@@ -1,0 +1,123 @@
+---
+title: "Hands-on Exercise 00: Working with tidyverse"
+author: "Sindy"
+date-modified: "last-modified"
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## Getting started
+
+Loading tidyverse into r environment by using the code chunk below.
+
+```{r}
+pacman::p_load(tidyverse, psych)
+```
+
+
+## Importing data
+
+This is an outdated version. Use `_` instead of `.` functions
+```{r}
+realis_csv <- read.csv("data/REALIS2019.csv")
+```
+
+Code chunk below uses uses read_csv() of readr to import REALIS2019.csv into r environment as a tiblle data.frame.
+```{r}
+realis2019 <- read_csv("data/REALIS2019.csv")
+```
+
+```{r}
+#! eval: FALSE
+popdata_fat <- read_csv("data/PopData2019_fat.csv")
+```
+
+## Pivoting data
+
+```{r}
+#! eval: FALSE
+popdata_long <- popdata_fat %>%
+  pivot_longer(c(3:21),
+               names_to = "Age Group",
+               values_to = "Population")
+```
+
+
+### More pipes:
+
+```{r}
+#popdata_long <- popdata_fat %>%
+#  pivot_longer(c(3:21),
+#               names_to = "Age Group",
+#               values_to = "Population") %>%
+#  select("Age Group" == "5_to_9")
+
+
+# Filter the dataset for a specific Age Group, e.g., "0_to_4"
+popdata_filtered <- popdata_long %>%
+  filter(`Age Group` == "0_to_4")  # Replace "0_to_4" with your desired age group
+```
+
+
+## Save data
+rds: r native file format - always good to save as rds format
+
+```{r}
+#! eval: FALSE
+write_rds(popdata_fat, "data/rds/popdata_fat.rds")
+write_rds(popdata_long, "data/rds/popdata_long.rds")
+```
+
+
+because you stopped all the processes above with `#! eval: FALSE` - only display code, does not run the code
+you have to read the processed file again.
+`#! echo: False`: you run the code in the background, without displaying code
+
+```{r}
+#! echo: False
+popdata_long <- read_rds("data/rds/popdata_long.rds")  # Loading long-format population data
+```
+
+
+## Working with dplyr
+
+### Selecting columns
+
+```{r}
+realis2019_selected <- realis2019 %>%
+  select(`Project Name`,
+         `Transacted Price ($)`,
+         `Property Type`,
+         `Type of Sale`,
+         `Unit Price ($ psm)`)
+```
+
+
+### Filtering columns
+
+```{r}
+realis2019_filtered <- realis2019_selected %>%
+  filter(`Property Type` == "Condominium" |
+           `Property Type` == "Apartment") %>%
+  filter(`Type of Sale` == "Resale") %>%
+  filter(`Unit Price ($ psm)` <= 13000)
+```
+
+
+### Combining selection and filter with pipe
+
+```{r}
+realis2019_end <- realis2019 %>%
+  select(`Project Name`,
+         `Transacted Price ($)`,
+         `Property Type`,
+         `Type of Sale`,
+         `Unit Price ($ psm)`) %>%
+  filter(`Property Type` == "Condominium" |
+           `Property Type` == "Apartment") %>%
+  filter(`Type of Sale` == "Resale") %>%
+  filter(`Unit Price ($ psm)` <= 13000)
+```

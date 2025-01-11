@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "Hands-on_Ex/Hands-on_Ex00.html",
+    "href": "Hands-on_Ex/Hands-on_Ex00.html",
+    "title": "Hands-on Exercise 00: Working with tidyverse",
+    "section": "",
+    "text": "Loading tidyverse into r environment by using the code chunk below.\n\npacman::p_load(tidyverse, psych)"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "ISSS608",
@@ -12,5 +19,40 @@
     "title": "About",
     "section": "",
     "text": "Greetings from the real Sindy! Below are some preferences my favourite AI companion thought would be fun to share with you…\nHi there! 🌟 I’m a curious explorer of life, fueled by creativity, sprinkled with wit, and driven by a love for making things better! 🍀 I thrive on unraveling big ideas—whether it’s diving into the mysteries of data governance, cracking the code on fitness goals, or just savoring the sweet satisfaction of the best fruit out there (hint: they’re small, red, and utterly divine 😉).\nWhen I’m not pondering sci-fi lore (yes, Blade Runner fans, I see you 👀), you’ll find me crafting solutions, learning new things, and enjoying the beauty of life’s simple joys. Oh, and breakfast for dinner? Not my thing—let’s keep the pancakes in their morning glory, please! 🥞🌅\nFun, fresh, and full of surprises—let’s create something amazing together! 💫"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex00.html#getting-started",
+    "href": "Hands-on_Ex/Hands-on_Ex00.html#getting-started",
+    "title": "Hands-on Exercise 00: Working with tidyverse",
+    "section": "",
+    "text": "Loading tidyverse into r environment by using the code chunk below.\n\npacman::p_load(tidyverse, psych)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex00.html#importing-data",
+    "href": "Hands-on_Ex/Hands-on_Ex00.html#importing-data",
+    "title": "Hands-on Exercise 00: Working with tidyverse",
+    "section": "Importing data",
+    "text": "Importing data\nThis is an outdated version. Use _ instead of . functions\n\nrealis_csv &lt;- read.csv(\"data/REALIS2019.csv\")\n\nCode chunk below uses uses read_csv() of readr to import REALIS2019.csv into r environment as a tiblle data.frame.\n\nrealis2019 &lt;- read_csv(\"data/REALIS2019.csv\")\n\n\n#! eval: FALSE\npopdata_fat &lt;- read_csv(\"data/PopData2019_fat.csv\")"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex00.html#pivoting-data",
+    "href": "Hands-on_Ex/Hands-on_Ex00.html#pivoting-data",
+    "title": "Hands-on Exercise 00: Working with tidyverse",
+    "section": "Pivoting data",
+    "text": "Pivoting data\n\n#! eval: FALSE\npopdata_long &lt;- popdata_fat %&gt;%\n  pivot_longer(c(3:21),\n               names_to = \"Age Group\",\n               values_to = \"Population\")\n\n\nMore pipes:\n\n#popdata_long &lt;- popdata_fat %&gt;%\n#  pivot_longer(c(3:21),\n#               names_to = \"Age Group\",\n#               values_to = \"Population\") %&gt;%\n#  select(\"Age Group\" == \"5_to_9\")\n\n\n# Filter the dataset for a specific Age Group, e.g., \"0_to_4\"\npopdata_filtered &lt;- popdata_long %&gt;%\n  filter(`Age Group` == \"0_to_4\")  # Replace \"0_to_4\" with your desired age group"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex00.html#save-data",
+    "href": "Hands-on_Ex/Hands-on_Ex00.html#save-data",
+    "title": "Hands-on Exercise 00: Working with tidyverse",
+    "section": "Save data",
+    "text": "Save data\nrds: r native file format - always good to save as rds format\n\n#! eval: FALSE\nwrite_rds(popdata_fat, \"data/rds/popdata_fat.rds\")\nwrite_rds(popdata_long, \"data/rds/popdata_long.rds\")\n\nbecause you stopped all the processes above with #! eval: FALSE - only display code, does not run the code you have to read the processed file again. #! echo: False: you run the code in the background, without displaying code\n\n#! echo: False\npopdata_long &lt;- read_rds(\"data/rds/popdata_long.rds\")  # Loading long-format population data"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex00.html#working-with-dplyr",
+    "href": "Hands-on_Ex/Hands-on_Ex00.html#working-with-dplyr",
+    "title": "Hands-on Exercise 00: Working with tidyverse",
+    "section": "Working with dplyr",
+    "text": "Working with dplyr\n\nSelecting columns\n\nrealis2019_selected &lt;- realis2019 %&gt;%\n  select(`Project Name`,\n         `Transacted Price ($)`,\n         `Property Type`,\n         `Type of Sale`,\n         `Unit Price ($ psm)`)\n\n\n\nFiltering columns\n\nrealis2019_filtered &lt;- realis2019_selected %&gt;%\n  filter(`Property Type` == \"Condominium\" |\n           `Property Type` == \"Apartment\") %&gt;%\n  filter(`Type of Sale` == \"Resale\") %&gt;%\n  filter(`Unit Price ($ psm)` &lt;= 13000)\n\n\n\nCombining selection and filter with pipe\n\nrealis2019_end &lt;- realis2019 %&gt;%\n  select(`Project Name`,\n         `Transacted Price ($)`,\n         `Property Type`,\n         `Type of Sale`,\n         `Unit Price ($ psm)`) %&gt;%\n  filter(`Property Type` == \"Condominium\" |\n           `Property Type` == \"Apartment\") %&gt;%\n  filter(`Type of Sale` == \"Resale\") %&gt;%\n  filter(`Unit Price ($ psm)` &lt;= 13000)"
   }
 ]
