@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 00: Working with tidyverse"
+title: "Hands-on Exercise 0: Working with tidyverse"
 author: "Sindy"
 date-modified: "last-modified"
 execute:
@@ -33,14 +33,13 @@ Use `_` instead of `.` functions to prevent changes made to column names
 realis2019 <- read_csv("data/REALIS2019.csv")
 ```
 
-```{r}
-#! eval: FALSE
+```{r, eval=FALSE}
 popdata_fat <- read_csv("data/PopData2019_fat.csv")
 ```
 
 ## Pivoting data
 
-```{r}
+```{r, eval=FALSE}
 #! eval: FALSE
 popdata_long <- popdata_fat %>%
   pivot_longer(c(3:21),
@@ -50,7 +49,7 @@ popdata_long <- popdata_fat %>%
 
 ### More pipes:
 
-```{r}
+```{r, eval=FALSE}
 #popdata_long <- popdata_fat %>%
 #  pivot_longer(c(3:21),
 #               names_to = "Age Group",
@@ -67,18 +66,16 @@ popdata_filtered <- popdata_long %>%
 
 rds: r native file format - always good to save as rds format
 
-```{r}
-#! eval: FALSE
+```{r, eval=FALSE}
 write_rds(popdata_fat, "data/rds/popdata_fat.rds")
 write_rds(popdata_long, "data/rds/popdata_long.rds")
 ```
 
-`#! eval: FALSE` - only display code, does not run the code
+`{r, eval=FALSE}`: only display code, does not run the code
 
-`#! echo: False`: you run the code in the background, without displaying code
+`{r, echo=FALSE}`: you run the code in the background, without displaying code
 
-```{r}
-#! echo: False
+```{r, echo=FALSE}
 popdata_long <- read_rds("data/rds/popdata_long.rds")  # Loading long-format population data
 # because you stopped all the processes above eval:False, you have to read the processed file again. 
 ```
