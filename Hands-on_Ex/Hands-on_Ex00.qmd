@@ -73,7 +73,7 @@ write_rds(popdata_fat, "data/rds/popdata_fat.rds")
 write_rds(popdata_long, "data/rds/popdata_long.rds")
 ```
 
-`#! eval: FALSE` - only display code, does not run the code 
+`#! eval: FALSE` - only display code, does not run the code
 
 `#! echo: False`: you run the code in the background, without displaying code
 
@@ -106,7 +106,9 @@ realis2019_filtered <- realis2019_selected %>%
   filter(`Unit Price ($ psm)` <= 13000)
 ```
 
-### Combining selection and filter with pipe
+### Combining select and filter with pipe
+
+We can also combine the above two operations into a single call.
 
 ```{r}
 realis2019_end <- realis2019 %>%
