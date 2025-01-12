@@ -39,7 +39,7 @@
     "href": "Hands-on_Ex/Hands-on_Ex00.html#pivoting-data",
     "title": "Hands-on Exercise 0: Working with tidyverse",
     "section": "Pivoting data",
-    "text": "Pivoting data\n\n#! eval: FALSE\npopdata_long &lt;- popdata_fat %&gt;%\n  pivot_longer(c(3:21),\n               names_to = \"Age Group\",\n               values_to = \"Population\")\n\n\nMore pipes:\n\n#popdata_long &lt;- popdata_fat %&gt;%\n#  pivot_longer(c(3:21),\n#               names_to = \"Age Group\",\n#               values_to = \"Population\") %&gt;%\n#  select(\"Age Group\" == \"5_to_9\")\n\n\n# Filter the dataset for a specific Age Group, e.g., \"0_to_4\"\npopdata_filtered &lt;- popdata_long %&gt;%\n  filter(`Age Group` == \"0_to_4\")  # Replace \"0_to_4\" with your desired age group"
+    "text": "Pivoting data\n\n#! eval: FALSE\npopdata_long &lt;- popdata_fat %&gt;%\n  pivot_longer(c(3:21),\n               names_to = \"Age Group\",\n               values_to = \"Population\")\n\n\nMore pipes:\n\n#popdata_long &lt;- popdata_fat %&gt;%\n#  pivot_longer(c(3:21),\n#               names_to = \"Age Group\",\n#               values_to = \"Population\") %&gt;%\n#  select(\"Age Group\" == \"5_to_9\")\n\n\n# Filter the dataset for a specific Age Group, e.g., \"0_to_4\"\npopdata_filtered &lt;- popdata_long %&gt;%\n  filter(`Age Group` == \"0_to_4\")"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex00.html#save-data",
