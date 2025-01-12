@@ -17,15 +17,18 @@ Loading tidyverse into r environment by using the code chunk below.
 pacman::p_load(tidyverse, psych)
 ```
 
-
 ## Importing data
 
-This is an outdated version. Use `_` instead of `.` functions
+This is an outdated version.
+
 ```{r}
 realis_csv <- read.csv("data/REALIS2019.csv")
 ```
 
-Code chunk below uses uses read_csv() of readr to import REALIS2019.csv into r environment as a tiblle data.frame.
+Code chunk below uses uses read_csv() of readr to import REALIS2019.csv into r environment as a tibble data.frame.
+
+Use `_` instead of `.` functions to prevent changes made to column names
+
 ```{r}
 realis2019 <- read_csv("data/REALIS2019.csv")
 ```
@@ -45,7 +48,6 @@ popdata_long <- popdata_fat %>%
                values_to = "Population")
 ```
 
-
 ### More pipes:
 
 ```{r}
@@ -61,8 +63,8 @@ popdata_filtered <- popdata_long %>%
   filter(`Age Group` == "0_to_4")  # Replace "0_to_4" with your desired age group
 ```
 
-
 ## Save data
+
 rds: r native file format - always good to save as rds format
 
 ```{r}
@@ -71,16 +73,15 @@ write_rds(popdata_fat, "data/rds/popdata_fat.rds")
 write_rds(popdata_long, "data/rds/popdata_long.rds")
 ```
 
+`#! eval: FALSE` - only display code, does not run the code 
 
-because you stopped all the processes above with `#! eval: FALSE` - only display code, does not run the code
-you have to read the processed file again.
 `#! echo: False`: you run the code in the background, without displaying code
 
 ```{r}
 #! echo: False
 popdata_long <- read_rds("data/rds/popdata_long.rds")  # Loading long-format population data
+# because you stopped all the processes above eval:False, you have to read the processed file again. 
 ```
-
 
 ## Working with dplyr
 
@@ -95,7 +96,6 @@ realis2019_selected <- realis2019 %>%
          `Unit Price ($ psm)`)
 ```
 
-
 ### Filtering columns
 
 ```{r}
@@ -105,7 +105,6 @@ realis2019_filtered <- realis2019_selected %>%
   filter(`Type of Sale` == "Resale") %>%
   filter(`Unit Price ($ psm)` <= 13000)
 ```
-
 
 ### Combining selection and filter with pipe
 
