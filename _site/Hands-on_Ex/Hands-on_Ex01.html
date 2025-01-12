@@ -190,15 +190,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#getting-started" id="toc-getting-started" class="nav-link active" data-scroll-target="#getting-started">1. Getting started</a></li>
-  <li><a href="#importing-data" id="toc-importing-data" class="nav-link" data-scroll-target="#importing-data">2. Importing data</a>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link active" data-scroll-target="#getting-started">1. Getting started</a>
   <ul class="collapse">
-  <li><a href="#about-the-data" id="toc-about-the-data" class="nav-link" data-scroll-target="#about-the-data">About the data</a></li>
+  <li><a href="#importing-data" id="toc-importing-data" class="nav-link" data-scroll-target="#importing-data">1.1 Importing data</a></li>
+  <li><a href="#about-the-data" id="toc-about-the-data" class="nav-link" data-scroll-target="#about-the-data">1.2 About the data</a></li>
   </ul></li>
-  <li><a href="#r-graphics-vs-ggplot" id="toc-r-graphics-vs-ggplot" class="nav-link" data-scroll-target="#r-graphics-vs-ggplot">3. R Graphics VS ggplot</a></li>
-  <li><a href="#grammar-of-graphics" id="toc-grammar-of-graphics" class="nav-link" data-scroll-target="#grammar-of-graphics">4. Grammar of Graphics</a></li>
-  <li><a href="#essential-grammatical-elements-in-ggplot2-data" id="toc-essential-grammatical-elements-in-ggplot2-data" class="nav-link" data-scroll-target="#essential-grammatical-elements-in-ggplot2-data">5. Essential Grammatical Elements in ggplot2: data</a></li>
-  <li><a href="#essential-grammatical-elements-in-ggplot2-geom" id="toc-essential-grammatical-elements-in-ggplot2-geom" class="nav-link" data-scroll-target="#essential-grammatical-elements-in-ggplot2-geom">6. Essential Grammatical Elements in ggplot2: geom</a></li>
+  <li><a href="#r-graphics-vs-ggplot" id="toc-r-graphics-vs-ggplot" class="nav-link" data-scroll-target="#r-graphics-vs-ggplot">2. R Graphics VS ggplot</a></li>
+  <li><a href="#grammar-of-graphics" id="toc-grammar-of-graphics" class="nav-link" data-scroll-target="#grammar-of-graphics">3. Grammar of Graphics</a></li>
+  <li><a href="#essential-grammatical-elements-in-ggplot2-data" id="toc-essential-grammatical-elements-in-ggplot2-data" class="nav-link" data-scroll-target="#essential-grammatical-elements-in-ggplot2-data">4. Essential Grammatical Elements in ggplot2: data</a></li>
+  <li><a href="#essential-grammatical-elements-in-ggplot2-geom" id="toc-essential-grammatical-elements-in-ggplot2-geom" class="nav-link" data-scroll-target="#essential-grammatical-elements-in-ggplot2-geom">5. Essential Grammatical Elements in ggplot2: geom</a></li>
   </ul>
 </nav>
     </div>
@@ -242,14 +242,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, psych)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
-<section id="importing-data" class="level2">
-<h2 class="anchored" data-anchor-id="importing-data">2. Importing data</h2>
+<section id="importing-data" class="level3">
+<h3 class="anchored" data-anchor-id="importing-data">1.1 Importing data</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>exam_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/Exam_data.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
 <section id="about-the-data" class="level3">
-<h3 class="anchored" data-anchor-id="about-the-data">About the data</h3>
+<h3 class="anchored" data-anchor-id="about-the-data">1.2 About the data</h3>
 <ul>
 <li><p>Year end examination grades of a cohort of primary 3 students from a local school.</p></li>
 <li><p>There are a total of seven attributes. Four of them are categorical data type and the other three are in continuous data type.</p>
@@ -261,7 +261,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 </section>
 <section id="r-graphics-vs-ggplot" class="level2">
-<h2 class="anchored" data-anchor-id="r-graphics-vs-ggplot">3. R Graphics VS ggplot</h2>
+<h2 class="anchored" data-anchor-id="r-graphics-vs-ggplot">2. R Graphics VS ggplot</h2>
 <p>First, let us compare how R Graphics, the core graphical functions of Base R and ggplot plot a simple histogram.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">R Graphics</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">ggplot2</a></li></ul>
@@ -299,7 +299,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </section>
 <section id="grammar-of-graphics" class="level2">
-<h2 class="anchored" data-anchor-id="grammar-of-graphics">4. Grammar of Graphics</h2>
+<h2 class="anchored" data-anchor-id="grammar-of-graphics">3. Grammar of Graphics</h2>
 <p>Grammar of Graphics defines the rules of structuring <span style="color:blue">mathematical and aesthetic</span> elements into a meaningful graph.</p>
 <p>There are two principles in Grammar of Graphics, they are:</p>
 <ul>
@@ -315,7 +315,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><em>Note: there will still be many grammatically correct but nonsensical graphics.</em></p>
 </section>
 <section id="essential-grammatical-elements-in-ggplot2-data" class="level2">
-<h2 class="anchored" data-anchor-id="essential-grammatical-elements-in-ggplot2-data">5. Essential Grammatical Elements in ggplot2: data</h2>
+<h2 class="anchored" data-anchor-id="essential-grammatical-elements-in-ggplot2-data">4. Essential Grammatical Elements in ggplot2: data</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>exam_data) <span class="co"># ggplot() initializes a ggplot object.</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># output:A blank canvas</span></span>
@@ -328,7 +328,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </section>
 <section id="essential-grammatical-elements-in-ggplot2-geom" class="level2">
-<h2 class="anchored" data-anchor-id="essential-grammatical-elements-in-ggplot2-geom">6. Essential Grammatical Elements in ggplot2: geom</h2>
+<h2 class="anchored" data-anchor-id="essential-grammatical-elements-in-ggplot2-geom">5. Essential Grammatical Elements in ggplot2: geom</h2>
 <p>Geometric objects are the actual marks we put on a plot. Examples include:</p>
 <p><img src="images/image6.png" class="img-fluid" style="width:80.0%"></p>
 <ul>

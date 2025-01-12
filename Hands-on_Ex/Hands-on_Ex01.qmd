@@ -17,13 +17,13 @@ Loading tidyverse into r environment by using the code chunk below.
 pacman::p_load(tidyverse, psych)
 ```
 
-## 2. Importing data
+### 1.1 Importing data
 
 ```{r}
 exam_data <- read_csv("data/Exam_data.csv")
 ```
 
-### About the data
+### 1.2 About the data
 
 -   Year end examination grades of a cohort of primary 3 students from a local school.
 
@@ -32,7 +32,7 @@ exam_data <- read_csv("data/Exam_data.csv")
     -   The categorical attributes are: `ID`, `CLASS`, `GENDER` and `RACE`.
     -   The continuous attributes are: `MATHS`, `ENGLISH` and `SCIENCE`.
 
-## 3. R Graphics VS ggplot
+## 2. R Graphics VS ggplot
 
 First, let us compare how R Graphics, the core graphical functions of Base R and ggplot plot a simple histogram.
 
@@ -55,7 +55,7 @@ ggplot(data=exam_data, aes(x = MATHS)) +
 ```
 :::
 
-## 4. Grammar of Graphics
+## 3. Grammar of Graphics
 
 Grammar of Graphics defines the rules of structuring [mathematical and aesthetic]{style="color:blue"} elements into a meaningful graph.
 
@@ -72,7 +72,7 @@ A good grammar of graphics will allow us to:
 
 *Note: there will still be many grammatically correct but nonsensical graphics.*
 
-## 5. Essential Grammatical Elements in ggplot2: data
+## 4. Essential Grammatical Elements in ggplot2: data
 
 ```{r, eval=FALSE, echo=TRUE}
 ggplot(data=exam_data) # ggplot() initializes a ggplot object.
@@ -85,7 +85,7 @@ ggplot(data=exam_data,
 # output: ggplot that includes the x-axis and the axis’s label.
 ```
 
-## 6. Essential Grammatical Elements in ggplot2: geom
+## 5. Essential Grammatical Elements in ggplot2: geom
 
 Geometric objects are the actual marks we put on a plot. Examples include:
 
