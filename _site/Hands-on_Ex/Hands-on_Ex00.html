@@ -125,7 +125,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-exercise" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">📘 Hands-on Exercise</span>
+ <span class="menu-text">Hands-on Exercise</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercise">    
         <li>
@@ -136,7 +136,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-in-class-exercise" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">📝 In-class Exercise</span>
+ <span class="menu-text">In-class Exercise</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercise">    
         <li>
@@ -147,7 +147,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-take-home-exercise" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">🏡 Take-home Exercise</span>
+ <span class="menu-text">Take-home Exercise</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercise">    
         <li>
@@ -193,7 +193,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#selecting-columns" id="toc-selecting-columns" class="nav-link" data-scroll-target="#selecting-columns">Selecting columns</a></li>
   <li><a href="#filtering-columns" id="toc-filtering-columns" class="nav-link" data-scroll-target="#filtering-columns">Filtering columns</a></li>
-  <li><a href="#combining-selection-and-filter-with-pipe" id="toc-combining-selection-and-filter-with-pipe" class="nav-link" data-scroll-target="#combining-selection-and-filter-with-pipe">Combining selection and filter with pipe</a></li>
+  <li><a href="#combining-select-and-filter-with-pipe" id="toc-combining-select-and-filter-with-pipe" class="nav-link" data-scroll-target="#combining-select-and-filter-with-pipe">Combining select and filter with pipe</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -319,8 +319,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="st">`</span><span class="at">Unit Price ($ psm)</span><span class="st">`</span> <span class="sc">&lt;=</span> <span class="dv">13000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="combining-selection-and-filter-with-pipe" class="level3">
-<h3 class="anchored" data-anchor-id="combining-selection-and-filter-with-pipe">Combining selection and filter with pipe</h3>
+<section id="combining-select-and-filter-with-pipe" class="level3">
+<h3 class="anchored" data-anchor-id="combining-select-and-filter-with-pipe">Combining select and filter with pipe</h3>
+<p>We can also combine the above two operations into a single call.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>realis2019_end <span class="ot">&lt;-</span> realis2019 <span class="sc">%&gt;%</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">`</span><span class="at">Project Name</span><span class="st">`</span>,</span>
