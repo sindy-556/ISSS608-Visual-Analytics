@@ -1,0 +1,96 @@
+---
+title: "Hands-on Exercise 1: Working with tidyverse"
+author: "Sindy"
+date-modified: "last-modified"
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## 1. Getting started
+
+Loading tidyverse into r environment by using the code chunk below.
+
+```{r}
+pacman::p_load(tidyverse, psych)
+```
+
+## 2. Importing data
+
+```{r}
+exam_data <- read_csv("data/Exam_data.csv")
+```
+
+### About the data
+
+-   Year end examination grades of a cohort of primary 3 students from a local school.
+
+-   There are a total of seven attributes. Four of them are categorical data type and the other three are in continuous data type.
+
+    -   The categorical attributes are: `ID`, `CLASS`, `GENDER` and `RACE`.
+    -   The continuous attributes are: `MATHS`, `ENGLISH` and `SCIENCE`.
+
+## 3. R Graphics VS ggplot
+
+First, let us compare how R Graphics, the core graphical functions of Base R and ggplot plot a simple histogram.
+
+::: panel-tabset
+### R Graphics
+
+```{r}
+hist(exam_data$MATHS)
+```
+
+### ggplot2
+
+```{r}
+ggplot(data=exam_data, aes(x = MATHS)) +
+  geom_histogram(bins=10, 
+                 boundary = 100,
+                 color="black", 
+                 fill="grey") +
+  ggtitle("Distribution of Maths scores")
+```
+:::
+
+## 4. Grammar of Graphics
+
+Grammar of Graphics defines the rules of structuring [mathematical and aesthetic]{style="color:blue"} elements into a meaningful graph.
+
+There are two principles in Grammar of Graphics, they are:
+
+-   Graphics = distinct layers of grammatical elements
+-   Meaningful plots through aesthetic mapping
+
+A good grammar of graphics will allow us to:
+
+1.  Gain insight into the composition of complicated graphics, and reveal unexpected connections between seemingly different graphics (Cox 1978).
+2.  Provide a strong foundation for understanding a diverse range of graphics.
+3.  Guide us on what a well-formed or correct graphic looks like.
+
+*Note: there will still be many grammatically correct but nonsensical graphics.*
+
+## 5. Essential Grammatical Elements in ggplot2: data
+
+```{r, eval=FALSE, echo=TRUE}
+ggplot(data=exam_data) # ggplot() initializes a ggplot object.
+# output:A blank canvas
+
+
+# Aesthetic mappings
+ggplot(data=exam_data, 
+       aes(x= MATHS))
+# output: ggplot that includes the x-axis and the axis’s label.
+```
+
+## 6. Essential Grammatical Elements in ggplot2: geom
+
+Geometric objects are the actual marks we put on a plot. Examples include:
+
+![](images/image6.png){width="80%"}
+
+-   A plot must have at least one geom; there is no upper limit. You can add a geom to a plot using the **+** operator.
+
+-   For complete list, please refer to [here](https://ggplot2.tidyverse.org/reference/#section-layer-geoms).
