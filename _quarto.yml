@@ -2,33 +2,33 @@ project:
   type: website
 
 website:
-  title: "ISSS608 Visual Analytics"
+  title: "ISSS608 VAA 🎨"
   navbar:
     left:
-      - text: "Hands-on Exercise"
+      - text: "📘 Hands-on Exercise"
         menu:
-        - text: "Hands-on Exercise 0"
-          href: Hands-on_Ex/Hands-on_Ex00.html
-      - text: "In-class Exercise"
+          - text: "Hands-on Exercise 0"
+            href: Hands-on_Ex/Hands-on_Ex00.html
+      - text: "📝 In-class Exercise"
         menu:
-        - text: "In-class Exercise 1"
-          href: In-class_Ex1.html
-      - text: "Take-home Exercise"
+          - text: "In-class Exercise 1"
+            href: In-class_Ex1.html
+      - text: "🏡 Take-home Exercise"
         menu:
-        - text: "Take-home Exercise 1"
-          href: Take-home_Ex1.html
+          - text: "Take-home Exercise 1"
+            href: Take-home_Ex1.html
     right:
       - href: index.qmd
-        text: Home
-      - about.qmd
+        text: "🚀 Home"
+      - href: about.qmd
+        text: "💡️ About"
 
 format:
   html:
-    theme:
-      - cosmo
-      - brand
+    theme: flatly
     css: styles.css
     toc: true
+    # Optional: Uncomment if using custom JS
+    # js: scripts.js
 
 editor: visual
-
