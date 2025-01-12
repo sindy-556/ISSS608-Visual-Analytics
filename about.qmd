@@ -5,6 +5,6 @@ title: "About"
 Hi there! I'm Sindy! 👋
 
 I'm excited to start my first course with Professor Kam Tin Seong 🎉.
-This is my first time using R and Quarto️,and I cam't wait to dive into Visual Analytics and Applications.
+This is my first time using R and Quarto️, and I can't wait to dive into Visual Analytics and Applications.
 
 Looking forward to this journey and seeing where it takes me 🌈🌟.
