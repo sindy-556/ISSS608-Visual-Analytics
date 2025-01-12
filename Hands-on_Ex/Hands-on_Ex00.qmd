@@ -59,7 +59,7 @@ popdata_long <- popdata_fat %>%
 
 # Filter the dataset for a specific Age Group, e.g., "0_to_4"
 popdata_filtered <- popdata_long %>%
-  filter(`Age Group` == "0_to_4")  # Replace "0_to_4" with your desired age group
+  filter(`Age Group` == "0_to_4")
 ```
 
 ## Save data
