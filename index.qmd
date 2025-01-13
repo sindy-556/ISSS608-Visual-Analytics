@@ -5,3 +5,5 @@ title: "ISSS608"
 Welcome to Sindy's playground for **ISSS608 Visual Analytics and Applications**.
 
 ![](photo_6057449358783267173_y.jpg){width="30%"}
+
+The image? That's just me bored when my code is running for like over an hour...
