@@ -420,7 +420,7 @@ ggplot(data=exam_data,
 ```
 
 
-### This is better
+#### This is better
 
 The code chunk below fixed both the y-axis and x-axis range from 0-100.
 
