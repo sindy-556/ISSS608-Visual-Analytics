@@ -408,7 +408,7 @@ ggplot(data=exam_data,
 ```
 
 
-## 8.2 Changing the y- and x-axis range
+### 8.2 Changing the y- and x-axis range
 
 The scatterplot on the below is slightly misleading because the y-aixs and x-axis range are not equal.
 
