@@ -94,3 +94,171 @@ Geometric objects are the actual marks we put on a plot. Examples include:
 -   A plot must have at least one geom; there is no upper limit. You can add a geom to a plot using the **+** operator.
 
 -   For complete list, please refer to [here](https://ggplot2.tidyverse.org/reference/#section-layer-geoms).
+
+### 5.1 Geometric Objects: geom_bar
+
+The code chunk below plots a bar chart by using geom_bar().
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x=RACE)) +
+  geom_bar()
+```
+
+### 5.2 Geometric Objects: geom_dotplot
+
+In a dot plot, the width of a dot corresponds to the bin width (or maximum width, depending on the binning algorithm), and dots are stacked, with each dot representing one observation.
+
+In the code chunk below, geom_dotplot() of ggplot2 is used to plot a dot plot.
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x = MATHS)) +
+  geom_dotplot(binwidth=2.5,         
+               dotsize = 0.5) +      
+  scale_y_continuous(NULL,           
+                     breaks = NULL)  
+```
+
+#### Understanding the parameters:
+
+-   `binwidth`: The default binwidth is 1.
+    -   Each bin will cover an interval of 1 unit on the x-axis.
+    -   For example, if your x-axis represents test scores ranging from 0 to 100, the bins will be \[0-1), \[1-2), \[2-3), ..., \[99-100).
+    -   `binwidth = 2.5` means that test scores are grouped into intervals of 2.5 units e.g. \[0-2.5), \[2.5, 5)...
+-   `scale_y_continuous()` is used to turn off the y-axis.
+    -   The range of y-axis is 0-1 which can can potentially distort the interpretation of the data.
+
+### 5.3 Geometric Objects: geom_histogram
+
+In the code chunk below, geom_histogram() is used to create a simple histogram by using values in MATHS field of exam_data.
+
+```{r}
+ggplot(data = exam_data, 
+       aes(x = MATHS)) +
+  geom_histogram(bins = 25)
+```
+
+The default bin is 30. By setting bins = 25, the number of bins is consistent with the test scores along the x-axis.
+
+### 5.4 Modifying a geometric object by changing geom()
+
+In the code chunk below,
+
+-   bins argument is used to change the number of bins to 25,
+-   fill argument is used to shade the histogram with light blue color, and
+-   color argument is used to change the outline colour of the bars in black
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x= MATHS)) +
+  geom_histogram(bins=20,            
+                 color="black",      
+                 fill="light blue")  
+```
+
+### 5.5 Modifying a geometric object by changing aes()
+
+The code chunk below changes the interior colour of the histogram (i.e. fill) by using sub-group of aesthetic().
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x= MATHS, 
+           fill = GENDER)) +
+  geom_histogram(bins=20, 
+                 color="grey30")
+```
+
+This approach can be used to colour, fill and alpha of the geometric.
+
+
+### 5.6 Geometric Objects: geom-density()
+
+geom-density() computes and plots kernel density estimate, which is a smoothed version of the histogram.
+
+It is a useful alternative to the histogram for continuous data that comes from an underlying smooth distribution.
+
+The code below plots the distribution of Maths scores in a kernel density estimate plot.
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x = MATHS)) +
+  geom_density() 
+```
+
+The code chunk below plots two kernel density lines by using colour or fill arguments of aes()
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x = MATHS, 
+           colour = GENDER)) +
+  geom_density()
+```
+
+
+### 5.7 Geometric Objects: geom_boxplot()
+
+`geom_boxplot()` displays continuous value list. It visualises five summary statistics (the median, two hinges and two whiskers), and all “outlying” points individually.
+
+The code chunk below plots boxplots by using `geom_boxplot()`.
+
+```{r}
+ggplot(data=exam_data, 
+       aes(y = MATHS,       
+           x= GENDER)) +    
+  geom_boxplot()
+```
+
+Notches are used in box plots to help visually assess whether the medians of distributions differ. If the notches do not overlap, this is evidence that the medians are different.
+
+The code chunk below plots the distribution of Maths scores by gender in notched plot instead of boxplot.
+
+```{r}
+ggplot(data=exam_data, 
+       aes(y = MATHS, 
+           x= GENDER)) +
+  geom_boxplot(notch=TRUE)
+```
+
+
+### 5.8 Geometric Objects: geom_violin()
+
+`geom_violin()` is designed for creating violin plot. Violin plots are a way of comparing multiple data distributions. With ordinary density curves, it is difficult to compare more than just a few distributions because the lines visually interfere with each other. With a violin plot, it’s easier to compare several distributions since they’re placed side by side.
+
+The code below plot the distribution of Maths score by gender in violin plot.
+
+```{r}
+ggplot(data=exam_data, 
+       aes(y = MATHS, 
+           x= GENDER)) +
+  geom_violin()
+```
+
+### 5.9 Geometric Objects: geom_point()
+
+`geom_point()` is especially useful for creating scatterplot.
+
+The code chunk below plots a scatterplot showing the Maths and English grades of pupils by using `geom_point()`.
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x= MATHS, 
+           y=ENGLISH)) +
+  geom_point()            
+```
+
+
+### 5.10 geom objects can be combined
+
+The code chunk below plots the data points on the boxplots by using both `geom_boxplot()` and `geom_point()`.
+
+```{r}
+ggplot(data=exam_data, 
+       aes(y = MATHS, 
+           x= GENDER)) +
+  geom_boxplot() +                    
+  geom_point(position="jitter", 
+             size = 0.5)        
+```
+
+
