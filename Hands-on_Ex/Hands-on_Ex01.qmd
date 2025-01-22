@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 1: Working with tidyverse"
+title: "Hands-on Exercise 1: A Layered Grammar of Graphics: ggplot2 methods"
 author: "Sindy"
 date-modified: "last-modified"
 execute:
@@ -32,8 +32,6 @@ exam_data <- read_csv("data/Exam_data.csv")
     -   The categorical attributes are: `ID`, `CLASS`, `GENDER` and `RACE`.
     -   The continuous attributes are: `MATHS`, `ENGLISH` and `SCIENCE`.
 
-
-
 ## 2. R Graphics VS ggplot
 
 First, let us compare how R Graphics, the core graphical functions of Base R and ggplot plot a simple histogram.
@@ -57,8 +55,6 @@ ggplot(data=exam_data, aes(x = MATHS)) +
 ```
 :::
 
-
-
 ## 3. Grammar of Graphics
 
 Grammar of Graphics defines the rules of structuring [mathematical and aesthetic]{style="color:blue"} elements into a meaningful graph.
@@ -76,8 +72,6 @@ A good grammar of graphics will allow us to:
 
 *Note: there will still be many grammatically correct but nonsensical graphics.*
 
-
-
 ## 4. Essential Grammatical Elements in ggplot2: data
 
 ```{r, eval=FALSE, echo=TRUE}
@@ -90,8 +84,6 @@ ggplot(data=exam_data,
        aes(x= MATHS))
 # output: ggplot that includes the x-axis and the axis’s label.
 ```
-
-
 
 ## 5. Essential Grammatical Elements in ggplot2: geom
 
@@ -265,8 +257,6 @@ ggplot(data=exam_data,
              size = 0.5)        
 ```
 
-
-
 ## 6. Essential Grammatical Elements in ggplot2: stat
 
 The Statistics functions statistically transform data, usually as some form of summary. For example:
@@ -342,8 +332,6 @@ ggplot(data=exam_data,
               linewidth=0.5)
 ```
 
-
-
 ## 7. Essential Grammatical Elements in ggplot2: facets
 
 Facetting generates small multiples (sometimes also called trellis plot), each displaying a different subset of the data. They are an alternative to aesthetics for displaying additional discrete variables. ggplot2 supports two types of factes, namely: `facet_grid()` and `facet_wrap()`.
@@ -361,7 +349,6 @@ ggplot(data=exam_data,
     facet_wrap(~ CLASS)
 ```
 
-
 ### 7.2 facet_grid() function
 
 `facet_grid()` forms a matrix of panels defined by row and column facetting variables. It is most useful when you have two discrete variables, and all combinations of the variables exist in the data.
@@ -375,8 +362,6 @@ ggplot(data=exam_data,
     facet_grid(~ CLASS)
 ```
 
-
-
 ## 8. Essential Grammatical Elements in ggplot2: Coordinates
 
 The **Coordinates functions** map the position of objects onto the plane of the plot. There are a number of different possible coordinate systems to use. They are:
@@ -385,7 +370,6 @@ The **Coordinates functions** map the position of objects onto the plane of the 
 -   [`coord_flip()`](https://ggplot2.tidyverse.org/reference/coord_flip.html): A cartesian system with the x and y axes flipped.
 -   [`coord_fixed()`](https://ggplot2.tidyverse.org/reference/coord_fixed.html): A cartesian system with a "fixed" aspect ratio (e.g., 1.78 for a "widescreen" plot).
 -   [`coord_quickmap()`](https://ggplot2.tidyverse.org/reference/coord_map.html): A coordinate system that approximates a good aspect ratio for maps.
-
 
 ### 8.1 Working with Coordinate
 
@@ -397,7 +381,6 @@ ggplot(data=exam_data,
   geom_bar()
 ```
 
-
 The code chunk below flips the horizontal bar chart into vertical bar chart by using `coord_flip()`.
 
 ```{r}
@@ -406,7 +389,6 @@ ggplot(data=exam_data,
   geom_bar() +
   coord_flip()
 ```
-
 
 ### 8.2 Changing the y- and x-axis range
 
@@ -418,7 +400,6 @@ ggplot(data=exam_data,
   geom_point() +
   geom_smooth(method=lm, size=0.5)
 ```
-
 
 #### This is better
 
@@ -434,23 +415,22 @@ ggplot(data=exam_data,
                   ylim=c(0,100))
 ```
 
-
-
 ## 9. Essential Grammatical Elements in ggplot2: themes
 
 Themes control elements of the graph not related to the data. For example:
 
-    background colour
-    size of fonts
-    gridlines
-    colour of labels
+```         
+background colour
+size of fonts
+gridlines
+colour of labels
+```
 
 Built-in themes include: - `theme_gray()` (default) - `theme_bw()` - `theme_classic()`
 
 A list of theme can be found at this [link.](https://ggplot2.tidyverse.org/reference/ggtheme.html) Each theme element can be conceived of as either a line (e.g. x-axis), a rectangle (e.g. graph background), or text (e.g. axis title).
 
 ::: panel-tabset
-
 ## Default theme
 
 The code chunk below plot a horizontal bar chart using `theme_gray()`.
@@ -463,7 +443,6 @@ ggplot(data=exam_data,
   theme_gray()
 ```
 
-
 ## Classic theme
 
 A horizontal bar chart plotted using `theme_classic()`.
@@ -475,7 +454,6 @@ ggplot(data=exam_data,
   coord_flip() +
   theme_classic()
 ```
-
 
 ## Minimal theme
 
@@ -490,7 +468,6 @@ ggplot(data=exam_data,
 ```
 :::
 
-
-
 ## 10. Reference
+
 Credits to [Prof Kam](https://r4va.netlify.app/chap01#learning-outcome).

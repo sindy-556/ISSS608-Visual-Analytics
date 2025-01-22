@@ -152,5 +152,26 @@
     "title": "Hands-on Exercise 1: Working with tidyverse",
     "section": "10. Reference",
     "text": "10. Reference\nCredits to Prof Kam."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02.html",
+    "href": "Hands-on_Ex/Hands-on_Ex02.html",
+    "title": "Hands-on Exercise 2: Beyond ggplot2 Fundamentals",
+    "section": "",
+    "text": "Loading tidyverse into r environment by using the code chunk below."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02.html#getting-started",
+    "href": "Hands-on_Ex/Hands-on_Ex02.html#getting-started",
+    "title": "Hands-on Exercise 2: Beyond ggplot2 Fundamentals",
+    "section": "",
+    "text": "Loading tidyverse into r environment by using the code chunk below."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02.html#reference",
+    "href": "Hands-on_Ex/Hands-on_Ex02.html#reference",
+    "title": "Hands-on Exercise 2: Beyond ggplot2 Fundamentals",
+    "section": "10. Reference",
+    "text": "10. Reference\nCredits to Prof Kam."
   }
 ]
