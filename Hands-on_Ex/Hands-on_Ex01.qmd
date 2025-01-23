@@ -470,4 +470,4 @@ ggplot(data=exam_data,
 
 ## 10. Reference
 
-Credits to [Prof Kam](https://r4va.netlify.app/chap01#learning-outcome).
+Credits to [Prof Kam](https://r4va.netlify.app/chap01).
