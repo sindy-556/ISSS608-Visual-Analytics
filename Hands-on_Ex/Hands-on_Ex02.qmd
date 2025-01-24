@@ -294,7 +294,7 @@ In order to identify subplots in text, **patchwork** also provides auto-tagging 
 
 
 
-### 4.5 Creating figure with insert
+### 4.5 Creating figure with inset
 
 Beside providing functions to place plots next to each other based on the provided layout. With `inset_element()` of **patchwork**, we can place one or several plots or graphic elements freely on top or below another plot.
 
