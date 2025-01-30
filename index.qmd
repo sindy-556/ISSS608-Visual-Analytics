@@ -2,6 +2,6 @@
 title: "ISSS608"
 ---
 
-Welcome to Sindy's playground for **ISSS608 Visual Analytics and Applications**.
+Welcome to Sindy's **ISSS608 Visual Analytics and Applications**.
 
 ![](Screenshot 2025-01-24 162333.png){width="50%"}
