@@ -11,9 +11,15 @@ execute:
 
 ## 1. Overview
 
-When telling a visually-driven data story, animated graphics tends to attract the interest of the audience and make deeper impression than static graphics. In this hands-on exercise, you will learn how to create animated data visualisation by using **gganimate** and **plotly r** packages. At the same time, you will also learn how to (i) reshape data by using **tidyr** package, and (ii) process, wrangle and transform data by using **dplyr** package.
+When telling a visually-driven data story, animated graphics tends to attract the interest of the audience and make deeper impression than static graphics.
 
-### 1.1 Basic concepts of animation
+### 1.1 Learning outcomes
+
+- Learn how to create animated data visualizations using gganimate and plotly in R.
+
+- Gain hands-on experience in reshaping data with the tidyr package and processing, wrangling, and transforming data with the dplyr package.
+
+### 1.2 Basic concepts of animation
 
 When creating animations, the plot does not actually move. Instead, many individual plots are built and then stitched together as movie frames, just like an old-school flip book or cartoon. Each frame is a different plot when conveying motion, which is built using some relevant subset of the aggregate data. The subset drives the flow of the animation when stitched back together.
 
@@ -119,14 +125,14 @@ ggplot(globalPop, aes(x = Old, y = Young,
   transition_time(Year) +       
   ease_aes('linear')          
 ```
+
 ## 4. Animated Data Visualisation: plotly
 
 In **Plotly R** package, both `ggplotly()` and `plot_ly()` support key frame animations through the `frame` argument/aesthetic. They also support an `ids` argument/aesthetic to ensure smooth transitions between objects with the same id (which helps facilitate object constancy).
 
 ### 4.1 Building an animated bubble plot: `ggplotly()` method
 
-
-:::: panel-tabset
+::: panel-tabset
 ## The plot
 
 ```{r}
@@ -177,7 +183,7 @@ ggplotly(gg)
 -   Appropriate ggplot2 functions are used to create a static bubble plot. The output is then saved as an R object called *gg*.
 -   `ggplotly()` is then used to convert the R graphic object into an animated svg object.
 :::
-::::
+:::
 
 Notice that although `show.legend = FALSE` argument was used, the legend still appears on the plot. To overcome this problem, `theme(legend.position='none')` should be used as shown in the plot and code chunk below.
 
@@ -247,7 +253,6 @@ bp <- globalPop %>%
 bp
 ```
 
-
 ## 5. Reference
-Credits to [Prof Kam](https://r4va.netlify.app/chap04).
 
+Credits to [Prof Kam](https://r4va.netlify.app/chap04).
