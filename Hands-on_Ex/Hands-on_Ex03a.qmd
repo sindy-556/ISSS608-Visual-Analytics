@@ -13,7 +13,7 @@ execute:
 
 ### 1.1 Installing and loading the required libraries
 
-In this exercise, beside tidyverse, four R packages will be used. They are:
+Beside tidyverse, four R packages will be used. They are:
 
 -   ggrepel: an R package provides geoms for ggplot2 to repel overlapping text labels.
 -   ggthemes: an R package provides some extra themes, geoms, and scales for 'ggplot2'.
@@ -325,7 +325,6 @@ Plotly’s R graphing library create interactive web graphics from ggplot2 graph
 
 ![](images/image2.jpg)
 
-
 There are two ways to create interactive graph by using plotly, they are:
 
 -   by using *plot_ly()*, and
@@ -353,7 +352,6 @@ plot_ly(data = exam_data,
 ```
 
 Interactive: Click on the colour symbol at the legend.
-
 
 ### 3.5 Creating an interactive scatter plot: ggplotly() method
 
@@ -440,9 +438,9 @@ crosstalk::bscols(gg,
 
 Things to learn from the code chunk:
 
-- `highlight()` is a function of **plotly** package. It sets a variety of options for brushing (i.e., highlighting) multiple plots. These options are primarily designed for linking multiple plotly graphs, and may not behave as expected when linking plotly to another htmlwidget package via crosstalk. In some cases, other htmlwidgets will respect these options, such as persistent selection in leaflet.
+-   `highlight()` is a function of **plotly** package. It sets a variety of options for brushing (i.e., highlighting) multiple plots. These options are primarily designed for linking multiple plotly graphs, and may not behave as expected when linking plotly to another htmlwidget package via crosstalk. In some cases, other htmlwidgets will respect these options, such as persistent selection in leaflet.
 
-- `bscols()` is a helper function of **crosstalk** package. It makes it easy to put HTML elements side by side. It can be called directly from the console but is especially designed to work in an R Markdown document. **Warning:** This will bring in all of Bootstrap!.
+-   `bscols()` is a helper function of **crosstalk** package. It makes it easy to put HTML elements side by side. It can be called directly from the console but is especially designed to work in an R Markdown document. **Warning:** This will bring in all of Bootstrap!.
 
 ## 5. Reference
 
