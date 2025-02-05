@@ -179,8 +179,7 @@ ggbetweenstats(
 
 -   pairwise.comparisons = TRUE → Conducts post-hoc pairwise comparisons (e.g., Games-Howell test for unequal variances).
 
--   pairwise.display = "s" → Displays only significant comparisons in pairwise tests.
-
+-   pairwise.display = "s" 
     -   "ns" → Shows only non-significant comparisons.
 
     -   "s" → Shows only significant comparisons (used in this case).
