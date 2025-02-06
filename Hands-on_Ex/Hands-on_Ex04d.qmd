@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 4a: Visualising Distribution"
+title: "Hands-on Exercise 4d: Funnel Plots for Fair Comparisons"
 author: "Sindy"
 date-modified: "last-modified"
 execute:
@@ -9,10 +9,32 @@ execute:
   freeze: true
 ---
 
-## 1. Getting started
+## 1. Overview
+
+Funnel plot is a specially designed data visualisation for conducting unbiased comparison between outlets, stores or business entities.
+
+### 1.1 Getting started
+
+In this exercise, four R packages will be used.
+```{r}
+pacman::p_load(tidyverse, FunnelPlotR, plotly, knitr)
+```
+
+### 1.2 Importing Data
+
+In this section, COVID-19_DKI_Jakarta will be used. The data was downloaded from Open Data Covid-19 Provinsi DKI Jakarta portal. For this hands-on exercise, we are going to compare the cumulative COVID-19 cases and death by sub-district (i.e. kelurahan) as at 31st July 2021, DKI Jakarta.
+
+The code chunk below imports the data into R and save it into a tibble data frame object called covid19.
+
+```{r}
+covid19 <- read_csv("data/COVID-19_DKI_Jakarta.csv") %>%
+  mutate_if(is.character, as.factor)
+```
+
+
 
 
 
 ## 4. Reference
 
-Credits to [Prof Kam](https://r4va.netlify.app/chap09).
+Credits to [Prof Kam](https://r4va.netlify.app/chap12).
