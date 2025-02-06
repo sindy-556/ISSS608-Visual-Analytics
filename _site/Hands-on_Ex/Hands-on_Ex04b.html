@@ -259,7 +259,28 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#two-sample-mean-test-ggbetweenstats" id="toc-two-sample-mean-test-ggbetweenstats" class="nav-link" data-scroll-target="#two-sample-mean-test-ggbetweenstats">3.1 Two-sample mean test: <em>ggbetweenstats()</em></a></li>
   <li><a href="#oneway-anova-test-ggbetweenstats-method" id="toc-oneway-anova-test-ggbetweenstats-method" class="nav-link" data-scroll-target="#oneway-anova-test-ggbetweenstats-method">3.2 Oneway ANOVA Test: ggbetweenstats() method</a></li>
+  <li><a href="#significance-test-of-correlation-ggscatterstats" id="toc-significance-test-of-correlation-ggscatterstats" class="nav-link" data-scroll-target="#significance-test-of-correlation-ggscatterstats">3.3 Significance Test of Correlation: ggscatterstats()</a></li>
+  <li><a href="#significance-test-of-association-dependence-ggbarstats-method" id="toc-significance-test-of-association-dependence-ggbarstats-method" class="nav-link" data-scroll-target="#significance-test-of-association-dependence-ggbarstats-method">3.4 Significance Test of Association (Dependence): ggbarstats() Method</a></li>
   </ul></li>
+  <li><a href="#visualising-models" id="toc-visualising-models" class="nav-link" data-scroll-target="#visualising-models">4. Visualising Models</a>
+  <ul class="collapse">
+  <li><a href="#visualising-models-1" id="toc-visualising-models-1" class="nav-link" data-scroll-target="#visualising-models-1">4.1 Visualising Models</a></li>
+  <li><a href="#importing-excel-file-readxl-methods" id="toc-importing-excel-file-readxl-methods" class="nav-link" data-scroll-target="#importing-excel-file-readxl-methods">4.2 Importing Excel File: readxl Methods</a></li>
+  </ul></li>
+  <li><a href="#building-and-diagnosing-a-multiple-regression-model" id="toc-building-and-diagnosing-a-multiple-regression-model" class="nav-link" data-scroll-target="#building-and-diagnosing-a-multiple-regression-model">5. Building and Diagnosing a Multiple Regression Model</a>
+  <ul class="collapse">
+  <li><a href="#multiple-regression-model-using-lm" id="toc-multiple-regression-model-using-lm" class="nav-link" data-scroll-target="#multiple-regression-model-using-lm">5.1 Multiple Regression Model using lm()</a></li>
+  <li><a href="#multiple-regression-model-using-lm-1" id="toc-multiple-regression-model-using-lm-1" class="nav-link" data-scroll-target="#multiple-regression-model-using-lm-1">5.2 Multiple Regression Model using lm()</a></li>
+  <li><a href="#model-diagnostic-checking-normality-assumption" id="toc-model-diagnostic-checking-normality-assumption" class="nav-link" data-scroll-target="#model-diagnostic-checking-normality-assumption">5.3 Model Diagnostic: checking normality assumption</a></li>
+  <li><a href="#model-diagnostic-check-model-for-homogeneity-of-variances" id="toc-model-diagnostic-check-model-for-homogeneity-of-variances" class="nav-link" data-scroll-target="#model-diagnostic-check-model-for-homogeneity-of-variances">5.4 Model Diagnostic: Check model for homogeneity of variances</a></li>
+  <li><a href="#model-diagnostic-complete-check" id="toc-model-diagnostic-complete-check" class="nav-link" data-scroll-target="#model-diagnostic-complete-check">5.5 Model Diagnostic: Complete check</a></li>
+  </ul></li>
+  <li><a href="#visualizing-regression-results" id="toc-visualizing-regression-results" class="nav-link" data-scroll-target="#visualizing-regression-results">6. Visualizing Regression Results</a>
+  <ul class="collapse">
+  <li><a href="#visualising-regression-parameters-see-methods" id="toc-visualising-regression-parameters-see-methods" class="nav-link" data-scroll-target="#visualising-regression-parameters-see-methods">6.1 Visualising Regression Parameters: see methods</a></li>
+  <li><a href="#visualising-regression-parameters-ggcoefstats-methods" id="toc-visualising-regression-parameters-ggcoefstats-methods" class="nav-link" data-scroll-target="#visualising-regression-parameters-ggcoefstats-methods">6.2 Visualising Regression Parameters: ggcoefstats() methods</a></li>
+  </ul></li>
+  <li><a href="#reference" id="toc-reference" class="nav-link" data-scroll-target="#reference">7. Reference</a></li>
   </ul>
 </nav>
     </div>
@@ -286,7 +307,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 4, 2025</p>
+      <p class="date-modified">February 6, 2025</p>
     </div>
   </div>
     
@@ -497,30 +518,311 @@ BF_{10} = \frac{P(D \mid H_1)}{P(D \mid H_0)}
 <div class="tab-content">
 <div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
 <ul>
-<li><p>type = “p” → Performs a parametric test (Welch’s ANOVA for unequal variances).</p></li>
-<li><p>mean.ci = TRUE → Displays mean and confidence intervals for each group.</p></li>
-<li><p>pairwise.comparisons = TRUE → Conducts post-hoc pairwise comparisons (e.g., Games-Howell test for unequal variances).</p></li>
-<li><p>pairwise.display = “s” → Displays only significant comparisons in pairwise tests.</p>
+<li><p><code>type = "p"</code> → Performs a parametric test (Welch’s ANOVA for unequal variances).</p></li>
+<li><p><code>mean.ci = TRUE</code> → Displays mean and confidence intervals for each group.</p></li>
+<li><p><code>pairwise.comparisons = TRUE</code> → Conducts post-hoc pairwise comparisons (e.g., Games-Howell test for unequal variances).</p></li>
+<li><p><code>pairwise.display = "s"</code></p>
 <ul>
-<li><p>“ns” → Shows only non-significant comparisons.</p></li>
-<li><p>“s” → Shows only significant comparisons (used in this case).</p></li>
-<li><p>“all” → Shows all comparisons.</p></li>
+<li><p><code>"ns"</code> → Shows only non-significant comparisons.</p></li>
+<li><p><code>"s"</code> → Shows only significant comparisons (used in this case).</p></li>
+<li><p><code>"all"</code> → Shows all comparisons.</p></li>
 </ul></li>
-<li><p>p.adjust.method = “fdr” → Adjusts p-values for multiple comparisons using the False Discovery Rate (FDR) correction.</p></li>
-<li><p>messages = FALSE → Suppresses console messages.</p></li>
+<li><p><code>p.adjust.method = "fdr"</code> → Adjusts p-values for multiple comparisons using the False Discovery Rate (FDR) correction.</p></li>
+<li><p><code>messages = FALSE</code> → Suppresses console messages.</p></li>
 </ul>
 </div>
 <div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
-
+<section id="one-way-welch-anova-results" class="level4">
+<h4 class="anchored" data-anchor-id="one-way-welch-anova-results">1. One-Way Welch ANOVA Results</h4>
+<ul>
+<li><span class="math inline">\(F_{\text{Welch}}(3, 23.8) = 10.15\)</span> → The Welch’s ANOVA test statistic<br>
+</li>
+<li><span class="math inline">\(p = 1.71 \times 10^{-4}\)</span> → The p-value, indicating a statistically significant difference among groups<br>
+</li>
+<li><span class="math inline">\(\hat{\omega}^2_p = 0.50\)</span> → Effect size (moderate to large effect)<br>
+</li>
+<li><span class="math inline">\(CI_{95\%} [0.21, 1.00]\)</span> → Confidence interval for the effect size<br>
+</li>
+<li><span class="math inline">\(n_{\text{obs}} = 322\)</span> → Number of observations</li>
+</ul>
+<p>This suggests that there is a significant difference in English scores across racial groups.</p>
+</section>
+<section id="violin-boxplots" class="level4">
+<h4 class="anchored" data-anchor-id="violin-boxplots">2. Violin &amp; Boxplots</h4>
+<ul>
+<li>The violin plot shows the distribution of scores.<br>
+</li>
+<li>The boxplot (inside the violin plot) summarizes:
+<ul>
+<li>The median (middle line in the box)</li>
+<li>The interquartile range (box)</li>
+<li>The whiskers (spread of data)</li>
+<li>The mean (red dot with label)</li>
+</ul></li>
+</ul>
+</section>
+<section id="post-hoc-pairwise-comparisons" class="level4">
+<h4 class="anchored" data-anchor-id="post-hoc-pairwise-comparisons">3. Post-Hoc Pairwise Comparisons</h4>
+<ul>
+<li>The <strong>Games-Howell test</strong> is used for post-hoc analysis (adjusted for multiple comparisons).<br>
+</li>
+<li>Only significant comparisons are displayed.<br>
+</li>
+<li>The p-value adjustment method used is <strong>False Discovery Rate (FDR)</strong>.</li>
+</ul>
+</section>
+<section id="bayesian-statistics" class="level4">
+<h4 class="anchored" data-anchor-id="bayesian-statistics">4. Bayesian Statistics</h4>
+<p>At the bottom:</p>
+<ul>
+<li><span class="math inline">\(\log_e(BF_{01}) = -11.63\)</span> → Bayesian evidence against the null hypothesis<br>
+</li>
+<li><span class="math inline">\(R^2_{\text{posterior}} = 0.09\)</span> → Bayesian effect size<br>
+</li>
+<li><span class="math inline">\(CI_{95\%} [0.04, 0.15]\)</span> → Bayesian credible interval<br>
+</li>
+<li><span class="math inline">\(r_{\text{Cauchy}} = 0.71\)</span> → Cauchy prior width used</li>
+</ul>
+<p>The negative log Bayes Factor <span class="math inline">\(BF_{01}\)</span> suggests strong evidence <strong>against the null hypothesis</strong>, meaning there is a significant difference between the groups.</p>
+</section>
 </div>
 <div id="tabset-3-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-3-tab">
-
+<ul>
+<li>The one-way Welch ANOVA confirms a significant difference in English scores across racial groups.</li>
+<li>The Chinese and “Other” groups have higher mean scores than the Indian and Malay groups.</li>
+<li>Post-hoc Games-Howell comparisons highlight significant differences.</li>
+<li>Bayesian analysis supports the findings from the frequentist approach.</li>
+</ul>
 </div>
 </div>
 </div>
-
-
+<p><img src="images/image9.jpg" class="img-fluid"></p>
 </section>
+<section id="significance-test-of-correlation-ggscatterstats" class="level3">
+<h3 class="anchored" data-anchor-id="significance-test-of-correlation-ggscatterstats">3.3 Significance Test of Correlation: ggscatterstats()</h3>
+<p>In the code chunk below, <code>ggscatterstats()</code> is used to build a visualization for the Significance Test of Correlation between Maths scores and English scores.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggscatterstats</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> exam_data,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> MATHS,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> ENGLISH,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">marginal =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on_Ex04b_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="significance-test-of-association-dependence-ggbarstats-method" class="level3">
+<h3 class="anchored" data-anchor-id="significance-test-of-association-dependence-ggbarstats-method">3.4 Significance Test of Association (Dependence): ggbarstats() Method</h3>
+<p>In the code chunk below, the Maths scores are binned into a 4-class variable using the <code>cut()</code> function.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>exam1 <span class="ot">&lt;-</span> exam_data <span class="sc">%&gt;%</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">MATHS_bins =</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>           <span class="fu">cut</span>(MATHS, </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">75</span>, <span class="dv">85</span>, <span class="dv">100</span>))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggbarstats</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> exam1, </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> MATHS_bins, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> GENDER</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on_Ex04b_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="visualising-models" class="level2">
+<h2 class="anchored" data-anchor-id="visualising-models">4. Visualising Models</h2>
+<p>In this section, Toyota Corolla case study will be used. The purpose of study is to build a model to discover factors affecting prices of used-cars by taking into consideration a set of explanatory variables.</p>
+<section id="visualising-models-1" class="level3">
+<h3 class="anchored" data-anchor-id="visualising-models-1">4.1 Visualising Models</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(readxl, performance, parameters, see)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="importing-excel-file-readxl-methods" class="level3">
+<h3 class="anchored" data-anchor-id="importing-excel-file-readxl-methods">4.2 Importing Excel File: readxl Methods</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>car_resale <span class="ot">&lt;-</span> <span class="fu">read_xls</span>(<span class="st">"data/ToyotaCorolla.xls"</span>, </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"data"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>car_resale</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,436 × 38
+      Id Model    Price Age_08_04 Mfg_Month Mfg_Year     KM Quarterly_Tax Weight
+   &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;         &lt;dbl&gt;  &lt;dbl&gt;
+ 1    81 TOYOTA … 18950        25         8     2002  20019           100   1180
+ 2     1 TOYOTA … 13500        23        10     2002  46986           210   1165
+ 3     2 TOYOTA … 13750        23        10     2002  72937           210   1165
+ 4     3 &nbsp;TOYOTA… 13950        24         9     2002  41711           210   1165
+ 5     4 TOYOTA … 14950        26         7     2002  48000           210   1165
+ 6     5 TOYOTA … 13750        30         3     2002  38500           210   1170
+ 7     6 TOYOTA … 12950        32         1     2002  61000           210   1170
+ 8     7 &nbsp;TOYOTA… 16900        27         6     2002  94612           210   1245
+ 9     8 TOYOTA … 18600        30         3     2002  75889           210   1245
+10    44 TOYOTA … 16950        27         6     2002 110404           234   1255
+# ℹ 1,426 more rows
+# ℹ 29 more variables: Guarantee_Period &lt;dbl&gt;, HP_Bin &lt;chr&gt;, CC_bin &lt;chr&gt;,
+#   Doors &lt;dbl&gt;, Gears &lt;dbl&gt;, Cylinders &lt;dbl&gt;, Fuel_Type &lt;chr&gt;, Color &lt;chr&gt;,
+#   Met_Color &lt;dbl&gt;, Automatic &lt;dbl&gt;, Mfr_Guarantee &lt;dbl&gt;,
+#   BOVAG_Guarantee &lt;dbl&gt;, ABS &lt;dbl&gt;, Airbag_1 &lt;dbl&gt;, Airbag_2 &lt;dbl&gt;,
+#   Airco &lt;dbl&gt;, Automatic_airco &lt;dbl&gt;, Boardcomputer &lt;dbl&gt;, CD_Player &lt;dbl&gt;,
+#   Central_Lock &lt;dbl&gt;, Powered_Windows &lt;dbl&gt;, Power_Steering &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+<p>Note that the output object car_resale is a tibble data frame.</p>
+</section>
+</section>
+<section id="building-and-diagnosing-a-multiple-regression-model" class="level2">
+<h2 class="anchored" data-anchor-id="building-and-diagnosing-a-multiple-regression-model">5. Building and Diagnosing a Multiple Regression Model</h2>
+<section id="multiple-regression-model-using-lm" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-regression-model-using-lm">5.1 Multiple Regression Model using lm()</h3>
+<p>The code chunk below is used to calibrate a multiple linear regression model by using <code>lm()</code> of Base Stats of R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">lm</span>(Price <span class="sc">~</span> Age_08_04 <span class="sc">+</span> Mfg_Year <span class="sc">+</span> KM <span class="sc">+</span> </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>              Weight <span class="sc">+</span> Guarantee_Period, <span class="at">data =</span> car_resale)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Price ~ Age_08_04 + Mfg_Year + KM + Weight + Guarantee_Period, 
+    data = car_resale)
+
+Coefficients:
+     (Intercept)         Age_08_04          Mfg_Year                KM  
+      -2.637e+06        -1.409e+01         1.315e+03        -2.323e-02  
+          Weight  Guarantee_Period  
+       1.903e+01         2.770e+01  </code></pre>
+</div>
+</div>
+</section>
+<section id="multiple-regression-model-using-lm-1" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-regression-model-using-lm-1">5.2 Multiple Regression Model using lm()</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">check_collinearity</span>(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Check for Multicollinearity
+
+Low Correlation
+
+             Term  VIF     VIF 95% CI Increased SE Tolerance Tolerance 95% CI
+               KM 1.46 [ 1.37,  1.57]         1.21      0.68     [0.64, 0.73]
+           Weight 1.41 [ 1.32,  1.51]         1.19      0.71     [0.66, 0.76]
+ Guarantee_Period 1.04 [ 1.01,  1.17]         1.02      0.97     [0.86, 0.99]
+
+High Correlation
+
+      Term   VIF     VIF 95% CI Increased SE Tolerance Tolerance 95% CI
+ Age_08_04 31.07 [28.08, 34.38]         5.57      0.03     [0.03, 0.04]
+  Mfg_Year 31.16 [28.16, 34.48]         5.58      0.03     [0.03, 0.04]</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>check_c <span class="ot">&lt;-</span> <span class="fu">check_collinearity</span>(model)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(check_c)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on_Ex04b_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="model-diagnostic-checking-normality-assumption" class="level3">
+<h3 class="anchored" data-anchor-id="model-diagnostic-checking-normality-assumption">5.3 Model Diagnostic: checking normality assumption</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(Price <span class="sc">~</span> Age_08_04 <span class="sc">+</span> KM <span class="sc">+</span> </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>              Weight <span class="sc">+</span> Guarantee_Period, <span class="at">data =</span> car_resale)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>check_n <span class="ot">&lt;-</span> <span class="fu">check_normality</span>(model1)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(check_n)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on_Ex04b_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="model-diagnostic-check-model-for-homogeneity-of-variances" class="level3">
+<h3 class="anchored" data-anchor-id="model-diagnostic-check-model-for-homogeneity-of-variances">5.4 Model Diagnostic: Check model for homogeneity of variances</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>check_h <span class="ot">&lt;-</span> <span class="fu">check_heteroscedasticity</span>(model1)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(check_h)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on_Ex04b_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="model-diagnostic-complete-check" class="level3">
+<h3 class="anchored" data-anchor-id="model-diagnostic-complete-check">5.5 Model Diagnostic: Complete check</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">check_model</span>(model1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on_Ex04b_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="visualizing-regression-results" class="level2">
+<h2 class="anchored" data-anchor-id="visualizing-regression-results">6. Visualizing Regression Results</h2>
+<section id="visualising-regression-parameters-see-methods" class="level3">
+<h3 class="anchored" data-anchor-id="visualising-regression-parameters-see-methods">6.1 Visualising Regression Parameters: see methods</h3>
+<p>In the code below, <code>plot()</code> of see package and <code>parameters()</code> of parameters package is used to visualise the parameters of a regression model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">parameters</span>(model1))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on_Ex04b_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="visualising-regression-parameters-ggcoefstats-methods" class="level3">
+<h3 class="anchored" data-anchor-id="visualising-regression-parameters-ggcoefstats-methods">6.2 Visualising Regression Parameters: ggcoefstats() methods</h3>
+<p>In the code below, <code>ggcoefstats()</code> of ggstatsplot package to visualise the parameters of a regression model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggcoefstats</span>(model1, </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">output =</span> <span class="st">"plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on_Ex04b_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="reference" class="level2">
+<h2 class="anchored" data-anchor-id="reference">7. Reference</h2>
+<p>Credits to <a href="https://r4va.netlify.app/chap10">Prof Kam</a>.</p>
+
+
 </section>
 
 </main> <!-- /main -->
