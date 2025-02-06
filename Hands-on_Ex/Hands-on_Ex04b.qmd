@@ -173,28 +173,193 @@ ggbetweenstats(
 ::: panel-tabset
 ### Code breakdown
 
--   type = "p" → Performs a parametric test (Welch’s ANOVA for unequal variances).
+-   `type = "p"` → Performs a parametric test (Welch’s ANOVA for unequal variances).
 
--   mean.ci = TRUE → Displays mean and confidence intervals for each group.
+-   `mean.ci = TRUE` → Displays mean and confidence intervals for each group.
 
--   pairwise.comparisons = TRUE → Conducts post-hoc pairwise comparisons (e.g., Games-Howell test for unequal variances).
+-   `pairwise.comparisons = TRUE` → Conducts post-hoc pairwise comparisons (e.g., Games-Howell test for unequal variances).
 
--   pairwise.display = "s" 
-    -   "ns" → Shows only non-significant comparisons.
+-   `pairwise.display = "s"`
 
-    -   "s" → Shows only significant comparisons (used in this case).
+    -   `"ns"` → Shows only non-significant comparisons.
 
-    -   "all" → Shows all comparisons.
+    -   `"s"` → Shows only significant comparisons (used in this case).
 
--   p.adjust.method = "fdr" → Adjusts p-values for multiple comparisons using the False Discovery Rate (FDR) correction.
+    -   `"all"` → Shows all comparisons.
 
--   messages = FALSE → Suppresses console messages.
+-   `p.adjust.method = "fdr"` → Adjusts p-values for multiple comparisons using the False Discovery Rate (FDR) correction.
+
+-   `messages = FALSE` → Suppresses console messages.
 
 ### Explanation of output
 
+#### 1. One-Way Welch ANOVA Results
 
+-   $F_{\text{Welch}}(3, 23.8) = 10.15$ → The Welch’s ANOVA test statistic\
+-   $p = 1.71 \times 10^{-4}$ → The p-value, indicating a statistically significant difference among groups\
+-   $\hat{\omega}^2_p = 0.50$ → Effect size (moderate to large effect)\
+-   $CI_{95\%} [0.21, 1.00]$ → Confidence interval for the effect size\
+-   $n_{\text{obs}} = 322$ → Number of observations
+
+This suggests that there is a significant difference in English scores across racial groups.
+
+#### 2. Violin & Boxplots
+
+-   The violin plot shows the distribution of scores.\
+-   The boxplot (inside the violin plot) summarizes:
+    -   The median (middle line in the box)
+    -   The interquartile range (box)
+    -   The whiskers (spread of data)
+    -   The mean (red dot with label)
+
+#### 3. Post-Hoc Pairwise Comparisons
+
+-   The **Games-Howell test** is used for post-hoc analysis (adjusted for multiple comparisons).\
+-   Only significant comparisons are displayed.\
+-   The p-value adjustment method used is **False Discovery Rate (FDR)**.
+
+#### 4. Bayesian Statistics
+
+At the bottom:
+
+-   $\log_e(BF_{01}) = -11.63$ → Bayesian evidence against the null hypothesis\
+-   $R^2_{\text{posterior}} = 0.09$ → Bayesian effect size\
+-   $CI_{95\%} [0.04, 0.15]$ → Bayesian credible interval\
+-   $r_{\text{Cauchy}} = 0.71$ → Cauchy prior width used
+
+The negative log Bayes Factor $BF_{01}$ suggests strong evidence **against the null hypothesis**, meaning there is a significant difference between the groups.
 
 ### Key Interpretation
 
-
+-   The one-way Welch ANOVA confirms a significant difference in English scores across racial groups.
+-   The Chinese and "Other" groups have higher mean scores than the Indian and Malay groups.
+-   Post-hoc Games-Howell comparisons highlight significant differences.
+-   Bayesian analysis supports the findings from the frequentist approach.
 :::
+
+![](images/image9.jpg)
+
+### 3.3 Significance Test of Correlation: ggscatterstats()
+
+In the code chunk below, `ggscatterstats()` is used to build a visualization for the Significance Test of Correlation between Maths scores and English scores.
+
+```{r}
+ggscatterstats(
+  data = exam_data,
+  x = MATHS,
+  y = ENGLISH,
+  marginal = FALSE,
+  )
+```
+
+### 3.4 Significance Test of Association (Dependence): ggbarstats() Method
+
+In the code chunk below, the Maths scores are binned into a 4-class variable using the `cut()` function.
+
+```{r}
+exam1 <- exam_data %>% 
+  mutate(MATHS_bins = 
+           cut(MATHS, 
+               breaks = c(0, 60, 75, 85, 100))
+  )
+
+```
+
+```{r}
+ggbarstats(
+  data = exam1, 
+  x = MATHS_bins, 
+  y = GENDER
+)
+```
+
+## 4. Visualising Models
+
+In this section, Toyota Corolla case study will be used. The purpose of study is to build a model to discover factors affecting prices of used-cars by taking into consideration a set of explanatory variables.
+
+### 4.1 Visualising Models
+
+```{r}
+pacman::p_load(readxl, performance, parameters, see)
+```
+
+### 4.2 Importing Excel File: readxl Methods
+
+```{r}
+car_resale <- read_xls("data/ToyotaCorolla.xls", 
+                       "data")
+car_resale
+```
+
+Note that the output object car_resale is a tibble data frame.
+
+## 5. Building and Diagnosing a Multiple Regression Model
+
+### 5.1 Multiple Regression Model using lm()
+
+The code chunk below is used to calibrate a multiple linear regression model by using `lm()` of Base Stats of R.
+
+```{r}
+model <- lm(Price ~ Age_08_04 + Mfg_Year + KM + 
+              Weight + Guarantee_Period, data = car_resale)
+model
+```
+
+### 5.2 Multiple Regression Model using lm()
+
+```{r}
+check_collinearity(model)
+```
+
+```{r}
+check_c <- check_collinearity(model)
+plot(check_c)
+```
+
+### 5.3 Model Diagnostic: checking normality assumption
+
+```{r}
+model1 <- lm(Price ~ Age_08_04 + KM + 
+              Weight + Guarantee_Period, data = car_resale)
+```
+
+```{r}
+check_n <- check_normality(model1)
+plot(check_n)
+```
+
+### 5.4 Model Diagnostic: Check model for homogeneity of variances
+
+```{r}
+check_h <- check_heteroscedasticity(model1)
+plot(check_h)
+```
+
+### 5.5 Model Diagnostic: Complete check
+
+```{r fig.width=12, fig.height=10}
+check_model(model1)
+```
+
+## 6. Visualizing Regression Results
+
+### 6.1 Visualising Regression Parameters: see methods
+
+In the code below, `plot()` of see package and `parameters()` of parameters package is used to visualise the parameters of a regression model.
+
+```{r}
+plot(parameters(model1))
+```
+
+### 6.2 Visualising Regression Parameters: ggcoefstats() methods
+
+In the code below, `ggcoefstats()` of ggstatsplot package to visualise the parameters of a regression model.
+
+```{r}
+ggcoefstats(model1, 
+            output = "plot")
+```
+
+## 7. Reference
+
+Credits to [Prof Kam](https://r4va.netlify.app/chap10).
