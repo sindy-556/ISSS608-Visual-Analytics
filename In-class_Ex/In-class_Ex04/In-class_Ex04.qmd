@@ -1,0 +1,60 @@
+---
+title: "In-class Exercise 4"
+author: "Sindy"
+date-modified: "last-modified"
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## Getting started
+
+### Installing and Loading R packages
+
+```{r}
+pacman::p_load(haven, SmartEDA, tidyverse, tidymodels, ggridges)
+```
+
+```{r}
+exam_data <- read_csv("./data/Exam_data.csv")
+```
+
+## Box plot
+
+```{r}
+ggplot(data = exam_data,
+       aes(x = ENGLISH,
+           y = CLASS)) + 
+  geom_boxplot()
+```
+
+## Ridgeline and Boxplot
+
+Boxplots provide essential summary statistics—medians, quartiles, and whiskers—but they are incomplete, they don’t reveal the full distribution of the data. In contrast, ridgeline plots illustrate the underlying density, highlighting features like multiple peaks (as seen in classes 3G and 3H) and outliers (evident in class 3F). Combining both gives you a more complete view by showing both the summary metrics and the detailed distribution.
+
+```{r}
+# Create the combined plot
+ggplot(data = exam_data, aes(x = ENGLISH, y = CLASS)) +
+  # Ridgeline layer to show density distributions with semi-transparency
+  geom_density_ridges(
+    scale = 1.1,        # Adjusts the vertical scaling of the ridgelines
+    alpha = 0.5,        # Sets transparency so that underlying layers remain visible
+    fill = "lightblue"  # Optional: set a fill color for the density areas
+  ) +
+  # Boxplot layer to show summary statistics
+  # position_nudge is used to slightly shift the boxplots so they don't completely overlap with the ridgelines
+  geom_boxplot(
+    width = 0.15,
+    position = position_nudge(y = -0.2),  # Adjust this value as needed
+    outlier.colour = "red",              # Highlight outliers, if desired
+    alpha = 0.7                          # Adjust transparency if needed
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Combined Plot of English Scores by Class",
+    x = "English Score",
+    y = "Class"
+  )
+```
