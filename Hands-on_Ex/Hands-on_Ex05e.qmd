@@ -1,0 +1,421 @@
+---
+title: "Hands-on Exercise 5e: Treemap Visualization with R"
+author: "Sindy"
+date-modified: "last-modified"
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## Overview
+
+Treemaps are a visualization technique used to represent hierarchical data through nested rectangles, where the size and color of each rectangle convey different attributes. They are particularly effective for displaying proportions within categories, making it easy to compare parts of a whole at a glance.
+
+## 1. Installing and Launching R Packages
+
+You will need the following packages. Here, we use `pacman::p_load()` for convenience:
+
+```{r}
+pacman::p_load(treemap, treemapify, tidyverse, d3treeR)
+```
+
+## 2. Data Wrangling
+
+For this exercise, the dataset *REALIS2018.csv* is used, containing private property transaction records in **2018** from Singapore’s Urban Redevelopment Authority (URA).
+
+### 2.1 Importing the Dataset
+
+```{r}
+realis2018 <- read_csv("data/realis2018.csv")
+```
+
+### 2.2 Transforming the Data
+
+Treemap visualizations often require aggregated information (e.g., by project, region). Here we:
+
+- Group by *Project Name*, *Planning Region*, *Planning Area*, *Property Type*, and *Type of Sale*.
+- Compute:
+  - Total Units Sold (sum of *No. of Units*),
+  - Total Area (sum of *Area (sqm)*),
+  - Median Unit Price (median of *Unit Price ($ psm)*),
+  - Median Transacted Price (median of *Transacted Price ($)*).
+
+We will use two key **dplyr** verbs: `group_by()` and `summarise()`.
+
+#### Without using the pipe:
+
+```{r}
+# Group the data
+realis2018_grouped <- group_by(
+  realis2018, 
+  `Project Name`,
+  `Planning Region`, 
+  `Planning Area`, 
+  `Property Type`, 
+  `Type of Sale`
+)
+
+# Summarise the grouped data
+realis2018_summarised <- summarise(
+  realis2018_grouped, 
+  `Total Unit Sold` = sum(`No. of Units`, na.rm = TRUE),
+  `Total Area` = sum(`Area (sqm)`, na.rm = TRUE),
+  `Median Unit Price ($ psm)` = median(`Unit Price ($ psm)`, na.rm = TRUE), 
+  `Median Transacted Price` = median(`Transacted Price ($)`, na.rm = TRUE)
+)
+```
+
+#### With the pipe:
+
+```{r}
+realis2018_summarised <- realis2018 %>% 
+  group_by(
+    `Project Name`,
+    `Planning Region`,
+    `Planning Area`,
+    `Property Type`,
+    `Type of Sale`
+  ) %>%
+  summarise(
+    `Total Unit Sold` = sum(`No. of Units`, na.rm = TRUE),
+    `Total Area` = sum(`Area (sqm)`, na.rm = TRUE),
+    `Median Unit Price ($ psm)` = median(`Unit Price ($ psm)`, na.rm = TRUE),
+    `Median Transacted Price` = median(`Transacted Price ($)`, na.rm = TRUE)
+  )
+```
+
+## 3. Designing Treemaps with **treemap** Package
+
+### 3.1 Subset the Data (Resale Condominium)
+
+```{r}
+realis2018_selected <- realis2018_summarised %>%
+  filter(
+    `Property Type` == "Condominium", 
+    `Type of Sale` == "Resale"
+  )
+```
+
+### 3.2 Basic Arguments in `treemap()`
+
+- `index`: defines the hierarchical structure (e.g., Region → Area → Project).
+- `vSize`: a numeric column that defines the rectangle sizes.
+- `vColor`: a numeric column that defines the rectangle colors.
+- `type`: how color values will be interpreted.
+
+#### First Attempt
+
+```{r}
+treemap(
+  realis2018_selected,
+  index = c("Planning Region", "Planning Area", "Project Name"),
+  vSize = "Total Unit Sold",
+  vColor = "Median Unit Price ($ psm)",
+  title = "Resale Condominium by Planning Region and Area, 2018",
+  title.legend = "Median Unit Price (S$ per sq. m)"
+)
+```
+
+> Notice that without specifying `type`, **treemap** assumes `type = "index"`, which produces unexpected colors. We fix this below.
+
+### 3.3 Correct Color Mapping with `type = "value"`
+
+```{r}
+treemap(
+  realis2018_selected,
+  index = c("Planning Region", "Planning Area", "Project Name"),
+  vSize = "Total Unit Sold",
+  vColor = "Median Unit Price ($ psm)",
+  type = "value",
+  title = "Resale Condominium by Planning Region and Area, 2018",
+  title.legend = "Median Unit Price (S$ per sq. m)"
+)
+```
+
+### 3.4 Color Palettes
+
+When `type = "value"`, the default color palette is a **diverging** palette. You can manually choose a palette using the `palette` argument.
+
+#### Example: "RdYlBu"
+
+```{r}
+treemap(
+  realis2018_selected,
+  index = c("Planning Region", "Planning Area", "Project Name"),
+  vSize = "Total Unit Sold",
+  vColor = "Median Unit Price ($ psm)",
+  type = "value",
+  palette = "RdYlBu",
+  title = "Resale Condominium by Planning Region and Area, 2018",
+  title.legend = "Median Unit Price (S$ per sq. m)"
+)
+```
+
+Because our values are all positive, you may not see the full gradient (e.g., no reds if all prices are above zero).
+
+### 3.5 "manual" Type
+
+With `type = "manual"`, the data is **linearly** mapped onto the palette. A *single-hue* palette like "Blues" is more intuitive if all values are positive.
+
+```{r}
+treemap(
+  realis2018_selected,
+  index = c("Planning Region", "Planning Area", "Project Name"),
+  vSize = "Total Unit Sold",
+  vColor = "Median Unit Price ($ psm)",
+  type = "manual",
+  palette = "Blues",
+  title = "Resale Condominium by Planning Region and Area, 2018",
+  title.legend = "Median Unit Price (S$ per sq. m)"
+)
+```
+
+### 3.6 Treemap Layout Algorithms
+
+- **"pivotSize"** (default) respects the order of the data but is slightly less balanced visually.
+- **"squarified"** often produces more balanced aspect ratios.
+
+```{r}
+treemap(
+  realis2018_selected,
+  index = c("Planning Region", "Planning Area", "Project Name"),
+  vSize = "Total Unit Sold",
+  vColor = "Median Unit Price ($ psm)",
+  type = "manual",
+  palette = "Blues",
+  algorithm = "squarified",
+  title = "Resale Condominium by Planning Region and Area, 2018",
+  title.legend = "Median Unit Price (S$ per sq. m)"
+)
+```
+
+#### Using `sortID`
+
+When using `"pivotSize"`, you can specify `sortID` to control the rectangle order:
+
+```{r}
+treemap(
+  realis2018_selected,
+  index = c("Planning Region", "Planning Area", "Project Name"),
+  vSize = "Total Unit Sold",
+  vColor = "Median Unit Price ($ psm)",
+  type = "manual",
+  palette = "Blues",
+  algorithm = "pivotSize",
+  sortID = "Median Transacted Price",
+  title = "Resale Condominium by Planning Region and Area, 2018",
+  title.legend = "Median Unit Price (S$ per sq. m)"
+)
+```
+
+
+## 4. Designing Treemaps with **treemapify**
+
+The **treemapify** package uses the **ggplot2** framework for treemaps. It provides **geom_treemap()** and additional layers like **geom_treemap_subgroup_border()** for hierarchical boundaries.
+
+### 4.1 Basic Treemap
+
+```{r}
+ggplot(
+  data = realis2018_selected,
+  aes(
+    area = `Total Unit Sold`,
+    fill = `Median Unit Price ($ psm)`
+  )
+) + 
+  geom_treemap() +
+  scale_fill_gradient(low = "lightblue", high = "blue") +
+  labs(title = "Basic Treemap with treemapify (2018 Data)",
+       fill = "Median Unit Price ($ psm)")
+```
+
+### 4.2 Defining a Hierarchy
+
+```{r}
+ggplot(
+  data = realis2018_selected,
+  aes(
+    area = `Total Unit Sold`,
+    fill = `Median Unit Price ($ psm)`,
+    subgroup = `Planning Region`
+  )
+) + 
+  geom_treemap() +
+  geom_treemap_subgroup_border(colour = "grey20", size = 2) +
+  labs(
+    title = "Treemap Grouped by Planning Region",
+    fill = "Median Unit Price ($ psm)"
+  )
+```
+
+To add another hierarchy level (e.g., *Planning Area*):
+
+```{r}
+ggplot(
+  data = realis2018_selected,
+  aes(
+    area = `Total Unit Sold`,
+    fill = `Median Unit Price ($ psm)`,
+    subgroup = `Planning Region`,
+    subgroup2 = `Planning Area`
+  )
+) + 
+  geom_treemap() +
+  geom_treemap_subgroup_border(colour = "grey20") +
+  geom_treemap_subgroup2_border(colour = "grey40", size = 2) +
+  labs(
+    title = "Treemap Grouped by Planning Region & Area",
+    fill = "Median Unit Price ($ psm)"
+  )
+```
+
+
+## 5. Designing Interactive Treemaps with **d3treeR**
+
+### 5.1 Building the Interactive Treemap
+
+First, create a treemap object with **treemap**:
+
+```{r}
+tm <- treemap(
+  realis2018_summarised,
+  index = c("Planning Region", "Planning Area"),
+  vSize = "Total Unit Sold",
+  vColor = "Median Unit Price ($ psm)",
+  type = "value",
+  title = "Private Residential Property Sold, 2018",
+  title.legend = "Median Unit Price (S$ per sq. m)"
+)
+```
+
+Then convert it to an interactive visualization with `d3tree()`:
+
+```{r}
+d3tree(
+  tm,
+  rootname = "Singapore"
+)
+```
+
+
+## 6. More exploration
+
+### 6.1 Adding Labels Inside Treemap (treemapify)
+
+You can add text labels to each rectangle using `geom_treemap_text()`:
+
+```{r}
+ggplot(
+  data = realis2018_selected,
+  aes(
+    area = `Total Unit Sold`,
+    fill = `Median Unit Price ($ psm)`,
+    label = `Planning Area`
+  )
+) + 
+  geom_treemap() +
+  geom_treemap_text(
+    colour = "white",
+    place = "centre",
+    grow = TRUE
+  ) +
+  scale_fill_gradient(low = "lightblue", high = "blue") +
+  labs(
+    title = "Treemap with Labels (Planning Area)",
+    fill = "Median Unit Price ($ psm)"
+  )
+```
+
+### 6.2 Filtering for Top N Areas
+
+Suppose you only want to visualize the **top 10** Planning Areas by *Total Unit Sold*:
+
+```{r}
+top10_areas <- realis2018_selected %>%
+  group_by(`Planning Area`) %>%
+  summarise(total_unit_sold = sum(`Total Unit Sold`)) %>%
+  slice_max(order_by = total_unit_sold, n = 10) %>%
+  pull(`Planning Area`)
+
+top10_data <- realis2018_selected %>%
+  filter(`Planning Area` %in% top10_areas)
+
+ggplot(
+  data = top10_data,
+  aes(
+    area = `Total Unit Sold`,
+    fill = `Median Unit Price ($ psm)`,
+    label = `Planning Area`
+  )
+) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre", grow = TRUE) +
+  labs(title = "Top 10 Planning Areas by Total Unit Sold (2018)")
+```
+
+### 6.3 Comparing Two Property Types Side by Side
+
+You can create two treemaps and place them side by side using **patchwork** or **cowplot**. For instance, comparing *Condominium* vs. *Executive Condominium*:
+
+```{r}
+pacman::p_load(patchwork)
+
+condo_data <- realis2018_summarised %>%
+  filter(`Property Type` == "Condominium")
+
+ec_data <- realis2018_summarised %>%
+  filter(`Property Type` == "Executive Condominium")
+
+plot_condo <- ggplot(
+  data = condo_data,
+  aes(area = `Total Unit Sold`, fill = `Median Unit Price ($ psm)`)
+) + 
+  geom_treemap() +
+  labs(title = "Condominium")
+
+plot_ec <- ggplot(
+  data = ec_data,
+  aes(area = `Total Unit Sold`, fill = `Median Unit Price ($ psm)`)
+) + 
+  geom_treemap() +
+  labs(title = "Executive Condominium")
+
+plot_condo
+```
+```{r}
+plot_ec
+```
+
+### 6.4 Highlighting Specific Regions (Conditional Coloring)
+
+You might want to color certain regions differently if they meet certain criteria, e.g., a *Median Unit Price* above \$20,000 psm:
+
+```{r}
+realis2018_selected <- realis2018_selected %>%
+  mutate(
+    PriceCategory = if_else(
+      `Median Unit Price ($ psm)` > 20000, 
+      "High Price", 
+      "Others"
+    )
+  )
+
+ggplot(
+  data = realis2018_selected,
+  aes(
+    area = `Total Unit Sold`,
+    fill = PriceCategory
+  )
+) + 
+  geom_treemap() +
+  scale_fill_manual(values = c("High Price" = "red", "Others" = "grey70")) +
+  labs(
+    title = "Conditional Coloring: High vs. Other Price Levels",
+    fill = "Price Category"
+  )
+```
+
+## 7. Reference
+Credits to [Prof Kam](https://r4va.netlify.app/chap16).
