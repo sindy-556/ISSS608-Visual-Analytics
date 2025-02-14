@@ -1,0 +1,204 @@
+---
+title: "Hands-on Exercise 5d: Visual Multivariate Analysis with Parallel Coordinates Plot: Key Concepts and Insights"
+author: "Sindy"
+date-modified: "last-modified"
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## 1. Overview
+
+Parallel coordinates plots are an effective way to visualize and analyze multivariate numerical data. They allow you to compare multiple variables simultaneously and reveal relationships among them—for example, how various indicators contribute to the World Happiness Index. In this exercise, we will create both static and interactive parallel coordinates plots using the World Happiness 2018 dataset. We also include a couple of additional insights through custom graphs.
+
+### 1.1 Required Packages
+
+We load the necessary R packages: **GGally**, **parallelPlot**, and **tidyverse**.
+
+```{r}
+pacman::p_load(GGally, parallelPlot, tidyverse)
+```
+
+### 1.2 Data Preparation
+
+We import the World Happiness 2018 dataset (saved as `WHData-2018.csv`), set the country names as row names (if needed), and select the relevant columns. (Adjust column indices as needed.)
+
+```{r}
+# Import the data
+wh <- read_csv("data/WHData-2018.csv")
+
+# (Optional) Set country names as row identifiers if needed:
+row.names(wh) <- wh$Country
+
+# Select relevant columns for analysis (e.g., columns 7 to 12 contain numerical indicators)
+wh_selected <- dplyr::select(wh, c(7:12))
+```
+
+## 2. Static Parallel Coordinates Plot with GGally
+
+Using the **GGally** package’s `ggparcoord()` function, we first create static parallel coordinates plots.
+
+### 2.1 Basic Parallel Coordinates Plot
+
+A simple parallel coordinates plot showing the selected numerical variables:
+
+```{r}
+#| fig-width: 13
+#| fig-height: 6
+ggparcoord(data = wh, 
+           columns = c(7:12)) +
+  labs(title = "Basic Parallel Coordinates Plot")
+```
+
+### 2.2 Enhanced Parallel Coordinates Plot with Grouping
+
+Here we group observations by a variable (e.g., Region in column 2), scale variables using the uniminmax method, lower line opacity, and overlay boxplots to better reveal the distribution.
+
+```{r}
+#| fig-width: 13
+#| fig-height: 5
+ggparcoord(data = wh, 
+           columns = c(7:12), 
+           groupColumn = 2,
+           scale = "uniminmax",
+           alphaLines = 0.2,
+           boxplot = TRUE, 
+           title = "Parallel Coordinates Plot of World Happiness Variables") +
+  labs(x = "Indicators", y = "Scaled Value")
+```
+
+### 2.3 Parallel Coordinates Plot with Facets
+
+We can create small multiples by faceting the plot by region. This approach helps compare patterns across geographical areas.
+
+```{r}
+#| fig-width: 16
+#| fig-height: 12
+ggparcoord(data = wh, 
+           columns = c(7:12), 
+           groupColumn = 2,
+           scale = "uniminmax",
+           alphaLines = 0.2,
+           boxplot = TRUE, 
+           title = "Parallel Coordinates Plots by Region") +
+  facet_wrap(~ Region) +
+  labs(x = "Indicators", y = "Scaled Value")
+```
+
+### 2.4 Rotating and Adjusting x-axis Labels
+
+When variable names overlap on the x-axis, we can rotate and adjust their positioning using `theme()` from **ggplot2**.
+
+```{r}
+#| fig-width: 16
+#| fig-height: 12
+ggparcoord(data = wh, 
+           columns = c(7:12), 
+           groupColumn = 2,
+           scale = "uniminmax",
+           alphaLines = 0.2,
+           boxplot = TRUE, 
+           title = "Parallel Coordinates Plots by Region with Rotated x-axis Labels") +
+  facet_wrap(~ Region) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  labs(x = "Indicators", y = "Scaled Value")
+```
+
+## 3. Interactive Parallel Coordinates Plot with parallelPlot
+
+The **parallelPlot** package provides an interactive version of parallel coordinates plots built on htmlwidgets and d3.js.
+
+### 3.1 Basic Interactive Plot
+
+We first create a basic interactive plot. For clarity, we select a subset of variables including the “Happiness score” (if available) along with the numerical indicators.
+
+```{r}
+# Adjust the data: select "Happiness score" (if present) and columns 7:12
+wh_interactive <- wh %>%
+  select("Happiness score", c(7:12))
+
+# Basic interactive parallel coordinates plot
+parallelPlot(wh_interactive,
+             width = 320,
+             height = 250)
+```
+
+### 3.2 Rotate Axis Labels
+
+To avoid overlapping axis labels, use the `rotateTitle` argument.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 6
+parallelPlot(wh_interactive,
+             rotateTitle = TRUE)
+```
+
+### 3.3 Changing the Colour Scheme
+
+Change the default blue colour scheme to a yellow–orange–red palette using the `continuousCS` argument.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 6
+parallelPlot(wh_interactive,
+             continuousCS = "YlOrRd",
+             rotateTitle = TRUE)
+```
+
+### 3.4 Interactive Plot with Histograms
+
+Display histograms along each variable’s axis by setting the `histoVisibility` argument.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 6
+histoVisibility <- rep(TRUE, ncol(wh_interactive))
+parallelPlot(wh_interactive,
+             rotateTitle = TRUE,
+             histoVisibility = histoVisibility)
+```
+
+## 4. Additional Insights
+
+Below are two extra visualizations that offer further insights into the dataset.
+
+### 4.1 Custom Interactive Plot with Enhanced Dimensions
+
+In this example, we adjust the interactive plot’s dimensions and use a custom colour scheme to improve clarity when examining the multivariate data.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+parallelPlot(wh_interactive,
+             width = 400,
+             height = 300,
+             continuousCS = "YlGnBu",
+             rotateTitle = TRUE,
+             histoVisibility = rep(TRUE, ncol(wh_interactive)))
+```
+
+### 4.2 Static Parallel Coordinates Plot with Custom Theme
+
+Using **GGally** together with additional **ggplot2** theme modifications, we create a static parallel coordinates plot with a refined aesthetic.
+
+```{r}
+#| fig-width: 13
+#| fig-height: 6
+ggparcoord(data = wh, 
+           columns = c(7:12), 
+           groupColumn = 2,
+           scale = "uniminmax",
+           alphaLines = 0.3,
+           boxplot = TRUE, 
+           title = "Enhanced Static Parallel Coordinates Plot") +
+  labs(x = "Happiness Indicators", y = "Scaled Value") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## 5. Reference
+Credits to [Prof Kam](https://r4va.netlify.app/chap15).
