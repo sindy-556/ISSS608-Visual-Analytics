@@ -1,0 +1,174 @@
+---
+title: "Hands-on Exercise 5c: Heatmap for Visualising and Analysing Multivariate Data: Key Concepts and Insights"
+author: "Sindy"
+date-modified: "last-modified"
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## 1. Overview
+
+Heatmaps are a powerful tool to visualise multivariate data. They help reveal patterns, clusters, and correlations among variables by mapping numerical values to colors. In this document, we demonstrate how to create both static and interactive heatmaps in R using data from the World Happiness Report (2018). We also provide an extra analysis—a correlation matrix heatmap—to offer additional insights into the relationships between the happiness indicators.
+
+### 1.1 Required Packages
+
+We load the necessary R packages: **seriation**, **dendextend**, **heatmaply**, **tidyverse**, and **RColorBrewer**.
+
+```{r}
+pacman::p_load(seriation, dendextend, heatmaply, tidyverse, RColorBrewer)
+```
+
+### 1.2 Data Import and Preparation
+
+We import the World Happiness 2018 dataset (saved as `WHData-2018.csv`), set the country names as row names, and select the relevant columns. (Adjust column indices as needed.)
+
+```{r}
+# Import the data
+wh <- read_csv("data/WHData-2018.csv")
+
+# Use country names as row identifiers
+row.names(wh) <- wh$Country
+
+# Select relevant columns (e.g., columns 3 and 7 to 12)
+wh_selected <- dplyr::select(wh, c(3, 7:12))
+
+# Convert the data frame to a matrix (required for heatmap functions)
+wh_matrix <- data.matrix(wh_selected)
+```
+
+## 2. Static Heatmap with Base R
+
+First, we create static heatmaps using the base R `heatmap()` function. We illustrate two examples: one without clustering dendrograms and one with the default clustering.
+
+```{r}
+#| fig-width: 6.5
+#| fig-height: 8
+# Static heatmap without dendrograms
+heatmap(wh_matrix, Rowv = NA, Colv = NA, 
+        main = "Static Heatmap (No Clustering)")
+
+# Static heatmap with default hierarchical clustering
+heatmap(wh_matrix, 
+        main = "Static Heatmap with Clustering")
+```
+
+To enhance interpretability—especially when variables have different scales—we scale the matrix by columns.
+
+```{r}
+#| fig-width: 6.5
+#| fig-height: 8
+heatmap(wh_matrix,
+        scale = "column",
+        cexRow = 0.6, 
+        cexCol = 0.8,
+        margins = c(10, 4),
+        main = "Column-Scaled Static Heatmap")
+```
+
+## 3. Interactive Heatmap with Heatmaply
+
+The **heatmaply** package enables interactive heatmaps. Below are several examples that include data transformation and clustering options.
+
+### 3.1 Basic Interactive Heatmap
+
+```{r}
+#| fig-width: 6.5
+#| fig-height: 15
+heatmaply(wh_matrix,
+          main = "Interactive Heatmap of World Happiness Data",
+          fontsize_row = 5)
+```
+
+### 3.2 Data Transformation Methods
+
+Transforming the data can make variables on different scales comparable. Here are examples of scaling (column-wise), normalising, and percentising.
+
+#### Column Scaling
+
+```{r}
+#| fig-width: 6.5
+#| fig-height: 15
+heatmaply(wh_matrix,
+          scale = "column",
+          main = "Interactive Heatmap with Column Scaling",
+          fontsize_row = 5)
+```
+
+#### Normalisation
+
+```{r}
+#| fig-width: 6.5
+#| fig-height: 15
+heatmaply(normalize(wh_matrix),
+          main = "Interactive Heatmap with Normalisation",
+          fontsize_row = 5)
+```
+
+#### Percentising
+
+```{r}
+#| fig-width: 6.5
+#| fig-height: 15
+heatmaply(percentize(wh_matrix),
+          main = "Interactive Heatmap with Percentising",
+          fontsize_row = 5)
+```
+
+### 3.3 Clustering and Optimal Ordering
+
+We can further improve the heatmap by clustering the rows (countries) using hierarchical clustering (with the “average” method) and applying an optimal leaf ordering via seriation.
+
+```{r}
+#| fig-width: 6.5
+#| fig-height: 15
+heatmaply(normalize(wh_matrix),
+          dist_method = "euclidean",
+          hclust_method = "average",
+          seriate = "OLO",
+          k_row = 3,
+          main = "Interactive Heatmap with Clustering and Optimal Leaf Ordering",
+          fontsize_row = 5)
+```
+
+## 4. Working with Colour Palettes
+
+To enhance the visual appeal, we can change the color palette. In the example below, we use the “Blues” palette from **RColorBrewer**.
+
+```{r}
+#| fig-width: 6.5
+#| fig-height: 12
+heatmaply(normalize(wh_matrix),
+          seriate = "none",
+          colors = RColorBrewer::brewer.pal(9, "Blues"),
+          k_row = 5,
+          margins = c(NA, 200, 60, NA),
+          fontsize_row = 4,
+          fontsize_col = 5,
+          main = "World Happiness Data (Normalised)",
+          xlab = "Happiness Indicators",
+          ylab = "Countries")
+```
+
+## 5. Correlation Matrix Heatmap
+
+To further explore the relationships among the variables, we calculate a correlation matrix and display it as an interactive heatmap. This visualization highlights which indicators are strongly correlated.
+
+```{r}
+#| fig-width: 6.5
+#| fig-height: 8
+# Compute the correlation matrix
+corr_matrix <- cor(wh_matrix, use = "complete.obs")
+
+# Plot an interactive correlation heatmap using a yellow–orange–red palette
+heatmaply(corr_matrix,
+          colors = RColorBrewer::brewer.pal(9, "YlOrRd"),
+          main = "Correlation Matrix of Happiness Indicators",
+          xlab = "Indicators")
+```
+
+## 6. Reference
+Credits to [Prof Kam](https://r4va.netlify.app/chap14).
+
