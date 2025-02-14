@@ -28,15 +28,27 @@ We import the World Happiness 2018 dataset (saved as `WHData-2018.csv`), set the
 ```{r}
 # Import the data
 wh <- read_csv("data/WHData-2018.csv")
+```
 
-# Use country names as row identifiers
+#### Preparing the data
+
+Next, we need to change the rows by country name instead of row number by using the code chunk below
+
+```{r}
 row.names(wh) <- wh$Country
+```
 
-# Select relevant columns (e.g., columns 3 and 7 to 12)
-wh_selected <- dplyr::select(wh, c(3, 7:12))
+Notice that the row number has been replaced into the country name.
 
-# Convert the data frame to a matrix (required for heatmap functions)
-wh_matrix <- data.matrix(wh_selected)
+#### Transforming the data frame into a matrix
+
+The data was loaded into a data frame, but it has to be a data matrix to make your heatmap.
+
+The code chunk below will be used to transform *wh* data frame into a data matrix.
+
+```{r}
+wh1 <- dplyr::select(wh, c(3, 7:12))
+wh_matrix <- data.matrix(wh)
 ```
 
 ## 2. Static Heatmap with Base R
@@ -170,5 +182,5 @@ heatmaply(corr_matrix,
 ```
 
 ## 6. Reference
-Credits to [Prof Kam](https://r4va.netlify.app/chap14).
 
+Credits to [Prof Kam](https://r4va.netlify.app/chap14).
