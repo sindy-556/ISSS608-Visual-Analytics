@@ -161,26 +161,7 @@ parallelPlot(wh_interactive,
              histoVisibility = histoVisibility)
 ```
 
-## 4. Additional Insights
-
-Below are two extra visualizations that offer further insights into the dataset.
-
-### 4.1 Custom Interactive Plot with Enhanced Dimensions
-
-In this example, we adjust the interactive plot’s dimensions and use a custom colour scheme to improve clarity when examining the multivariate data.
-
-```{r}
-#| fig-width: 12
-#| fig-height: 8
-parallelPlot(wh_interactive,
-             width = 400,
-             height = 300,
-             continuousCS = "YlGnBu",
-             rotateTitle = TRUE,
-             histoVisibility = rep(TRUE, ncol(wh_interactive)))
-```
-
-### 4.2 Static Parallel Coordinates Plot with Custom Theme
+## 4. Static Parallel Coordinates Plot with Custom Theme
 
 Using **GGally** together with additional **ggplot2** theme modifications, we create a static parallel coordinates plot with a refined aesthetic.
 
