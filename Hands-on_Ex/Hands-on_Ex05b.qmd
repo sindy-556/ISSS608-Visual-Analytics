@@ -26,7 +26,6 @@ When the data is large, both in terms of the number of observations and the numb
 -   Rendering the value of a correlation to depict its sign and magnitude, and
 -   Reordering the variables in a correlation matrix so that "similar" variables are positioned adjacently, facilitating perception.
 
-
 ### 1.1 Installing and loading the required libraries
 
 ```{r}
@@ -54,17 +53,18 @@ Figure below shows the scatter plot matrix of Wine Quality Data. It is a 11 by 1
 ```{r}
 pairs(wine[,1:11])
 ```
+
 The required input of *pairs()* can be a matrix or data frame. The code chunk used to create the scatterplot matrix is relatively simple. It uses the default *pairs* function. Columns 2 to 12 of wine dataframe is used to build the scatterplot matrix. The variables are: fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, density, pH, sulphates and alcohol.
 
 ```{r}
 pairs(wine[,2:12])
 ```
+
 ### 2.2 Drawing the lower corner
 
 *pairs* function of R Graphics provided many customisation arguments. For example, it is a common practice to show either the upper half or lower half of the correlation matrix instead of both. This is because a correlation matrix is symmetric.
 
 ::: panel-tabset
-
 ### Lower half
 
 ```{r}
@@ -76,8 +76,7 @@ pairs(wine[,2:12], upper.panel = NULL)
 ```{r}
 pairs(wine[,2:12], lower.panel = NULL)
 ```
-
-::: 
+:::
 
 ### 2.3 Including with correlation coefficients
 
@@ -171,6 +170,7 @@ grouped_ggcorrmat(
   )
 )
 ```
+
 Things to learn from the code chunk above:
 
 -   to build a facet plot, the only argument needed is `grouping.var`.
@@ -194,6 +194,7 @@ Next, [*corrplot()*](https://www.rdocumentation.org/packages/corrplot/versions/0
 ```{r}
 corrplot(wine.cor)
 ```
+
 Notice that the default visual object used to plot the corrgram is circle. The default layout of the corrgram is a symmetric matrix. The default colour scheme is diverging blue-red. Blue colours are used to represent pair variables with positive correlation coefficients and red colours are used to represent pair variables with negative correlation coefficients. The intensity of the colour or also know as **saturation** is used to represent the strength of the correlation coefficient. Darker colours indicate relatively stronger linear relationship between the paired variables. On the other hand, lighter colours indicates relatively weaker linear relationship.
 
 ### 5.2 Working with visual geometrics
@@ -204,6 +205,7 @@ In corrplot package, there are seven visual geometrics (parameter method) can be
 corrplot(wine.cor, 
          method = "ellipse") 
 ```
+
 ### 5.3 Working with layout
 
 `corrplor()` supports three layout types, namely: “full”, “upper” or “lower”. The default is “full” which display full matrix. The default setting can be changed by using the type argument of corrplot().
@@ -287,7 +289,11 @@ corrplot.mixed(wine.cor,
 If using **hclust**, `corrplot()` can draw rectangles around the corrgram based on the results of hierarchical clustering.
 
 ```{r}
+#| fig-width: 6
+#| fig-height: 6
 corrplot(wine.cor, 
+         lower = "ellipse", 
+         upper = "number",
          method = "ellipse", 
          tl.pos = "lt",
          tl.col = "black",
