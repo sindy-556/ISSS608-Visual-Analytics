@@ -1,0 +1,221 @@
+---
+title: "In-class Exercise 5: Toyota Corolla Data Analysis"
+author: "Sindy"
+date: "last-modified"
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## 1. Getting Started
+
+### 1.1 Load Required R Packages
+
+We begin by loading all necessary libraries.
+
+```{r}
+pacman::p_load(tidyverse, readxl, SmartEDA, easystats, gtsummary)
+```
+
+## 2. Data Loading and Preparation
+
+We load the dataset from an Excel file and convert selected columns to factors for further analysis.
+
+Converting columns to factors helps in treating categorical variables appropriately during analysis.
+
+```{r}
+# Load the Toyota Corolla dataset from the 'data' sheet
+car_resale <- read_xls("./data/ToyotaCorolla.xls", "data")
+
+# Specify columns to be converted to factors
+cols <- c("Mfg_Month", "HP_Bin", "CC_bin", "Doors", "Gears",
+          "Cylinders", "Fuel_Type", "Color", "Met_Color", "Automatic",
+          "Mfr_Guarantee", "BOVAG_Guarantee", "ABS", "Airbag_1",
+          "Airbag_2", "Airco", "Automatic_airco", "Boardcomputer",
+          "CD_Player", "Central_Lock", "Powered_Windows",
+          "Power_Steering", "Radio", "Mistlamps", "Sport_Model",
+          "Backseat_Divider", "Metallic_Rim", "Radio_cassette",
+          "Tow_Bar")
+
+# Convert the 'Id' column to character and specified columns to factors
+car_resale <- car_resale %>%
+  mutate(Id = as.character(Id)) %>%
+  mutate_at(vars(one_of(cols)), as.factor)
+```
+
+## 3. Data Overview
+
+### 3.1 Structural Overview
+
+We can inspect the overall structure of the dataset using a summary and glimpse.
+
+::: panel-tabset
+### Summary
+
+```{r}
+# Display a summary of the dataset
+summary(car_resale)
+```
+
+### Glimpse
+
+```{r}
+# Show a concise structure overview
+glimpse(car_resale)
+```
+:::
+
+### 3.2 List records
+
+```{r}
+list(car_resale)
+```
+
+## 4. Data Summaries
+
+::: panel-tabset
+### Type 1
+
+Type 1 provides an overall data summary.
+
+```{r summary-type1}
+summary1 <- car_resale %>%
+  ExpData(type = 1)
+
+# Display the summary (further customization possible)
+summary1
+```
+
+### Type 2
+
+Type 2 provides an overall data summary.
+
+```{r summary-type2}
+summary2 <- car_resale %>%
+  ExpData(type = 2)
+
+# Display the detailed summary
+summary2
+```
+:::
+
+## 5. Visualizations
+
+### 5.1 Numerical Data Visualizations
+
+We create visualizations for numerical variables. Two versions are provided: - Without specifying a target variable. - Focusing on the "Price" variable.
+
+#### Without Target Variable
+
+```{r num-viz-all}
+car_resale %>%
+  ExpNumViz(target = NULL,
+            nlim = 10,
+            Page = c(2,2))
+```
+
+#### Visualizing Price Distribution
+
+```{r num-viz-price}
+car_resale %>%
+  ExpNumViz(target = "Price",
+            nlim = 10,
+            Page = c(2,2))
+```
+
+### 5.2 Categorical Data Visualizations
+
+The following plot displays bar charts for categorical variables to visualize the distribution of categories.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 10
+car_resale %>%
+  ExpCatViz(target = NULL,
+            col = "sky blue",
+            clim = 10,
+            margin = 2,
+            Page = c(4,4),
+            sample = 16)
+```
+
+## 6. Checking Multicollinearity
+
+In this section, we assess multicollinearity using two approaches: the correlation matrix and the Variance Inflation Factor (VIF). We start by fitting a regression model, then examine multicollinearity diagnostics using the `check_collinearity()` function, which provides both correlation and VIF information.
+
+```{r}
+# Fit an initial model including potential multicollinear predictors
+model <- lm(Price ~ Age_08_04 + Mfg_Year + KM + Weight + Guarantee_Period, data = car_resale)
+
+model
+```
+
+```{r}
+# Plot the multicollinearity diagnostics for a visual overview
+check_c <- check_collinearity(model)
+plot(check_c)
+```
+
+Since the variable "Mfg_Year" shows multicollinearity issues, we remove it and fit an updated model.
+
+```{r}
+# Fit an updated model excluding manufacturing year
+model1 <- lm(Price ~ Age_08_04 + KM + Weight + Guarantee_Period, data = car_resale)
+```
+
+```{r}
+# Check the normality of residuals and heteroscedasticity for the updated model
+check_normality(model1)
+check_heteroscedasticity(model1)
+```
+
+We can also generate a comprehensive set of diagnostic plots for our fitted model using the `check_model(`) function.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+check_model(model1)
+```
+
+Approaches to Assess Multicollinearity:
+
+-   Correlation Matrix: Examines pairwise correlations between predictors to identify highly correlated variables.
+
+-   Variance Inflation Factor (VIF): Quantifies how much the variance of a regression coefficient is inflated due to multicollinearity.
+
+## 7. Model Summary
+
+### 7.1 gtsummary
+
+Finally, we can summarize the updated model using `gtsummary`.
+
+```{r}
+summary(model1)
+```
+
+### 7.2 tbl_regression
+
+We can also generate regression tables with `tbl_regression`
+
+#### Basic regression table
+
+```{r}
+tbl_regression(model1, 
+               intercept = TRUE)
+```
+
+#### Regression table with additional statistics
+
+```{r}
+tbl_regression(model1, 
+               intercept = TRUE) %>%
+  add_glance_source_note(
+    # "\U03C3" to extract the sigma value
+    label = list(sigma ~ "\U03C3"),  # can ignore if you do not want the sigma
+    include = c(r.squared, adj.r.squared,
+                AIC, statistic,
+                p.value, sigma)
+  )
+```

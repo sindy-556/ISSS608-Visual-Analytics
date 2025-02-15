@@ -93,7 +93,6 @@ p1 <- heart_data %>%
   theme_minimal()
 
 p1
-
 ```
 
 ```{r}
