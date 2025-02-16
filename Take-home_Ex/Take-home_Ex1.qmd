@@ -618,7 +618,7 @@ Training AUC may reach near 1.0 (overfitting), but test AUC remains around 0.52,
 ### Model evaluation
 
 ```{r}
-pred_prob_xgb <- predict(xgb_model, newdata = dtest, ntreelimit = xgb_model$best_iteration)
+pred_prob_xgb <- predict(xgb_model, newdata = dtest, iteration_range = xgb_model$best_iteration)
 
 pred_class_xgb <- ifelse(pred_prob_xgb >= 0.5, 1, 0)
 
@@ -670,7 +670,7 @@ xgb.plot.importance(importance_xgb, top_n = 15,
 ```
 #### Interpretation:
 
-While certain features (e.g., Cholesterol_Level, Systolic_BP) rank highest in splitting power, the test AUC is still low. This suggests either insufficient predictive signal or potential overfitting to training noise.
+While certain features (e.g., `Cholesterol_Level`, `Systolic_BP`) rank highest in splitting power, the test AUC is still low. This suggests either insufficient predictive signal or potential overfitting to training noise.
 
 
 ## Final thoughts

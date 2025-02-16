@@ -1485,20 +1485,18 @@ Stopping. Best iteration:
 <section id="model-evaluation" class="level3">
 <h3 class="anchored" data-anchor-id="model-evaluation">Model evaluation</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pred_prob_xgb <span class="ot">&lt;-</span> <span class="fu">predict</span>(xgb_model, <span class="at">newdata =</span> dtest, <span class="at">ntreelimit =</span> xgb_model<span class="sc">$</span>best_iteration)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[23:49:37] WARNING: src/c_api/c_api.cc:935: `ntree_limit` is deprecated, use `iteration_range` instead.</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>pred_class_xgb <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(pred_prob_xgb <span class="sc">&gt;=</span> <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>results_xgb <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">obs  =</span> <span class="fu">factor</span>(y_test, <span class="at">levels=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">labels=</span><span class="fu">c</span>(<span class="st">"No"</span>,<span class="st">"Yes"</span>)),</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">pred =</span> <span class="fu">factor</span>(pred_class_xgb, <span class="at">levels=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">labels=</span><span class="fu">c</span>(<span class="st">"No"</span>,<span class="st">"Yes"</span>)),</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">prob =</span> pred_prob_xgb</span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>xgb_cm <span class="ot">&lt;-</span> <span class="fu">conf_mat</span>(results_xgb, <span class="at">truth=</span>obs, <span class="at">estimate=</span>pred)</span>
-<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>xgb_cm <span class="sc">%&gt;%</span> <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pred_prob_xgb <span class="ot">&lt;-</span> <span class="fu">predict</span>(xgb_model, <span class="at">newdata =</span> dtest, <span class="at">iteration_range =</span> xgb_model<span class="sc">$</span>best_iteration)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>pred_class_xgb <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(pred_prob_xgb <span class="sc">&gt;=</span> <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>results_xgb <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">obs  =</span> <span class="fu">factor</span>(y_test, <span class="at">levels=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">labels=</span><span class="fu">c</span>(<span class="st">"No"</span>,<span class="st">"Yes"</span>)),</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">pred =</span> <span class="fu">factor</span>(pred_class_xgb, <span class="at">levels=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">labels=</span><span class="fu">c</span>(<span class="st">"No"</span>,<span class="st">"Yes"</span>)),</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">prob =</span> pred_prob_xgb</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>xgb_cm <span class="ot">&lt;-</span> <span class="fu">conf_mat</span>(results_xgb, <span class="at">truth=</span>obs, <span class="at">estimate=</span>pred)</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>xgb_cm <span class="sc">%&gt;%</span> <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 13 × 3
    .metric              .estimator .estimate
@@ -1522,25 +1520,25 @@ Stopping. Best iteration:
 <section id="roc-curve-and-confusion-matrix" class="level3">
 <h3 class="anchored" data-anchor-id="roc-curve-and-confusion-matrix">ROC curve and confusion matrix</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>p_confmat <span class="ot">&lt;-</span> <span class="fu">autoplot</span>(xgb_cm, <span class="at">type=</span><span class="st">"heatmap"</span>) <span class="sc">+</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"XGBoost Confusion Matrix"</span>, <span class="at">fill=</span><span class="st">"Count"</span>)</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>roc_xgb <span class="ot">&lt;-</span> <span class="fu">roc</span>(<span class="at">response =</span> <span class="fu">as.numeric</span>(results_xgb<span class="sc">$</span>obs), <span class="at">predictor =</span> results_xgb<span class="sc">$</span>prob)</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>auc_val <span class="ot">&lt;-</span> <span class="fu">auc</span>(roc_xgb)</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>p_roc <span class="ot">&lt;-</span> <span class="fu">ggroc</span>(roc_xgb, <span class="at">colour=</span><span class="st">"#1c61b6"</span>) <span class="sc">+</span></span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">paste0</span>(<span class="st">"XGBoost ROC Curve (AUC="</span>, <span class="fu">round</span>(auc_val,<span class="dv">3</span>), <span class="st">")"</span>),</span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x     =</span> <span class="st">"1 - Specificity"</span>,</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y     =</span> <span class="st">"Sensitivity"</span></span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>combined_plot <span class="ot">&lt;-</span> p_confmat <span class="sc">|</span> p_roc</span>
-<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>combined_plot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>p_confmat <span class="ot">&lt;-</span> <span class="fu">autoplot</span>(xgb_cm, <span class="at">type=</span><span class="st">"heatmap"</span>) <span class="sc">+</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"XGBoost Confusion Matrix"</span>, <span class="at">fill=</span><span class="st">"Count"</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>roc_xgb <span class="ot">&lt;-</span> <span class="fu">roc</span>(<span class="at">response =</span> <span class="fu">as.numeric</span>(results_xgb<span class="sc">$</span>obs), <span class="at">predictor =</span> results_xgb<span class="sc">$</span>prob)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>auc_val <span class="ot">&lt;-</span> <span class="fu">auc</span>(roc_xgb)</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>p_roc <span class="ot">&lt;-</span> <span class="fu">ggroc</span>(roc_xgb, <span class="at">colour=</span><span class="st">"#1c61b6"</span>) <span class="sc">+</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">paste0</span>(<span class="st">"XGBoost ROC Curve (AUC="</span>, <span class="fu">round</span>(auc_val,<span class="dv">3</span>), <span class="st">")"</span>),</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x     =</span> <span class="st">"1 - Specificity"</span>,</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y     =</span> <span class="st">"Sensitivity"</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>combined_plot <span class="ot">&lt;-</span> p_confmat <span class="sc">|</span> p_roc</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>combined_plot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1556,8 +1554,8 @@ Stopping. Best iteration:
 <li>ROC curve: The curve hovers close to the diagonal, with an AUC near ~0.52. This is only marginally better than random guessing (AUC=0.5).</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>importance_xgb <span class="ot">&lt;-</span> <span class="fu">xgb.importance</span>(<span class="at">model =</span> xgb_model)</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>importance_xgb  <span class="co"># see a data frame of feature importances</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>importance_xgb <span class="ot">&lt;-</span> <span class="fu">xgb.importance</span>(<span class="at">model =</span> xgb_model)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>importance_xgb  <span class="co"># see a data frame of feature importances</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                        Feature        Gain       Cover   Frequency
                          &lt;char&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;
@@ -1583,9 +1581,9 @@ Stopping. Best iteration:
 20:        Physical_ActivityLow 0.005850960 0.000673683 0.008242034
                         Feature        Gain       Cover   Frequency</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot</span></span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">xgb.plot.importance</span>(importance_xgb, <span class="at">top_n =</span> <span class="dv">15</span>, </span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">main=</span><span class="st">"XGBoost Feature Importance"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">xgb.plot.importance</span>(importance_xgb, <span class="at">top_n =</span> <span class="dv">15</span>, </span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">main=</span><span class="st">"XGBoost Feature Importance"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1597,7 +1595,7 @@ Stopping. Best iteration:
 </section>
 <section id="interpretation" class="level4">
 <h4 class="anchored" data-anchor-id="interpretation">Interpretation:</h4>
-<p>While certain features (e.g., Cholesterol_Level, Systolic_BP) rank highest in splitting power, the test AUC is still low. This suggests either insufficient predictive signal or potential overfitting to training noise.</p>
+<p>While certain features (e.g., <code>Cholesterol_Level</code>, <code>Systolic_BP</code>) rank highest in splitting power, the test AUC is still low. This suggests either insufficient predictive signal or potential overfitting to training noise.</p>
 </section>
 </section>
 </section>
