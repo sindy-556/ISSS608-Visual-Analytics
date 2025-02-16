@@ -343,12 +343,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This dataset investigates the epidemiology of heart attacks among different segments of the Japanese population. Japan’s rapidly aging demographic and high healthcare standards make it a unique context in which lifestyle, clinical parameters, and heart attack occurrence interact in complex ways.</p>
 <section id="our-task" class="level3">
 <h3 class="anchored" data-anchor-id="our-task">Our task</h3>
-<p>In this exercise we will be:</p>
+<p>In this exercise, we will:</p>
 <ul>
-<li>Examining Heart Attack Occurrence: Analyze the distribution and determinants of heart attack events across the dataset.</li>
-<li>Conducting Demographic Analysis: Investigate how age, gender, and region contribute to heart attack risk, distinguishing between younger and older cohorts.</li>
-<li>Exploring Health Metrics: Visualize relationships between clinical indicators (e.g., BMI, blood pressure, cholesterol) and heart attack occurrence.</li>
-<li>Assessing Lifestyle Factors: Evaluate the impact of lifestyle variables such as smoking history, physical activity, diet quality, alcohol consumption, and stress levels on heart health.</li>
+<li><strong>Examine Heart Attack Occurrence</strong>: Explore how heart attacks are distributed across the dataset and identify any relevant predictors.</li>
+<li><strong>Conduct Demographic Analysis</strong>: Investigate the role of age, gender, and region, especially comparing younger vs.&nbsp;older cohorts.</li>
+<li><strong>Explore Health Metrics</strong>: Visualize relationships among BMI, blood pressure, cholesterol, and heart attack status.</li>
+<li><strong>Assess Lifestyle Factors</strong>: Evaluate how smoking, physical activity, diet quality, alcohol consumption, and stress influence heart health.</li>
 </ul>
 </section>
 </section>
@@ -381,7 +381,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>xgboost</strong>: Gradient boosting library for classification and regression tasks</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, SmartEDA, easystats, reshape2, caret, yardstick, pROC, GGally, ggmosaic, patchwork, xgboost)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  tidyverse,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  SmartEDA,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  easystats,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  reshape2,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  caret,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  yardstick,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  pROC,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  GGally,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  ggmosaic,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  patchwork,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  xgboost</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This dataset contains information about heart attack occurrences in Japan, focusing on various demographic and health-related factors.</p>
 </section>
@@ -587,7 +599,7 @@ $ Extra_Column_15         &lt;dbl&gt; 0.061632229, 0.617825340, 0.974455410, 0.2
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="1152"></p>
+<p><img src="Take-home_Ex1-draft---Copy_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="1152"></p>
 </figure>
 </div>
 </div>
@@ -694,7 +706,7 @@ $ Heart_Attack_Occurrence &lt;fct&gt; No, No, No, No, No, No, No, No, Yes, No, N
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="1152"></p>
+<p><img src="Take-home_Ex1-draft---Copy_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="1152"></p>
 </figure>
 </div>
 </div>
@@ -743,7 +755,7 @@ $ Heart_Attack_Occurrence &lt;fct&gt; No, No, No, No, No, No, No, No, Yes, No, N
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="Take-home_Ex1-draft---Copy_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
 </div>
@@ -775,7 +787,7 @@ $ Heart_Attack_Occurrence &lt;fct&gt; No, No, No, No, No, No, No, No, Yes, No, N
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="Take-home_Ex1-draft---Copy_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
 </div>
@@ -1068,7 +1080,7 @@ $ Heart_Attack_Occurrence &lt;fct&gt; No, No, No, No, No, No, No, No, Yes, No, N
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="Take-home_Ex1-draft---Copy_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
 </div>
@@ -1355,7 +1367,7 @@ $ Heart_Attack_Occurrence &lt;fct&gt; No, No, No, No, No, No, No, No, Yes, No, N
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Take-home_Ex1-draft---Copy_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1393,27 +1405,28 @@ $ Heart_Attack_Occurrence &lt;fct&gt; No, No, No, No, No, No, No, No, Yes, No, N
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="1152"></p>
+<p><img src="Take-home_Ex1-draft---Copy_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="1152"></p>
 </figure>
 </div>
 </div>
 </div>
-<section id="weighted-logistic-regression-results" class="level4">
-<h4 class="anchored" data-anchor-id="weighted-logistic-regression-results">Weighted Logistic Regression Results</h4>
+<p>Weighted Logistic Regression Results</p>
 <p>After applying class weights and mild polynomial terms to BMI and Blood Pressure, our weighted logistic model shows some improvements compared to the naïve model:</p>
 <ul>
-<li><p>Sensitivity Improves: The model now predicts a small number of “Yes” cases rather than labeling everything “No.”</p></li>
-<li><p>Collinearity appears more stable</p>
+<li>No longer predicting all “No”
+<ul>
+<li>The confusion matrix now reflects at least some “Yes” predictions: it is not trivially predicting “No” for every observation. This is a direct benefit of giving more weight to “Yes” in the training procedure, which pushes the model to separate out at least a portion of positive cases.</li>
+</ul></li>
+<li>Collinearity appears more stable
 <ul>
 <li>The VIF plot still shows point estimates around 1.0 for most variables, with moderate spikes in confidence intervals for a few. However, these are less extreme than in the naïve model, suggesting the parameter estimates are more stable overall.</li>
 </ul></li>
-<li><p>Little change to overall accuracy (AUC)</p>
+<li>Little change to overall accuracy (AUC)
 <ul>
 <li>While the model does somewhat better at identifying positives, the ROC curve remains fairly close to the diagonal, reflecting an AUC only slightly better than 0.5.</li>
 <li>In other words, the model is still not very accurate overall, indicating that the available predictors may not strongly discriminate between “Yes” and “No”—or that we need further refinements (e.g., more complex interactions, alternative transformations, or additional data).</li>
 </ul></li>
 </ul>
-</section>
 </section>
 </section>
 <section id="fitting-a-xgboost" class="level2">
@@ -1480,14 +1493,14 @@ Stopping. Best iteration:
 [28]    train-auc:0.972693  test-auc:0.525233</code></pre>
 </div>
 </div>
-<p>Training AUC may reach near 1.0 (overfitting), but test AUC remains around 0.52, implying the model struggles to find a robust pattern. However, this may also indicate a difference in distribution of the training and testing dataset, and that no robust pattern is learnable from these features. There may also be insufficient predictive signal in the data.</p>
+<p>The training AUC climbs to ~0.999 or even 1.0, while the test set AUC remains near 0.52, suggesting no robust pattern is learnable from these features. This might indicate insufficient predictive signal in the data.</p>
 </section>
 <section id="model-evaluation" class="level3">
 <h3 class="anchored" data-anchor-id="model-evaluation">Model evaluation</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pred_prob_xgb <span class="ot">&lt;-</span> <span class="fu">predict</span>(xgb_model, <span class="at">newdata =</span> dtest, <span class="at">ntreelimit =</span> xgb_model<span class="sc">$</span>best_iteration)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[23:49:37] WARNING: src/c_api/c_api.cc:935: `ntree_limit` is deprecated, use `iteration_range` instead.</code></pre>
+<pre><code>[23:42:26] WARNING: src/c_api/c_api.cc:935: `ntree_limit` is deprecated, use `iteration_range` instead.</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>pred_class_xgb <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(pred_prob_xgb <span class="sc">&gt;=</span> <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1544,7 +1557,7 @@ Stopping. Best iteration:
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Take-home_Ex1-draft---Copy_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1589,7 +1602,7 @@ Stopping. Best iteration:
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Take-home_Ex1-draft---Copy_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1597,7 +1610,10 @@ Stopping. Best iteration:
 </section>
 <section id="interpretation" class="level4">
 <h4 class="anchored" data-anchor-id="interpretation">Interpretation:</h4>
-<p>While certain features (e.g., Cholesterol_Level, Systolic_BP) rank highest in splitting power, the test AUC is still low. This suggests either insufficient predictive signal or potential overfitting to training noise.</p>
+<ul>
+<li>The plot ranks features by how frequently and effectively they split the data.</li>
+<li>Even though certain variables like Cholesterol_Level or Systolic_BP appear at the top, the final predictive performance on the test set remains poor, indicating limited actual signal or potential overfitting to training noise.</li>
+</ul>
 </section>
 </section>
 </section>

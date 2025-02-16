@@ -18,17 +18,16 @@ This dataset investigates the epidemiology of heart attacks among different segm
 
 ### Our task
 
-In this exercise we will be: 
+In this exercise, we will:
 
-- Examining Heart Attack Occurrence: Analyze the distribution and determinants of heart attack events across the dataset. 
-- Conducting Demographic Analysis: Investigate how age, gender, and region contribute to heart attack risk, distinguishing between younger and older cohorts.
-- Exploring Health Metrics: Visualize relationships between clinical indicators (e.g., BMI, blood pressure, cholesterol) and heart attack occurrence. 
-- Assessing Lifestyle Factors: Evaluate the impact of lifestyle variables such as smoking history, physical activity, diet quality, alcohol consumption, and stress levels on heart health.
+- **Examine Heart Attack Occurrence**: Explore how heart attacks are distributed across the dataset and identify any relevant predictors.
+- **Conduct Demographic Analysis**: Investigate the role of age, gender, and region, especially comparing younger vs. older cohorts.
+- **Explore Health Metrics**: Visualize relationships among BMI, blood pressure, cholesterol, and heart attack status.
+- **Assess Lifestyle Factors**: Evaluate how smoking, physical activity, diet quality, alcohol consumption, and stress influence heart health.
 
 ## Getting started
 
 ### Load packages
-
 
 We load the following R packages using the `pacman::p_load()` function:
 
@@ -549,7 +548,8 @@ combined_plot
 
 After applying class weights and mild polynomial terms to BMI and Blood Pressure, our weighted logistic model shows some improvements compared to the naïve model:
 
-- Sensitivity Improves: The model now predicts a small number of “Yes” cases rather than labeling everything “No.”
+- No longer predicting all “No”
+  - The confusion matrix now reflects at least some “Yes” predictions: it is not trivially predicting “No” for every observation. This is a direct benefit of giving more weight to “Yes” in the training procedure, which pushes the model to separate out at least a portion of positive cases.
 
 - Collinearity appears more stable
   - The VIF plot still shows point estimates around 1.0 for most variables, with moderate spikes in confidence intervals for a few. However, these are less extreme than in the naïve model, suggesting the parameter estimates are more stable overall.
@@ -612,7 +612,7 @@ xgb_model <- xgb.train(
 )
 
 ```
-Training AUC may reach near 1.0 (overfitting), but test AUC remains around 0.52, implying the model struggles to find a robust pattern. However, this may also indicate a difference in distribution of the training and testing dataset, and that no robust pattern is learnable from these features. There may also be insufficient predictive signal in the data.
+The training AUC climbs to ~0.999 or even 1.0, while the test set AUC remains near 0.52, suggesting no robust pattern is learnable from these features. This might indicate insufficient predictive signal in the data.
 
 
 ### Model evaluation
@@ -670,7 +670,8 @@ xgb.plot.importance(importance_xgb, top_n = 15,
 ```
 #### Interpretation:
 
-While certain features (e.g., Cholesterol_Level, Systolic_BP) rank highest in splitting power, the test AUC is still low. This suggests either insufficient predictive signal or potential overfitting to training noise.
+- The plot ranks features by how frequently and effectively they split the data.
+- Even though certain variables like Cholesterol_Level or Systolic_BP appear at the top, the final predictive performance on the test set remains poor, indicating limited actual signal or potential overfitting to training noise.
 
 
 ## Final thoughts
