@@ -429,7 +429,124 @@ combined_plot
   - The ROC curve lies near the diagonal reference line, confirming that the model lacks predictive power and is essentially guessing.
 
 
+## Improving logistic regression
 
+### Rationale
+
+Our naïve logistic regression suggested potential issues:
+- Very low sensitivity (predicting all “No”)
+- Large variance inflation factor (VIF) intervals
+
+Therefore, we refine the logistic model by:
+
+1. Use **weighted** logistic regression to handle class imbalance,  
+2. Incorporate mild non-linear terms for `BMI`, `Systolic_BP`, and `Diastolic_BP` with polynomial expansions,  
+3. Remove redundant variables.
+
+
+```{r}
+new_formula <- as.formula(
+  "Heart_Attack_Occurrence ~ Age + Gender + Family_History + poly(BMI, 2, raw=TRUE) + 
+   Heart_Rate + poly(Systolic_BP, 2, raw=TRUE) + poly(Diastolic_BP, 2, raw=TRUE) + Cholesterol_Level + 
+   Diabetes_History + Hypertension_History + Physical_Activity + Smoking_History + 
+   Diet_Quality + Alcohol_Consumption + Stress_Levels"
+)
+```
+
+
+#### Creating observation weights
+We create balanced weights to give more importance to the minority class. This ensures misclassifying a minority‐class “Yes” is penalized more strongly than misclassifying a “No.”
+
+```{r}
+n_yes <- sum(train_data$Heart_Attack_Occurrence == "Yes")
+n_no  <- sum(train_data$Heart_Attack_Occurrence == "No")
+N     <- n_yes + n_no
+
+w_yes <- N / (2 * n_yes)
+w_no  <- N / (2 * n_no)
+
+# Assign weights
+train_data$weights_col <- ifelse(
+  train_data$Heart_Attack_Occurrence == "Yes",
+  w_yes,
+  w_no
+)
+```
+
+
+### Fit weighted logistic model
+```{r}
+# 2. Fit weighted logistic regression
+model_glm_weighted <- glm(
+  formula = new_formula,
+  data    = train_data,
+  family  = binomial(link = "logit"),
+  weights = weights_col
+)
+```
+```{r}
+# Capture the output
+result <- check_collinearity(model_glm_weighted)
+
+# Coerce to a data frame
+df <- as.data.frame(result)
+
+# Use knitr::kable to print the table neatly
+knitr::kable(df, caption = "Check for Multicollinearity", 
+             format = "html", 
+             table.attr = "style='width:100%; white-space:nowrap;'")
+```
+
+### Visualizing the model
+
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+check_c <- check_collinearity(model_glm_weighted)
+p_collinearity <- plot(check_c) +
+  labs(title = "Collinearity of Weighted Logistic Model") +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1))
+
+pred_prob_improved <- predict(model_glm_weighted, newdata = test_data, type = "response")
+pred_class_improved <- ifelse(pred_prob_improved >= 0.55, "Yes", "No") %>%
+  factor(levels = levels(test_data$Heart_Attack_Occurrence))
+improved_cm <- data.frame(
+  obs  = test_data$Heart_Attack_Occurrence,
+  pred = pred_class_improved
+) %>% conf_mat(obs, pred)
+
+p_confmat <- autoplot(improved_cm, type = "heatmap") +
+  labs(title = "Weighted Logistic: Confusion Matrix")
+
+roc_improved <- roc(
+  response  = as.numeric(test_data$Heart_Attack_Occurrence),
+  predictor = as.numeric(pred_prob_improved)
+)
+p_roc <- ggroc(roc_improved, colour = "#1c61b6", legacy.axes = TRUE) +
+  labs(title = "ROC Curve: Weighted Logistic Model") +
+  theme_minimal()
+
+## Combine the three plots
+library(patchwork)
+combined_plot <- p_collinearity / (p_confmat + p_roc)
+combined_plot
+```
+
+
+Weighted Logistic Regression Results
+
+After applying class weights and mild polynomial terms to BMI and Blood Pressure, our weighted logistic model shows some improvements compared to the naïve model:
+
+- No longer predicting all “No”
+  - The confusion matrix now reflects at least some “Yes” predictions: it is not trivially predicting “No” for every observation. This is a direct benefit of giving more weight to “Yes” in the training procedure, which pushes the model to separate out at least a portion of positive cases.
+
+- Collinearity appears more stable
+  - The VIF plot still shows point estimates around 1.0 for most variables, with moderate spikes in confidence intervals for a few. However, these are less extreme than in the naïve model, suggesting the parameter estimates are more stable overall.
+
+- Little change to overall accuracy (AUC)
+  - While the model does somewhat better at identifying positives, the ROC curve remains fairly close to the diagonal, reflecting an AUC only slightly better than 0.5.
+  - In other words, the model is still not very accurate overall, indicating that the available predictors may not strongly discriminate between “Yes” and “No”—or that we need further refinements (e.g., more complex interactions, alternative transformations, or additional data).
 
 
 

@@ -287,6 +287,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#understanding-the-model" id="toc-understanding-the-model" class="nav-link" data-scroll-target="#understanding-the-model">Understanding the model</a></li>
   <li><a href="#model-performance" id="toc-model-performance" class="nav-link" data-scroll-target="#model-performance">Model performance</a></li>
   </ul></li>
+  <li><a href="#improving-logistic-regression" id="toc-improving-logistic-regression" class="nav-link" data-scroll-target="#improving-logistic-regression">Improving logistic regression</a>
+  <ul class="collapse">
+  <li><a href="#rationale" id="toc-rationale" class="nav-link" data-scroll-target="#rationale">Rationale</a></li>
+  <li><a href="#fit-weighted-logistic-model" id="toc-fit-weighted-logistic-model" class="nav-link" data-scroll-target="#fit-weighted-logistic-model">Fit weighted logistic model</a></li>
+  <li><a href="#visualizing-the-model" id="toc-visualizing-the-model" class="nav-link" data-scroll-target="#visualizing-the-model">Visualizing the model</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -1079,9 +1085,303 @@ $ Heart_Attack_Occurrence &lt;fct&gt; No, No, No, No, No, No, No, No, Yes, No, N
 <ul>
 <li>The ROC curve lies near the diagonal reference line, confirming that the model lacks predictive power and is essentially guessing.</li>
 </ul>
-
-
 </section>
+</section>
+</section>
+<section id="improving-logistic-regression" class="level2">
+<h2 class="anchored" data-anchor-id="improving-logistic-regression">Improving logistic regression</h2>
+<section id="rationale" class="level3">
+<h3 class="anchored" data-anchor-id="rationale">Rationale</h3>
+<p>Our naïve logistic regression suggested potential issues: - Very low sensitivity (predicting all “No”) - Large variance inflation factor (VIF) intervals</p>
+<p>Therefore, we refine the logistic model by:</p>
+<ol type="1">
+<li>Use <strong>weighted</strong> logistic regression to handle class imbalance,<br>
+</li>
+<li>Incorporate mild non-linear terms for <code>BMI</code>, <code>Systolic_BP</code>, and <code>Diastolic_BP</code> with polynomial expansions,<br>
+</li>
+<li>Remove redundant variables.</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>new_formula <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Heart_Attack_Occurrence ~ Age + Gender + Family_History + poly(BMI, 2, raw=TRUE) + </span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="st">   Heart_Rate + poly(Systolic_BP, 2, raw=TRUE) + poly(Diastolic_BP, 2, raw=TRUE) + Cholesterol_Level + </span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="st">   Diabetes_History + Hypertension_History + Physical_Activity + Smoking_History + </span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="st">   Diet_Quality + Alcohol_Consumption + Stress_Levels"</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="creating-observation-weights" class="level4">
+<h4 class="anchored" data-anchor-id="creating-observation-weights">Creating observation weights</h4>
+<p>We create balanced weights to give more importance to the minority class. This ensures misclassifying a minority‐class “Yes” is penalized more strongly than misclassifying a “No.”</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>n_yes <span class="ot">&lt;-</span> <span class="fu">sum</span>(train_data<span class="sc">$</span>Heart_Attack_Occurrence <span class="sc">==</span> <span class="st">"Yes"</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>n_no  <span class="ot">&lt;-</span> <span class="fu">sum</span>(train_data<span class="sc">$</span>Heart_Attack_Occurrence <span class="sc">==</span> <span class="st">"No"</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>N     <span class="ot">&lt;-</span> n_yes <span class="sc">+</span> n_no</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>w_yes <span class="ot">&lt;-</span> N <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> n_yes)</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>w_no  <span class="ot">&lt;-</span> N <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> n_no)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign weights</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>train_data<span class="sc">$</span>weights_col <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  train_data<span class="sc">$</span>Heart_Attack_Occurrence <span class="sc">==</span> <span class="st">"Yes"</span>,</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  w_yes,</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  w_no</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="fit-weighted-logistic-model" class="level3">
+<h3 class="anchored" data-anchor-id="fit-weighted-logistic-model">Fit weighted logistic model</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Fit weighted logistic regression</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>model_glm_weighted <span class="ot">&lt;-</span> <span class="fu">glm</span>(</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> new_formula,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data    =</span> train_data,</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">family  =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>),</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">weights =</span> weights_col</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Capture the output</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">check_collinearity</span>(model_glm_weighted)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Coerce to a data frame</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(result)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Use knitr::kable to print the table neatly</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(df, <span class="at">caption =</span> <span class="st">"Check for Multicollinearity"</span>, </span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">format =</span> <span class="st">"html"</span>, </span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">table.attr =</span> <span class="st">"style='width:100%; white-space:nowrap;'"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Check for Multicollinearity</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">VIF</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">VIF_CI_low</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">VIF_CI_high</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">SE_factor</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Tolerance</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Tolerance_CI_low</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Tolerance_CI_high</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Age</td>
+<td style="text-align: right;">1.004556</td>
+<td style="text-align: right;">1.000277</td>
+<td style="text-align: right;">1.074857</td>
+<td style="text-align: right;">1.002275</td>
+<td style="text-align: right;">0.9954646</td>
+<td style="text-align: right;">0.9303566</td>
+<td style="text-align: right;">0.9997228</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gender</td>
+<td style="text-align: right;">1.003347</td>
+<td style="text-align: right;">1.000075</td>
+<td style="text-align: right;">1.149809</td>
+<td style="text-align: right;">1.001672</td>
+<td style="text-align: right;">0.9966644</td>
+<td style="text-align: right;">0.8697096</td>
+<td style="text-align: right;">0.9999252</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Family_History</td>
+<td style="text-align: right;">1.001847</td>
+<td style="text-align: right;">1.000002</td>
+<td style="text-align: right;">2.774072</td>
+<td style="text-align: right;">1.000923</td>
+<td style="text-align: right;">0.9981564</td>
+<td style="text-align: right;">0.3604809</td>
+<td style="text-align: right;">0.9999981</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">poly(BMI, 2, raw = TRUE)</td>
+<td style="text-align: right;">1.003982</td>
+<td style="text-align: right;">1.000162</td>
+<td style="text-align: right;">1.097600</td>
+<td style="text-align: right;">1.001989</td>
+<td style="text-align: right;">0.9960340</td>
+<td style="text-align: right;">0.9110785</td>
+<td style="text-align: right;">0.9998376</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Heart_Rate</td>
+<td style="text-align: right;">1.002266</td>
+<td style="text-align: right;">1.000008</td>
+<td style="text-align: right;">1.614256</td>
+<td style="text-align: right;">1.001132</td>
+<td style="text-align: right;">0.9977391</td>
+<td style="text-align: right;">0.6194804</td>
+<td style="text-align: right;">0.9999916</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">poly(Systolic_BP, 2, raw = TRUE)</td>
+<td style="text-align: right;">1.005107</td>
+<td style="text-align: right;">1.000419</td>
+<td style="text-align: right;">1.062202</td>
+<td style="text-align: right;">1.002550</td>
+<td style="text-align: right;">0.9949186</td>
+<td style="text-align: right;">0.9414402</td>
+<td style="text-align: right;">0.9995808</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">poly(Diastolic_BP, 2, raw = TRUE)</td>
+<td style="text-align: right;">1.004244</td>
+<td style="text-align: right;">1.000211</td>
+<td style="text-align: right;">1.085491</td>
+<td style="text-align: right;">1.002120</td>
+<td style="text-align: right;">0.9957736</td>
+<td style="text-align: right;">0.9212419</td>
+<td style="text-align: right;">0.9997893</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cholesterol_Level</td>
+<td style="text-align: right;">1.001808</td>
+<td style="text-align: right;">1.000002</td>
+<td style="text-align: right;">3.013365</td>
+<td style="text-align: right;">1.000904</td>
+<td style="text-align: right;">0.9981953</td>
+<td style="text-align: right;">0.3318549</td>
+<td style="text-align: right;">0.9999984</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Diabetes_History</td>
+<td style="text-align: right;">1.002857</td>
+<td style="text-align: right;">1.000033</td>
+<td style="text-align: right;">1.244352</td>
+<td style="text-align: right;">1.001427</td>
+<td style="text-align: right;">0.9971512</td>
+<td style="text-align: right;">0.8036315</td>
+<td style="text-align: right;">0.9999666</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hypertension_History</td>
+<td style="text-align: right;">1.002289</td>
+<td style="text-align: right;">1.000009</td>
+<td style="text-align: right;">1.586196</td>
+<td style="text-align: right;">1.001144</td>
+<td style="text-align: right;">0.9977158</td>
+<td style="text-align: right;">0.6304391</td>
+<td style="text-align: right;">0.9999911</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Physical_Activity</td>
+<td style="text-align: right;">1.004614</td>
+<td style="text-align: right;">1.000291</td>
+<td style="text-align: right;">1.073216</td>
+<td style="text-align: right;">1.002304</td>
+<td style="text-align: right;">0.9954073</td>
+<td style="text-align: right;">0.9317786</td>
+<td style="text-align: right;">0.9997093</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Smoking_History</td>
+<td style="text-align: right;">1.002518</td>
+<td style="text-align: right;">1.000016</td>
+<td style="text-align: right;">1.390398</td>
+<td style="text-align: right;">1.001258</td>
+<td style="text-align: right;">0.9974880</td>
+<td style="text-align: right;">0.7192187</td>
+<td style="text-align: right;">0.9999838</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Diet_Quality</td>
+<td style="text-align: right;">1.003581</td>
+<td style="text-align: right;">1.000102</td>
+<td style="text-align: right;">1.125179</td>
+<td style="text-align: right;">1.001789</td>
+<td style="text-align: right;">0.9964314</td>
+<td style="text-align: right;">0.8887471</td>
+<td style="text-align: right;">0.9998975</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Alcohol_Consumption</td>
+<td style="text-align: right;">1.007005</td>
+<td style="text-align: right;">1.001124</td>
+<td style="text-align: right;">1.043643</td>
+<td style="text-align: right;">1.003496</td>
+<td style="text-align: right;">0.9930440</td>
+<td style="text-align: right;">0.9581821</td>
+<td style="text-align: right;">0.9988770</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Stress_Levels</td>
+<td style="text-align: right;">1.002948</td>
+<td style="text-align: right;">1.000039</td>
+<td style="text-align: right;">1.219987</td>
+<td style="text-align: right;">1.001473</td>
+<td style="text-align: right;">0.9970609</td>
+<td style="text-align: right;">0.8196808</td>
+<td style="text-align: right;">0.9999605</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</section>
+<section id="visualizing-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-the-model">Visualizing the model</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>check_c <span class="ot">&lt;-</span> <span class="fu">check_collinearity</span>(model_glm_weighted)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>p_collinearity <span class="ot">&lt;-</span> <span class="fu">plot</span>(check_c) <span class="sc">+</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Collinearity of Weighted Logistic Model"</span>) <span class="sc">+</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">40</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>pred_prob_improved <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_glm_weighted, <span class="at">newdata =</span> test_data, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>pred_class_improved <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(pred_prob_improved <span class="sc">&gt;=</span> <span class="fl">0.55</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">factor</span>(<span class="at">levels =</span> <span class="fu">levels</span>(test_data<span class="sc">$</span>Heart_Attack_Occurrence))</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>improved_cm <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">obs  =</span> test_data<span class="sc">$</span>Heart_Attack_Occurrence,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">pred =</span> pred_class_improved</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> <span class="fu">conf_mat</span>(obs, pred)</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>p_confmat <span class="ot">&lt;-</span> <span class="fu">autoplot</span>(improved_cm, <span class="at">type =</span> <span class="st">"heatmap"</span>) <span class="sc">+</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Weighted Logistic: Confusion Matrix"</span>)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>roc_improved <span class="ot">&lt;-</span> <span class="fu">roc</span>(</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">response  =</span> <span class="fu">as.numeric</span>(test_data<span class="sc">$</span>Heart_Attack_Occurrence),</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">predictor =</span> <span class="fu">as.numeric</span>(pred_prob_improved)</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>p_roc <span class="ot">&lt;-</span> <span class="fu">ggroc</span>(roc_improved, <span class="at">colour =</span> <span class="st">"#1c61b6"</span>, <span class="at">legacy.axes =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"ROC Curve: Weighted Logistic Model"</span>) <span class="sc">+</span></span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a><span class="do">## Combine the three plots</span></span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>combined_plot <span class="ot">&lt;-</span> p_collinearity <span class="sc">/</span> (p_confmat <span class="sc">+</span> p_roc)</span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>combined_plot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex1_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Weighted Logistic Regression Results</p>
+<p>After applying class weights and mild polynomial terms to BMI and Blood Pressure, our weighted logistic model shows some improvements compared to the naïve model:</p>
+<ul>
+<li>No longer predicting all “No”
+<ul>
+<li>The confusion matrix now reflects at least some “Yes” predictions: it is not trivially predicting “No” for every observation. This is a direct benefit of giving more weight to “Yes” in the training procedure, which pushes the model to separate out at least a portion of positive cases.</li>
+</ul></li>
+<li>Collinearity appears more stable
+<ul>
+<li>The VIF plot still shows point estimates around 1.0 for most variables, with moderate spikes in confidence intervals for a few. However, these are less extreme than in the naïve model, suggesting the parameter estimates are more stable overall.</li>
+</ul></li>
+<li>Little change to overall accuracy (AUC)
+<ul>
+<li>While the model does somewhat better at identifying positives, the ROC curve remains fairly close to the diagonal, reflecting an AUC only slightly better than 0.5.</li>
+<li>In other words, the model is still not very accurate overall, indicating that the available predictors may not strongly discriminate between “Yes” and “No”—or that we need further refinements (e.g., more complex interactions, alternative transformations, or additional data).</li>
+</ul></li>
+</ul>
+
+
 </section>
 </section>
 
