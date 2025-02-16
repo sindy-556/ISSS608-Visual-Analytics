@@ -16,7 +16,7 @@ execute:
 We begin by loading all necessary libraries.
 
 ```{r}
-pacman::p_load(tidyverse, readxl, SmartEDA, easystats, gtsummary)
+pacman::p_load(tidyverse, readxl, SmartEDA, easystats, gtsummary, ggstatsplot)
 ```
 
 ## 2. Data Loading and Preparation
@@ -90,7 +90,7 @@ summary1
 
 ### Type 2
 
-Type 2 provides an overall data summary.
+Type 2 provides a variable level summary.
 
 ```{r summary-type2}
 summary2 <- car_resale %>%
@@ -105,7 +105,12 @@ summary2
 
 ### 5.1 Numerical Data Visualizations
 
-We create visualizations for numerical variables. Two versions are provided: - Without specifying a target variable. - Focusing on the "Price" variable.
+We create visualizations for numerical variables.
+
+Two versions are provided:
+
+-   Without specifying a target variable.
+-   Focusing on the "Price" variable.
 
 #### Without Target Variable
 
@@ -184,6 +189,12 @@ Approaches to Assess Multicollinearity:
 -   Correlation Matrix: Examines pairwise correlations between predictors to identify highly correlated variables.
 
 -   Variance Inflation Factor (VIF): Quantifies how much the variance of a regression coefficient is inflated due to multicollinearity.
+
+```{r}
+ggcoefstats(model1, 
+            output = "plot")
+```
+
 
 ## 7. Model Summary
 
