@@ -32,8 +32,27 @@ In this exercise we will be:
 We load the following R packages using the `pacman::p_load()` function:
 
 ```{r}
-pacman::p_load(tidyverse, readxl, SmartEDA, easystats, gtsummary, reshape2, ggstatsplot)
+# Load all necessary packages at once
+pacman::p_load(
+  tidyverse,      # Data wrangling, ggplot2
+  SmartEDA,       # EDA
+  easystats,      # check_model, check_collinearity
+  gtsummary,      # summary tables
+  reshape2,       # for melt
+  ggstatsplot,    # additional ggplot stats
+  caret,          # train/test split, modeling
+  yardstick,      # classification metrics
+  pROC,           # ROC/AUC
+  glmnet,         # regularized regression
+  randomForest,   # basic random forest
+  vip,            # variable importance plots
+  pdp,             # partial dependence plots
+  GGally,
+  ggmosaic, plotly, ggplot2
+)
 ```
+
+
 
 This dataset contains information about heart attack occurrences in Japan, focusing on various demographic and health-related factors.
 
@@ -42,9 +61,9 @@ This dataset contains information about heart attack occurrences in Japan, focus
 heart_data <- read_csv("./data/japan_heart_attack_dataset.csv")
 ```
 
-### Data pre-processing
+## Data pre-processing
 
-#### Glimpse of data
+### Glimpse of data
 Using the `glimpse()` function, we see that the dataset consists of 30,000 rows and 32 columns. The output displays the column names, their data types, and the first few entries for each variable. Additionally, there are 15 extra columns (Extra_Column_1 to Extra_Column_15) which are not clearly defined.
 
 ```{r}
@@ -54,7 +73,7 @@ glimpse(heart_data)
 The following provides an overview of the Japan Heart Attack dataset using the `ExpData()` function, summarizing both overall and variable-level details. 
 
 ::: panel-tabset
-#### Overall data summary
+### Overall data summary
 
 ```{r}
 summary1 <- heart_data %>%
@@ -64,7 +83,7 @@ summary1 <- heart_data %>%
 summary1
 ```
 
-#### Variable level summary
+### Variable level summary
 
 ```{r}
 summary2 <- heart_data %>%
@@ -97,7 +116,7 @@ heart_data <- heart_data %>%
   )
 ```
 
-#### Drop extra columns
+### Drop extra columns
 
 ```{r}
 #| fig-width: 12
@@ -120,9 +139,328 @@ ggplot(extra_data_long, aes(x = Heart_Attack_Occurrence, y = value)) +
     y = "Value"
   )
 ```
-Since these variables do not appear to vary by heart attack status, they are unlikely to provide useful information for any downstream analysis (e.g., modeling, hypothesis testing). Dropping them will simplify the dataset and help focus on variables that do relate to heart attack risk. We can drop the Extra Columns with the following code:
+Since these variables do not appear to vary by heart attack status, they are unlikely to provide useful information for any downstream analysis (e.g., modeling, hypothesis testing). Dropping them will simplify the dataset and help focus on variables that do relate to heart attack risk. 
+
+We can drop them with the following code:
 ```{r}
 heart_data <- heart_data %>%
   select(-starts_with("Extra_Column_"))
 ```
+
+
+### Cleaned dataset
+```{r}
+glimpse(heart_data)
+```
+## Exploratory visuals 
+
+We create a new variable, `Age_Group`, classifying individuals as “Over50” or “50OrBelow” to compare younger vs. older individuals.
+
+```{r}
+heart_data <- heart_data %>%
+  mutate(Age_Group = ifelse(Age > 50, "Over50", "50OrBelow") %>% as.factor())
+```
+
+
+We create `AgeGender` by combining the `Age_Group` and `gender`. We also combine `smoking status` and `physical activity` into `SmokeAct` and reorder `alcohol consumption` levels.
+
+
+
+```{r}
+# Demographic variables
+heart_data <- heart_data %>%
+  mutate(
+    AgeGender = case_when(
+      Age_Group == "Over50" & Gender == "Male"   ~ "Over 50 Male",
+      Age_Group == "Over50" & Gender == "Female" ~ "Over 50 Female",
+      Age_Group == "50OrBelow" & Gender == "Male"   ~ "≤50 Male",
+      Age_Group == "50OrBelow" & Gender == "Female" ~ "≤50 Female"
+    ) %>% factor(levels = c("≤50 Female","≤50 Male","Over 50 Female","Over 50 Male"))
+  )
+
+# Lifestyle variables
+heart_data <- heart_data %>%
+  mutate(
+    SmokeAct = case_when(
+      Smoking_History == "Yes" & Physical_Activity == "Low"      ~ "Smoker, PA:Low",
+      Smoking_History == "Yes" & Physical_Activity == "Moderate" ~ "Smoker, PA:Mod",
+      Smoking_History == "Yes" & Physical_Activity == "High"     ~ "Smoker, PA:High",
+      Smoking_History == "No"  & Physical_Activity == "Low"      ~ "Non-Smoker, PA:Low",
+      Smoking_History == "No"  & Physical_Activity == "Moderate" ~ "Non-Smoker, PA:Mod",
+      Smoking_History == "No"  & Physical_Activity == "High"     ~ "Non-Smoker, PA:High"
+    ) %>% 
+    # Order them in a sensible sequence:
+    factor(levels = c("Non-Smoker, PA:Low","Non-Smoker, PA:Mod","Non-Smoker, PA:High",
+                      "Smoker, PA:Low","Smoker, PA:Mod","Smoker, PA:High"))
+  )
+```
+
+
+### Mosaic Plot: Demographic Analysis
+We plot a mosaic where `AgeGender` is on the x-axis, color indicates heart attack occurrence, and each facet represents a different region.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 5
+
+p_demo <- ggplot(heart_data) +
+  geom_mosaic(
+    aes(x = product(AgeGender),
+        fill = Heart_Attack_Occurrence,
+        text = paste0("Group: ", AgeGender,
+                      "<br>Region: ", Region,
+                      "<br>Heart Attack: ", Heart_Attack_Occurrence)
+    ),
+    alpha = 0.9
+  ) +
+  facet_wrap(~ Region) +
+  scale_fill_manual(values = c("No" = "#F1B1B5", "Yes" = "#97B3AE")) +
+  labs(
+    title = "Demographic Mosaic: Age & Gender by Region vs. Heart Attack",
+    x     = "Age & Gender",
+    y     = " ",
+    fill  = "Heart Attack"
+  ) +
+  theme_minimal()
+
+p_demo
+```
+This mosaic plot illustrates heart attack occurrences across different age and gender groups within rural and urban regions. The width of each bar segment corresponds to the relative size of that demographic group, while the height indicates the proportion of individuals who experienced a heart attack. 
+
+Overall, heart attack rates remain relatively consistent between rural and urban areas. However, males tend to have a higher probability of heart attack than females, regardless of age or region.
+
+
+### Mosaic plot: Lifestyle factors
+
+We create a mosaic plot with `SmokeAct` on the x-axis, color by heart attack occurrence, and facet by the four alcohol consumption levels.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+
+# Reorder factor levels for Alcohol_Consumption
+heart_data <- heart_data %>%
+  mutate(
+    Alcohol_Consumption = factor(
+      Alcohol_Consumption,
+      levels = c("High", "Moderate", "Low", "None")
+    )
+  )
+
+ggplot(heart_data) +
+  geom_mosaic(aes(
+    x    = product(SmokeAct),
+    fill = Heart_Attack_Occurrence
+  ), alpha = 0.9) +
+  facet_wrap(~ Alcohol_Consumption, ncol = 2) +
+  scale_fill_manual(values = c("No" = "#F1B1B5", "Yes" = "#97B3AE")) +
+  labs(
+    title = "Lifestyle Mosaic: Smoking, Activity, and Alcohol vs. Heart Attack",
+    subtitle = "PA = Physical Activity. Each facet represents a different Alcohol Consumption level.",
+    x = "Smoking & PA Group",
+    y = "",
+    fill = "Heart Attack"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title    = element_text(face = "bold", size = 14, hjust=0.5),
+    plot.subtitle = element_text(size = 10, hjust=0.5),
+    strip.text    = element_text(face="bold"),
+    axis.text.x   = element_text(angle=40, hjust=1, size=7),
+    panel.spacing = unit(2, "lines")
+  )
+```
+
+This mosaic plot explores how smoking, physical activity (PA), and alcohol consumption interact to influence heart attack occurrences. Each facet represents a different alcohol consumption level (High, Moderate, Low, None).
+
+Interestingly, non-smokers who report no alcohol consumption but high physical activity exhibit one of the highest heart attack rates. Additionally, smokers with moderate physical activity tend to have higher heart attack rates compared to smokers with low or high physical activity.
+
+### Pairwise numeric plot (Health metrics)
+This code uses `ggpairs()` to create a matrix of pairwise plots for all numeric variables in heart_data. The `mapping = aes(color = Heart_Attack_Occurrence)` argument adds a color-coded grouping by heart attack status.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+
+# Automatically select all numeric columns from the dataset
+numeric_cols <- sapply(heart_data, is.numeric)
+
+pairwise_plot <- ggpairs(
+  data = heart_data,
+  columns = which(numeric_cols),
+  mapping = aes(color = Heart_Attack_Occurrence),
+  lower = list(continuous = wrap("smooth", alpha = 0.3, size = 0.5)),
+  diag = list(continuous = wrap("densityDiag", alpha = 0.5)),
+  upper = list(continuous = wrap("cor", size = 4))
+) +
+  ggtitle("Pairwise Correlations Among All Numeric Metrics")
+
+pairwise_plot
+```
+
+##### Explanation of the plot
+
+This grid compares health metrics like BMI, blood pressure, cholesterol, and stress. The **diagonal panels** show density curves for each variable, revealing, for instance, that `Age` has a broader distribution compared to the other variables.
+
+The **upper panels** list correlation coefficients and their significance, most of which are near zero (e.g., **`Corr: 0.025, 0.048`**), indicating that these variables do not strongly co-vary. In the **lower scatter plots**, points are colored by heart attack occurrence; no tight clustering suggests no single numeric threshold exclusively separates “Yes” vs. “No.” For instance, `Systolic_BP` and `Diastolic_BP` show little correlation as high `Systolic_BP` often coexists with both high and low `Diastolic_BP`. Overall, **no single numeric factor** stands out as a strictly linear driver of heart attack, though there may be subtle nonlinear or interactive effects to explore later.
+
+
+### Train test split
+Before building a predictive model, it is best practice to split the data into training and testing sets. The createDataPartition function ensures that the distribution of the target class is approximately the same in both sets. Here, we allocate 80% of the data for training and 20% for testing.
+
+```{r}
+set.seed(123)
+
+train_index <- createDataPartition(heart_data$Heart_Attack_Occurrence, p = 0.8, list = FALSE)
+
+train_data <- heart_data[train_index, ]
+test_data  <- heart_data[-train_index, ]
+```
+
+
+## Naive Logistic Regression
+
+uses all variables in cleaned dataset
+
+
+### Fit the Model
+
+We will fit a logistic regression using `glm()`.
+```{r}
+# Use a standard glm with all predictors
+naive_glm <- glm(
+  Heart_Attack_Occurrence ~ .,
+  data   = train_data,
+  family = binomial
+)
+
+summary(naive_glm)
+```
+```{r}
+check_collinearity(naive_glm)
+```
+```{r}
+#| fig-width: 15
+
+# Plot the multicollinearity diagnostics for a visual overview
+check_c <- check_collinearity(naive_glm)
+plot(check_c)
+```
+```{r}
+# Check the levels of your outcome variable
+levels(train_data$Heart_Attack_Occurrence)
+# Recode the outcome: "Yes" becomes 1 and "No" becomes 0
+actual_outcome <- ifelse(train_data$Heart_Attack_Occurrence == "Yes", 1, 0)
+
+# Verify there are no missing values
+sum(is.na(actual_outcome))
+
+```
+
+```{r}
+actual_outcome <- ifelse(train_data$Heart_Attack_Occurrence == "Yes", 1, 0)
+```
+
+
+
+```{r}
+# Install and load the separationplot package if not already installed
+if (!require(separationplot)) {
+  install.packages("separationplot")
+  library(separationplot)
+} else {
+  library(separationplot)
+}
+
+# Get predicted probabilities from the fitted logistic regression model
+predicted_probs <- predict(naive_glm, type = "response")
+
+# Create the separation plot
+separationplot(
+  pred   = predicted_probs,
+  actual = actual_outcome,
+  line   = TRUE
+)
+
+# Add a title to the plot
+title("Separation Plot for Logistic Regression")
+```
+
+
+
+```{r}
+#| fig-width: 12
+#| fig-height: 10
+# Check for potential collinearity
+check_collinearity(naive_glm)
+
+ggcoefstats(naive_glm, 
+            output = "plot")
+```
+
+
+
+
+### Predictions + Performance
+```{r}
+# Predict on test set
+pred_prob_naive <- predict(naive_glm, newdata = test_data, type = "response")
+
+pred_class_naive <- ifelse(pred_prob_naive >= 0.5, "Yes", "No") %>%
+  factor(levels = levels(test_data$Heart_Attack_Occurrence))
+
+# Evaluate
+naive_results <- data.frame(
+  obs   = test_data$Heart_Attack_Occurrence,
+  pred  = pred_class_naive,
+  prob  = pred_prob_naive
+)
+
+naive_cm <- naive_results %>%
+  conf_mat(obs, pred)
+
+naive_metrics <- naive_cm %>%
+  summary()  # yardstick summary
+
+naive_metrics
+```
+
+#### Confusion Matrix Heatmap
+
+```{r}
+autoplot(naive_cm, type = "heatmap") +
+  labs(title="Naïve Logistic Regression: Confusion Matrix")
+```
+
+
+#### ROC Curve
+```{r}
+roc_obj_naive <- roc(
+  as.numeric(test_data$Heart_Attack_Occurrence),
+  as.numeric(pred_prob_naive)
+)
+
+plot(roc_obj_naive, col = "#1c61b6", main="ROC Curve: Naïve Logistic Model")
+auc(roc_obj_naive)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
