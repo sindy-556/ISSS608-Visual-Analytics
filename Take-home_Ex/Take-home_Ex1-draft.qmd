@@ -48,7 +48,7 @@ pacman::p_load(
   vip,            # variable importance plots
   pdp,             # partial dependence plots
   GGally,
-  ggmosaic, plotly, ggplot2, knitr, patchwork
+  ggmosaic, plotly, ggplot2, knitr
 )
 ```
 
@@ -225,8 +225,6 @@ p_demo <- ggplot(heart_data_eda) +
 
 p_demo
 ```
-##### Explanation of the plot
-
 This mosaic plot illustrates heart attack occurrences across different age and gender groups within rural and urban regions. The width of each bar segment corresponds to the relative size of that demographic group, while the height indicates the proportion of individuals who experienced a heart attack. 
 
 Overall, heart attack rates remain relatively consistent between rural and urban areas. However, males tend to have a higher probability of heart attack than females, regardless of age or region.
@@ -272,8 +270,6 @@ ggplot(heart_data_eda) +
     panel.spacing = unit(2, "lines")
   )
 ```
-##### Explanation of the plot
-
 
 This mosaic plot explores how smoking, physical activity (PA), and alcohol consumption interact to influence heart attack occurrences. Each facet represents a different alcohol consumption level (High, Moderate, Low, None).
 
@@ -323,15 +319,14 @@ test_data  <- heart_data[-train_index, ]
 ```
 
 
-## Naive logistic regression
+## Naive Logistic Regression
 
-Here, we build an initial (“naive”) logistic regression model that includes **all** available predictors (except the 15 “Extra_Column” variables we dropped). This approach gives us a baseline.
+uses all variables in cleaned dataset
 
 
-### Fit the model
+### Fit the Model
 
 We will fit a logistic regression using `glm()`.
-
 ```{r}
 # Use a standard glm with all predictors
 naive_glm <- glm(
@@ -339,12 +334,10 @@ naive_glm <- glm(
   data   = train_data,
   family = binomial
 )
+
+summary(naive_glm)
 ```
 
-
-### Understanding the model
-
-We use `check_collinearity()` to see if any variables are highly correlated or cause near‐complete separation. A “good” logistic regression typically avoids extremely high VIFs or indefinite confidence intervals.
 
 ```{r}
 # Capture the output
@@ -359,26 +352,46 @@ knitr::kable(df, caption = "Check for Multicollinearity",
              table.attr = "style='width:100%; white-space:nowrap;'")
 ```
 
-#### Interpreting the collinearity results
-
-- VIF ~1.0 but extremely large upper confidence bounds: This indicates the algorithm is unsure about the exact magnitude of possible collinearity. In simpler terms, the model’s variance–covariance matrix is nearly singular.
-- This often happens when:
-  - Quasi‐complete separation: Certain variables or combinations nearly “perfectly” predict the outcome.
-  - Imbalance in the dataset (many more “No” than “Yes”) plus insufficient signal in some predictors.
-  - Over‐parametrization: Too many correlated predictors for the sample size.
-
-### Model performance
 
 ```{r}
-#| fig-width: 10
-#| fig-height: 8
-
-# 1) Collinearity plot
 check_c <- check_collinearity(naive_glm)
-p_collinearity <- plot(check_c) +
-  theme(axis.text.x = element_text(angle = 40, hjust = 1))
+p <- plot(check_c)
+p + theme(axis.text.x = element_text(angle = 40, hjust = 1))
+```
 
-# 2) Confusion matrix heatmap
+
+```{r}
+# Check the levels of your outcome variable
+levels(train_data$Heart_Attack_Occurrence)
+# Recode the outcome: "Yes" becomes 1 and "No" becomes 0
+actual_outcome <- ifelse(train_data$Heart_Attack_Occurrence == "Yes", 1, 0)
+
+# Verify there are no missing values
+sum(is.na(actual_outcome))
+
+```
+
+```{r}
+actual_outcome <- ifelse(train_data$Heart_Attack_Occurrence == "Yes", 1, 0)
+```
+
+
+```{r}
+#| fig-width: 12
+#| fig-height: 10
+# Check for potential collinearity
+check_collinearity(naive_glm)
+
+ggcoefstats(naive_glm, 
+            output = "plot")
+```
+
+
+
+
+### Predictions + Performance
+```{r}
+# Predict on test set
 pred_prob_naive <- predict(naive_glm, newdata = test_data, type = "response")
 
 pred_class_naive <- ifelse(pred_prob_naive >= 0.5, "Yes", "No") %>%
@@ -394,39 +407,27 @@ naive_results <- data.frame(
 naive_cm <- naive_results %>%
   conf_mat(obs, pred)
 
-p_confmat <- autoplot(naive_cm, type = "heatmap") +
-  labs(title = "Naive Logistic Regression: Confusion Matrix")
+naive_metrics <- naive_cm %>%
+  summary()  # yardstick summary
 
-# 3) ROC curve as a ggplot object using ggroc()
-roc_naive <- roc(
-  response  = as.numeric(naive_results$obs),
-  predictor = as.numeric(naive_results$prob)
-)
-
-p_roc <- ggroc(roc_naive, colour = "#1c61b6", legacy.axes = TRUE) +
-  labs(title = "ROC Curve: Naïve Logistic Model") +
-  theme_minimal()
-
-
-combined_plot <- p_collinearity / (p_confmat + p_roc)
-
-# Display the combined plot
-combined_plot
+naive_metrics
 ```
 
-#### Explanation of the plot
+#### Confusion Matrix Heatmap
 
-1. **Collinearity Plot:**  
-  - This bar chart displays VIF estimates, where the ideal values fall in the green region.
-  - Individual VIF point estimates hover around 1.0, but their upper confidence intervals extend into the red, indicating extremely high values. 
-  - This suggests that the model’s parameter estimates are unstable due to quasi‐complete separation or an excess of correlated predictors relative to the sample size. In essence, the model cannot reliably discern each variable’s true contribution, leading to artificially low VIF point estimates paired with massive uncertainty bounds.
+```{r}
+autoplot(naive_cm, type = "heatmap") +
+  labs(title="Naïve Logistic Regression: Confusion Matrix")
+```
 
-2. **Confusion Matrix:**  
-  - The matrix shows 0 true positives. 
-  - This is typical when a logistic model either encounters near-complete separation or opts to disregard the minority class in imbalanced datasets.
 
-3. **ROC Curve:**  
-  - The ROC curve lies near the diagonal reference line, confirming that the model lacks predictive power and is essentially guessing.
+
+
+
+
+
+
+
 
 
 
