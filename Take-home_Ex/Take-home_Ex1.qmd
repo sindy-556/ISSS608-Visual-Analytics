@@ -1,7 +1,10 @@
 ---
-title: "Take-home Exercise 1"
+title: "Take-home Exercise 1: Examining Heart Attack Risk in Japan"
 author: "Sindy"
 date-modified: "last-modified"
+output:
+  html_document:
+    css: styles.css
 execute:
   echo: true
   eval: true
@@ -9,212 +12,117 @@ execute:
   freeze: true
 ---
 
+## Overview
+
+The Heart Attack in Japan dataset is a research-centric compilation designed to investigate the epidemiology of heart attacks across different segments of the Japanese population. Japan, with its rapidly aging demographic and high standard of healthcare, presents a unique context where understanding the interplay between lifestyle, clinical parameters, and heart attack occurrence is critical.
+
+### Our task
+
+In this exercise we will be: 
+
+- Examining Heart Attack Occurrence: Analyze the distribution and determinants of heart attack events across the dataset. 
+- Conducting Demographic Analysis: Investigate how age, gender, and region contribute to heart attack risk, distinguishing between younger and older cohorts.
+- Exploring Health Metrics: Visualize relationships between clinical indicators (e.g., BMI, blood pressure, cholesterol) and heart attack occurrence. 
+- Assessing Lifestyle Factors: Evaluate the impact of lifestyle variables such as smoking history, physical activity, diet quality, alcohol consumption, and stress levels on heart health.
+
 ## Getting started
 
+### Load packages
+
+We load the following R packages using the `pacman::p_load()` function:
+
 ```{r}
-pacman::p_load(tidyverse, plotly, GGally, patchwork, ggridges, ggcorrplot, broom,caret, pROC, factoextra, ggalluvial, ggeffects, randomForest)
+pacman::p_load(tidyverse, readxl, SmartEDA, easystats, gtsummary, reshape2, ggstatsplot)
 ```
 
-```{r}
-heart_data <- read_csv("data/japan_heart_attack_dataset.csv")
+This dataset contains information about heart attack occurrences in Japan, focusing on various demographic and health-related factors.
 
-# Check structure
+### Import data
+```{r}
+heart_data <- read_csv("./data/japan_heart_attack_dataset.csv")
+```
+
+### Data pre-processing
+
+#### Glimpse of data
+Using the `glimpse()` function, we see that the dataset consists of 30,000 rows and 32 columns. The output displays the column names, their data types, and the first few entries for each variable. Additionally, there are 15 extra columns (Extra_Column_1 to Extra_Column_15) which are not clearly defined.
+
+```{r}
 glimpse(heart_data)
+```
 
-# (Optional) Clean or rename columns if needed
-# heart_data <- heart_data %>%
-#   rename(Age = age, etc...)
+The following provides an overview of the Japan Heart Attack dataset using the `ExpData()` function, summarizing both overall and variable-level details. 
 
-# Decide on "Youth" vs. "Adult" threshold
-# For demonstration, let's assume 'Youth' < 40, 'Adult' >= 40
+::: panel-tabset
+#### Overall data summary
+
+```{r}
+summary1 <- heart_data %>%
+  ExpData(type = 1)
+
+# Display the summary (further customization possible)
+summary1
+```
+
+#### Variable level summary
+
+```{r}
+summary2 <- heart_data %>%
+  ExpData(type = 2)
+
+# Display the summary (further customization possible)
+summary2
+```
+
+:::
+
+### Convert categorical variables to factors
+
+From the overview above, we see that the dataset contains no missing values, and the categorical variables have a maximum of 4 unique values. Converting these variables into factors ensures they are correctly treated as categorical data during analysis and visualization.
+
+```{r}
+# Convert selected categorical variables into factors
 heart_data <- heart_data %>%
-  mutate(Age_Group = if_else(Age < 40, "Youth", "Adult"))
-```
-```{r}
-heart_data[duplicated(heart_data),]
-```
-
-```{r}
-for(column_name in names(heart_data)) {
-  na_count <- sum(is.na(heart_data[[column_name]]))
-
-  if (na_count > 0) {
-    message("Column '", column_name, "' has ", na_count, " NA values.")
-  }
-}
+  mutate(
+    Gender = as.factor(Gender),
+    Region = as.factor(Region),
+    Smoking_History = as.factor(Smoking_History),
+    Diabetes_History = as.factor(Diabetes_History),
+    Hypertension_History = as.factor(Hypertension_History),
+    Physical_Activity = as.factor(Physical_Activity),
+    Diet_Quality = as.factor(Diet_Quality),
+    Alcohol_Consumption = as.factor(Alcohol_Consumption),
+    Family_History = as.factor(Family_History),
+    Heart_Attack_Occurrence = as.factor(Heart_Attack_Occurrence)
+  )
 ```
 
+#### Drop extra columns
 
 ```{r}
-# Inspect variance and correlation of "Extra_Column_x"
-extra_cols <- grep("^Extra_Column_", names(heart_data), value = TRUE)
+#| fig-width: 12
+#| fig-height: 10
 
-# Quick summary
-summary(heart_data[extra_cols])
+# Select only the Extra_Columns and the outcome variable
+extra_data <- heart_data %>%
+  select(starts_with("Extra_Column_"), Heart_Attack_Occurrence)
 
-# Quick correlation with Heart_Attack_Occurrence (assuming "Yes"/"No" -> 1/0 conversion)
+# Reshape to long format
+extra_data_long <- melt(extra_data, id.vars = "Heart_Attack_Occurrence")
+
+# Create boxplots comparing each Extra_Column by Heart_Attack_Occurrence
+ggplot(extra_data_long, aes(x = Heart_Attack_Occurrence, y = value)) +
+  geom_boxplot() +
+  facet_wrap(~ variable, scales = "free") +
+  labs(
+    title = "Distribution of Extra Columns by Heart Attack Occurrence",
+    x = "Heart Attack Occurrence",
+    y = "Value"
+  )
+```
+Since these variables do not appear to vary by heart attack status, they are unlikely to provide useful information for any downstream analysis (e.g., modeling, hypothesis testing). Dropping them will simplify the dataset and help focus on variables that do relate to heart attack risk. We can drop the Extra Columns with the following code:
+```{r}
 heart_data <- heart_data %>%
-  mutate(HA_Flag = if_else(Heart_Attack_Occurrence == "Yes", 1, 0))
-
-cor_vals <- sapply(heart_data[extra_cols], function(col) cor(col, heart_data$HA_Flag, use="complete.obs"))
-cor_vals
-
-# If these correlations are all near zero & the columns have little variance => likely useless
+  select(-starts_with("Extra_Column_"))
 ```
-```{r}
-# Convert Heart_Attack_Occurrence to a binary flag (if not already done)
-heart_data <- heart_data %>%
-  mutate(HA_Flag = if_else(Heart_Attack_Occurrence == "Yes", 1, 0))
-
-# Identify all numeric columns in the data frame
-numeric_cols <- names(heart_data)[sapply(heart_data, is.numeric)]
-# Optionally, remove the HA_Flag column from the list to avoid correlating it with itself
-numeric_cols <- setdiff(numeric_cols, "HA_Flag")
-
-# Compute the correlation between each numeric column and HA_Flag
-cor_vals <- sapply(numeric_cols, function(col) {
-  cor(heart_data[[col]], heart_data$HA_Flag, use = "complete.obs")
-})
-
-# Print the correlation values
-cor_vals
-```
-
-
-
-```{r}
-# Visualization 1: Age Distribution (Ridge or Histogram) + Overlaid by Heart Attack Occurrence
-p1 <- heart_data %>%
-  ggplot(aes(x = Age, fill = Heart_Attack_Occurrence)) +
-  geom_histogram(position = "identity", alpha = 0.6, bins = 30) +
-  facet_wrap(~Age_Group, scales = "free_y") +
-  labs(title = "Age Distribution by Group and Heart Attack Occurrence",
-       x = "Age", y = "Count") +
-  theme_minimal()
-
-p1
-```
-
-```{r}
-ggplot(heart_data, aes(x = Smoking_History, fill = Heart_Attack_Occurrence)) +
-  geom_bar(position = "dodge") +
-  labs(title = "Smoking History vs. Heart Attack Occurrence",
-       x = "Smoking History", y = "Count") +
-  theme_minimal()
-```
-```{r}
-
-# Suppose these are factors
-df_alluvial <- heart_data %>%
-  select(Smoking_History, Hypertension_History, Diabetes_History, Heart_Attack_Occurrence) %>%
-  na.omit()
-
-ggplot(df_alluvial,
-       aes(axis1 = Smoking_History, 
-           axis2 = Hypertension_History,
-           axis3 = Diabetes_History,
-           y = 1, fill = Heart_Attack_Occurrence)) +
-  geom_alluvium(aes(color = Heart_Attack_Occurrence), width = 1/12) +
-  geom_stratum(width = 1/12, fill = "grey80", color = "white") +
-  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
-  scale_x_discrete(limits = c("Smoking", "Hypertension", "Diabetes"),
-                   expand = c(.05, .05)) +
-  labs(title="Combined Categorical Risk Factors vs. Heart Attack Outcome",
-       x="", y="Number of Records") +
-  theme_minimal()
-
-```
-
-```{r}
-ggplot(heart_data, aes(x = Cholesterol_Level, y = Heart_Attack_Occurrence, fill = Heart_Attack_Occurrence)) +
-  geom_density_ridges(alpha = 0.7) +
-  theme_minimal() +
-  labs(title="Cholesterol Level Distribution by Heart Attack Occurrence",
-       x="Cholesterol Level", y="")
-
-```
-```{r}
-library(ggalluvial)
-
-# Suppose these are factors
-df_alluvial <- heart_data %>%
-  select(Smoking_History, Hypertension_History, Diabetes_History, Heart_Attack_Occurrence) %>%
-  na.omit()
-
-ggplot(df_alluvial,
-       aes(axis1 = Smoking_History, 
-           axis2 = Hypertension_History,
-           axis3 = Diabetes_History,
-           y = 1, fill = Heart_Attack_Occurrence)) +
-  geom_alluvium(aes(color = Heart_Attack_Occurrence), width = 1/12) +
-  geom_stratum(width = 1/12, fill = "grey80", color = "white") +
-  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
-  scale_x_discrete(limits = c("Smoking", "Hypertension", "Diabetes"),
-                   expand = c(.05, .05)) +
-  labs(title="Combined Categorical Risk Factors vs. Heart Attack Outcome",
-       x="", y="Number of Records") +
-  theme_minimal()
-```
-
-
-
-
-```{r}
-ggplot(heart_data, aes(x = BMI, y = Cholesterol_Level, color = Heart_Attack_Occurrence)) +
-  geom_point(alpha=0.3) +
-  geom_smooth(method = "loess") +
-  theme_minimal() +
-  labs(title="BMI vs. Cholesterol, Colored by Heart Attack Occurrence",
-       x="BMI", y="Cholesterol")
-
-```
-
-```{r}
-# Fit logistic regression
-model_logit <- glm(HA_Flag ~ BMI + Systolic_BP + Stress_Levels + 
-                   Smoking_History + Diabetes_History + Hypertension_History,
-                   data = heart_data, family=binomial)
-
-effects_bmi <- ggemmeans(model_logit, terms="BMI")
-ggplot(effects_bmi, aes(x, predicted)) +
-  geom_line() +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha=0.2) +
-  labs(title="Partial Effect of BMI on Heart Attack Probability",
-       x="BMI", y="Predicted Probability of Heart Attack") +
-  theme_minimal()
-
-```
-
-```{r}
-ggplot(heart_data, aes(x = Region, fill = Heart_Attack_Occurrence)) +
-  geom_bar(position = "fill") +
-  labs(title = "Proportion of Heart Attacks by Region",
-       x = "Region", y = "Proportion") +
-  theme_minimal()
-
-```
-
-
-
-```{r}
-library(randomForest)
-set.seed(123)
-
-model_rf <- randomForest(factor(HA_Flag) ~ Age + BMI + Cholesterol_Level +
-                         Smoking_History + Diabetes_History + 
-                         Hypertension_History + Family_History + Stress_Levels,
-                         data = heart_data, ntree=200, importance=TRUE)
-
-varImpPlot(model_rf)
-
-```
-
-
-
-
-
-
-
-
-
 
