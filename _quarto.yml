@@ -37,6 +37,8 @@ website:
             href: Hands-on_Ex/Hands-on_Ex05d.html
           - text: "Hands-on Exercise 5e"
             href: Hands-on_Ex/Hands-on_Ex05e.html
+          - text: "Hands-on Exercise 7"
+            href: Hands-on_Ex/Hands-on_Ex07.html
       - text: "In-class Exercise"
         menu:
           - text: "In-class Exercise 1"
@@ -44,11 +46,13 @@ website:
           - text: "In-class Exercise 2"
             href: "https://public.tableau.com/app/profile/sindy.hua/viz/In-class_Ex02_17377911301680/L2"
           - text: "In-class Exercise 3"
-            href: "hhttps://public.tableau.com/app/profile/sindy.hua/viz/In-class_Ex03_17383922555560/Story1"
+            href: "https://public.tableau.com/app/profile/sindy.hua/viz/In-class_Ex03_17383922555560/Story1"
           - text: "In-class Exercise 4"
             href: In-class_Ex/In-class_Ex04/In-class_Ex04.html
           - text: "In-class Exercise 5"
             href: In-class_Ex/In-class_Ex05/In-class_Ex05.html
+          - text: "In-class Exercise 6"
+            href: "https://simplysindy.shinyapps.io/shiny_basics/"
       - text: "Take-home Exercise"
         menu:
           - text: "Take-home Exercise 1"
