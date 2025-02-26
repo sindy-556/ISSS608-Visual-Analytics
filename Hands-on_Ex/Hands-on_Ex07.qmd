@@ -21,7 +21,7 @@ pacman::p_load(scales, viridis, lubridate, ggthemes,
 
 ## 2. Plotting a Calendar Heatmap
 
-A calendar heatmap can give you a quick visual cue of how data points (e.g., attacks, sales, events) distribute across days and hours of the week.
+A calendar heatmap can provide a quick visual cue of how data points (e.g., attacks, sales, events) distribute across days and hours of the week.
 
 ### 2.1 The Data
 
@@ -38,9 +38,9 @@ kable(head(attacks))
 
 There are three columns, namely timestamp, source_country and tz.
 
-- timestamp field stores date-time values in POSIXct format.
-- source_country field stores the source of the attack. It is in ISO 3166-1 alpha-2 country code.
-- tz field stores time zone of the source IP address.
+- `timestamp` field stores date-time values in POSIXct format.
+- `source_country` field stores the source of the attack. It is in ISO 3166-1 alpha-2 country code.
+- `tz` field stores time zone of the source IP address.
 
 
 ### 2.3 Data Preparation
@@ -200,16 +200,13 @@ ggplot(Vietnam, aes(x = year, y = Vietnam, group = month)) +
     size     = 0.5
   ) + 
   facet_wrap(~month, nrow = 1) +
-  # or facet_grid(~month) if you prefer separate columns
   scale_x_continuous(breaks = seq(2010, 2019,3)) +
   labs(
     x     = "Year",
     y     = "No. of Visitors",
     title = "Visitor arrivals from Vietnam by air, Jan 2010–Dec 2019"
   ) +
-  # Use the default ggplot theme explicitly (or theme_gray()):
   theme_gray(base_size = 8)
-  # Tweak a few elements for readability:
 ```
 
 ## 4. Plotting a Slopegraph
@@ -234,19 +231,17 @@ rice %>%
     Country,
     Title = "Rice Yield of Top 11 Asian Countries",
     SubTitle = "1961-1980",
-    Caption = "Prepared by: <Your Name>"
   )
 ```
 
 > **Tip**: Converting `Year` to a factor helps emphasize discrete time points.
 
----
 
 ## 5. More plots
 
 ### 5.1 Highlighting the Maximum/Minimum in a Cycle Plot
 
-To highlight extremes in the cycle plot, you could do:
+To highlight extremes in the cycle plot, we can try:
 
 ```{r}
 Vietnam_extremes <- Vietnam %>%
@@ -273,7 +268,7 @@ ggplot(Vietnam_extremes, aes(x = year, y = Vietnam, group = month)) +
 
 ### 5.2 Adding a Trendline to the Slopegraph
 
-While slopegraphs usually connect discrete points, you can experiment with a small data set over more than two years by adding intermediate lines:
+While slopegraphs usually connect discrete points, we can experiment with a small data set over more than two years by adding intermediate lines:
 
 ```{r fig.height = 6}
 rice %>%
@@ -296,7 +291,6 @@ A **horizon chart** can compactly show how a time series changes relative to a b
 **Example** (using the *arrivals_by_air.xlsx* data for Vietnam):
 
 ```{r}
-# Suppose we already have Vietnam data from earlier steps
 horizon_data <- Vietnam %>%
   mutate(Date = ymd(paste(year, match(month, month.abb), "01", sep="-"))) %>%
   select(Date, Visitors = Vietnam)
@@ -311,7 +305,7 @@ ggplot(horizon_data, aes(x = Date, y = Visitors)) +
 
 ### 5.4 Making an Interactive Time-Series Plot
 
-You could also convert any of these ggplot objects to an **interactive** plot using **plotly** or **ggiraph**:
+We could also convert any of these ggplot objects to an **interactive** plot using **plotly** or **ggiraph**:
 
 ```{r}
 p <- ggplot(horizon_data, aes(x = Date, y = Visitors)) +
@@ -320,6 +314,6 @@ p <- ggplot(horizon_data, aes(x = Date, y = Visitors)) +
 ggplotly(p)
 ```
 
-## 7. Reference
+## 6. Reference
 
 Credits to [Prof Kam](https://r4va.netlify.app/chap17).
