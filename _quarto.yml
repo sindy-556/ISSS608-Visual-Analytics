@@ -53,6 +53,8 @@ website:
             href: In-class_Ex/In-class_Ex05/In-class_Ex05.html
           - text: "In-class Exercise 6"
             href: "https://simplysindy.shinyapps.io/shiny_basics/"
+          - text: "In-class Exercise 7"
+            href: In-class_Ex/In-class_Ex07/In-class_Ex07.html
       - text: "Take-home Exercise"
         menu:
           - text: "Take-home Exercise 1"

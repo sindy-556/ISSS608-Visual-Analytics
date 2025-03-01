@@ -1,0 +1,188 @@
+---
+title: "In-class Exercise 7: Visualising, Analysing and Forecasting Time-series Data: tidyverts methods"
+author: "Sindy"
+date: "last-modified"
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## 1. Getting Started
+
+### 1.1 Load Required R Packages
+
+For the purpose of this in-class exercise, the following R packages will be used.
+
+```{r}
+pacman::p_load(tidyverse, tsibble, feasts, fable, seasonal)
+```
+
+### 1.2 Importing the data
+```{r}
+ts_data <- read_csv(
+  "data/visitor_arrivals_by_air.csv")
+```
+
+In the code chunk below, dmy() of lubridate package is used to convert data type of Month-Year field from Character to Date.
+
+```{r}
+ts_data$`Month-Year` <- dmy(
+  ts_data$`Month-Year`)
+```
+
+> Tip: make sure the format is correct (chr vs Date fields)
+
+19.2.3 Conventional base ts object versus tibble object
+
+```{r}
+ts_data_ts <- ts(ts_data)       
+head(ts_data_ts)
+```
+Different dataframes... (explanation here)
+not a typical tibble dataframe
+> class(ts_data_ts)
+[1] "mts"    "ts"     "matrix" "array" 
+> class(ts_data)
+[1] "spec_tbl_df" "tbl_df"      "tbl"         "data.frame"
+
+Use ts_data for data prep and conversion
+then convert to ts_data_ts for a timeseries object?
+
+
+
+some explanation here!
+```{r}
+ts_tsibble <- ts_data %>%
+  mutate(Month = yearmonth(`Month-Year`)) %>%
+  as_tsibble(index = `Month`)
+```
+
+> class(ts_tsibble)
+[1] "tbl_ts"     "tbl_df"     "tbl"        "data.frame"
+
+sth that can be used by dpylr and tidyr and also timeseries time series manner?
+
+
+
+visual time series.,,,
+
+transform the series for you to work with first
+cause cannot see the header (numbers correspond to which country) - so transform to a long table. Prepare data by reordering data differently.
+```{r}
+ts_longer <- ts_data %>%
+  pivot_longer(cols = c(2:34),
+               names_to = "Country",
+               values_to = "Arrivals")
+```
+
+
+Visualising single time-series: ggplot2 methods
+
+```{r}
+ts_longer %>%
+  filter(Country == "Vietnam") %>%
+  ggplot(aes(x = `Month-Year`, 
+             y = Arrivals))+
+  geom_line(size = 0.5)
+```
+
+### plot multiple countries
+
+```{r}
+#| fig-height: 8
+ggplot(data = ts_longer, 
+       aes(x = `Month-Year`, 
+           y = Arrivals,
+           color = Country))+
+  geom_line(size = 0.5) +
+  theme(legend.position = "bottom", 
+        legend.box.spacing = unit(0.5, "cm"))
+```
+
+
+or use facet
+you can define no of col --> rows will be automatically calculated...
+
+```{r}
+#| fig-height: 12
+ggplot(data = ts_longer, 
+       aes(x = `Month-Year`, 
+           y = Arrivals))+
+  geom_line(size = 0.5) +
+  facet_wrap(~ Country,
+             ncol = 3,
+             scales = "free_y") +
+  theme_bw()
+```
+
+NOTE!!! intervals are not constant!!
+
+
+```{r}
+tsibble_longer <- ts_tsibble %>%
+  pivot_longer(cols = c(2:34),
+               names_to = "Country",
+               values_to = "Arrivals")
+```
+
+Useful to start with
+```{r}
+#| fig-height: 6
+tsibble_longer %>%
+  filter(Country == "Vietnam" |
+         Country == "Italy") %>% 
+  autoplot(Arrivals) + 
+  facet_grid(Country ~ ., scales = "free_y")
+```
+
+
+shows you the distribution.
+e.g. Italians only come in at a big crowd in the month of Aug. Rest of the year hover around 5000.
+
+Vietnams, higher in Jun and Jul months. Peak in jul. Sept to Dec relatively constant, Jan to May, gradual increase. Jun higher jump. Arrival count peak at jul
+```{r}
+#| fig-height: 6
+tsibble_longer %>%
+  filter(Country == "Vietnam" |
+         Country == "Italy") %>% 
+  gg_subseries(Arrivals)
+```
+
+
+
+### ACF plots
+how the time series correlated.
+only one variable - which is your time series variable
+
+auto correlation plots
+create 2 time lags...
+find the correlation between them
+- then you have multiple variables.
+- get the second variable by shifting lag=1
+note the graph below starts from lag=1 (t vs t-1)
+
+
+China - 6 mths period.
+Italy - 12 peak. weak correlation at 1st mth ~0.3
+Note!!! 95% confidence level - should go above the blue line.
+China case, vietnam case, most/all the lags is statistically significant.
+China and vietnam, correlation decreases then increases again. The period different. Vietnam - 12 mths. China - 6 mths period
+UK lag t-1 significant... the rest of the year not sigificant, then 12 mths significant again
+- which means trend is not significant at all
+- drop down very fast
+- seasonal not important. (for UK and Italy)
+
+
+```{r}
+#| fig-height: 6
+tsibble_longer %>%
+  filter(`Country` == "Vietnam" |
+         `Country` == "Italy" |
+         `Country` == "United Kingdom" |
+         `Country` == "China") %>%
+  ACF(Arrivals) %>%
+  autoplot()
+```
+

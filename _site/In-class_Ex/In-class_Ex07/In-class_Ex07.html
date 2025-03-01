@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Sindy">
+<meta name="dcterms.date" content="2025-03-01">
+
+<title>In-class Exercise 7: Visualising, Analysing and Forecasting Time-series Data: tidyverts methods – ISSS608 VAA 🎨</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-f3c2ea88cadbcfb37ba28ffa2c97cfc1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">ISSS608 VAA 🎨</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-ex-part-1" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Hands-on Ex Part 1</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-ex-part-1">    
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex00.html">
+ <span class="dropdown-text">Hands-on Exercise 0</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex01.html">
+ <span class="dropdown-text">Hands-on Exercise 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex02.html">
+ <span class="dropdown-text">Hands-on Exercise 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex03a.html">
+ <span class="dropdown-text">Hands-on Exercise 3a</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex03b.html">
+ <span class="dropdown-text">Hands-on Exercise 3b</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex04a.html">
+ <span class="dropdown-text">Hands-on Exercise 4a</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex04b.html">
+ <span class="dropdown-text">Hands-on Exercise 4b</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex04c.html">
+ <span class="dropdown-text">Hands-on Exercise 4c</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex04d.html">
+ <span class="dropdown-text">Hands-on Exercise 4d</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-ex-part-2" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Hands-on Ex Part 2</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-ex-part-2">    
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05a.html">
+ <span class="dropdown-text">Hands-on Exercise 5a</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05b.html">
+ <span class="dropdown-text">Hands-on Exercise 5b</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05c.html">
+ <span class="dropdown-text">Hands-on Exercise 5c</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05d.html">
+ <span class="dropdown-text">Hands-on Exercise 5d</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05e.html">
+ <span class="dropdown-text">Hands-on Exercise 5e</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex07.html">
+ <span class="dropdown-text">Hands-on Exercise 7</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-in-class-exercise" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">In-class Exercise</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercise">    
+        <li>
+    <a class="dropdown-item" href="https://public.tableau.com/app/profile/sindy.hua/viz/In-class_Ex01_17371867037820/L1">
+ <span class="dropdown-text">In-class Exercise 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://public.tableau.com/app/profile/sindy.hua/viz/In-class_Ex02_17377911301680/L2">
+ <span class="dropdown-text">In-class Exercise 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://public.tableau.com/app/profile/sindy.hua/viz/In-class_Ex03_17383922555560/Story1">
+ <span class="dropdown-text">In-class Exercise 3</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex04/In-class_Ex04.html">
+ <span class="dropdown-text">In-class Exercise 4</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex05/In-class_Ex05.html">
+ <span class="dropdown-text">In-class Exercise 5</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://simplysindy.shinyapps.io/shiny_basics/">
+ <span class="dropdown-text">In-class Exercise 6</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex07/In-class_Ex07.html">
+ <span class="dropdown-text">In-class Exercise 7</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-take-home-exercise" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Take-home Exercise</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercise">    
+        <li>
+    <a class="dropdown-item" href="../../Take-home_Ex/Take-home_Ex1.html">
+ <span class="dropdown-text">Take-home Exercise 1</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">🚀 Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">💡️ About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link active" data-scroll-target="#getting-started">1. Getting Started</a>
+  <ul class="collapse">
+  <li><a href="#load-required-r-packages" id="toc-load-required-r-packages" class="nav-link" data-scroll-target="#load-required-r-packages">1.1 Load Required R Packages</a></li>
+  <li><a href="#importing-the-data" id="toc-importing-the-data" class="nav-link" data-scroll-target="#importing-the-data">1.2 Importing the data</a></li>
+  </ul></li>
+  <li><a href="#converting-data-formats-for-time-series-analysis" id="toc-converting-data-formats-for-time-series-analysis" class="nav-link" data-scroll-target="#converting-data-formats-for-time-series-analysis">2. Converting Data Formats for Time Series Analysis</a>
+  <ul class="collapse">
+  <li><a href="#base-ts-object-versus-tibble-object" id="toc-base-ts-object-versus-tibble-object" class="nav-link" data-scroll-target="#base-ts-object-versus-tibble-object">2.1 Base ts object versus tibble object</a></li>
+  <li><a href="#converting-to-tsibble-format" id="toc-converting-to-tsibble-format" class="nav-link" data-scroll-target="#converting-to-tsibble-format">2.2 Converting to tsibble format</a></li>
+  </ul></li>
+  <li><a href="#data-transformation-for-visualization" id="toc-data-transformation-for-visualization" class="nav-link" data-scroll-target="#data-transformation-for-visualization">3. Data Transformation for Visualization</a></li>
+  <li><a href="#visualizing-time-series-data" id="toc-visualizing-time-series-data" class="nav-link" data-scroll-target="#visualizing-time-series-data">4. Visualizing Time Series Data</a>
+  <ul class="collapse">
+  <li><a href="#single-time-series-visualization" id="toc-single-time-series-visualization" class="nav-link" data-scroll-target="#single-time-series-visualization">4.1 Single Time Series Visualization</a></li>
+  <li><a href="#multiple-time-series-visualization" id="toc-multiple-time-series-visualization" class="nav-link" data-scroll-target="#multiple-time-series-visualization">4.2 Multiple Time Series Visualization</a></li>
+  <li><a href="#using-facets-for-better-comparison" id="toc-using-facets-for-better-comparison" class="nav-link" data-scroll-target="#using-facets-for-better-comparison">4.3 Using Facets for Better Comparison</a></li>
+  </ul></li>
+  <li><a href="#converting-tsibble-for-further-analysis" id="toc-converting-tsibble-for-further-analysis" class="nav-link" data-scroll-target="#converting-tsibble-for-further-analysis">5. Converting tsibble for Further Analysis</a></li>
+  <li><a href="#analyzing-time-series-patterns" id="toc-analyzing-time-series-patterns" class="nav-link" data-scroll-target="#analyzing-time-series-patterns">6. Analyzing Time Series Patterns</a>
+  <ul class="collapse">
+  <li><a href="#comparing-country-specific-patterns" id="toc-comparing-country-specific-patterns" class="nav-link" data-scroll-target="#comparing-country-specific-patterns">6.1 Comparing Country-Specific Patterns</a></li>
+  <li><a href="#seasonal-subseries-analysis" id="toc-seasonal-subseries-analysis" class="nav-link" data-scroll-target="#seasonal-subseries-analysis">6.2 Seasonal Subseries Analysis</a></li>
+  </ul></li>
+  <li><a href="#autocorrelation-analysis" id="toc-autocorrelation-analysis" class="nav-link" data-scroll-target="#autocorrelation-analysis">7. Autocorrelation Analysis</a>
+  <ul class="collapse">
+  <li><a href="#acf-plots" id="toc-acf-plots" class="nav-link" data-scroll-target="#acf-plots">7.1 ACF Plots</a></li>
+  <li><a href="#pacf-plots" id="toc-pacf-plots" class="nav-link" data-scroll-target="#pacf-plots">7.2 PACF Plots</a></li>
+  </ul></li>
+  <li><a href="#time-series-decomposition" id="toc-time-series-decomposition" class="nav-link" data-scroll-target="#time-series-decomposition">8. Time Series Decomposition</a></li>
+  <li><a href="#forecasting" id="toc-forecasting" class="nav-link" data-scroll-target="#forecasting">9. Forecasting</a>
+  <ul class="collapse">
+  <li><a href="#creating-training-and-hold-out-sets" id="toc-creating-training-and-hold-out-sets" class="nav-link" data-scroll-target="#creating-training-and-hold-out-sets">9.1 Creating Training and Hold-out Sets</a></li>
+  <li><a href="#decomposing-the-training-data" id="toc-decomposing-the-training-data" class="nav-link" data-scroll-target="#decomposing-the-training-data">9.2 Decomposing the Training Data</a></li>
+  <li><a href="#fitting-forecast-models" id="toc-fitting-forecast-models" class="nav-link" data-scroll-target="#fitting-forecast-models">9.3 Fitting Forecast Models</a></li>
+  <li><a href="#visualizing-the-forecast-results" id="toc-visualizing-the-forecast-results" class="nav-link" data-scroll-target="#visualizing-the-forecast-results">9.4 Visualizing the Forecast Results</a></li>
+  </ul></li>
+  <li><a href="#additional-insights" id="toc-additional-insights" class="nav-link" data-scroll-target="#additional-insights">10. Additional Insights</a>
+  <ul class="collapse">
+  <li><a href="#comparing-seasonal-patterns-across-countries" id="toc-comparing-seasonal-patterns-across-countries" class="nav-link" data-scroll-target="#comparing-seasonal-patterns-across-countries">10.1 Comparing Seasonal Patterns Across Countries</a></li>
+  <li><a href="#exploring-trend-vs-seasonality-strength" id="toc-exploring-trend-vs-seasonality-strength" class="nav-link" data-scroll-target="#exploring-trend-vs-seasonality-strength">10.2 Exploring Trend vs Seasonality Strength</a></li>
+  <li><a href="#arima-model-fitting-and-comparison" id="toc-arima-model-fitting-and-comparison" class="nav-link" data-scroll-target="#arima-model-fitting-and-comparison">10.3 ARIMA Model Fitting and Comparison</a></li>
+  <li><a href="#detecting-anomalies-in-visitor-arrivals" id="toc-detecting-anomalies-in-visitor-arrivals" class="nav-link" data-scroll-target="#detecting-anomalies-in-visitor-arrivals">10.4 Detecting Anomalies in Visitor Arrivals</a></li>
+  <li><a href="#visualizing-forecast-uncertainty" id="toc-visualizing-forecast-uncertainty" class="nav-link" data-scroll-target="#visualizing-forecast-uncertainty">10.5 Visualizing Forecast Uncertainty</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">In-class Exercise 7: Visualising, Analysing and Forecasting Time-series Data: tidyverts methods</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Sindy </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 1, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="getting-started" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started">1. Getting Started</h2>
+<section id="load-required-r-packages" class="level3">
+<h3 class="anchored" data-anchor-id="load-required-r-packages">1.1 Load Required R Packages</h3>
+<p>For the purpose of this in-class exercise, the following R packages will be used.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, tsibble, feasts, fable, seasonal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The packages provide the following functionality: - <strong>tidyverse</strong>: Collection of packages for data manipulation and visualization - <strong>tsibble</strong>: Provides a data infrastructure for tidy temporal data - <strong>feasts</strong>: Feature Extraction And Statistics for Time Series analysis - <strong>fable</strong>: Forecasting models including exponential smoothing and ARIMA - <strong>seasonal</strong>: Seasonal decomposition of time series</p>
+</section>
+<section id="importing-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="importing-the-data">1.2 Importing the data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ts_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/visitor_arrivals_by_air.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In the code chunk below, dmy() of lubridate package is used to convert data type of Month-Year field from Character to Date.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ts_data<span class="sc">$</span><span class="st">`</span><span class="at">Month-Year</span><span class="st">`</span> <span class="ot">&lt;-</span> <span class="fu">dmy</span>(ts_data<span class="sc">$</span><span class="st">`</span><span class="at">Month-Year</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="converting-data-formats-for-time-series-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="converting-data-formats-for-time-series-analysis">2. Converting Data Formats for Time Series Analysis</h2>
+<section id="base-ts-object-versus-tibble-object" class="level3">
+<h3 class="anchored" data-anchor-id="base-ts-object-versus-tibble-object">2.1 Base ts object versus tibble object</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ts_data_ts <span class="ot">&lt;-</span> <span class="fu">ts</span>(ts_data)       </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ts_data_ts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     Month-Year Republic of South Africa Canada   USA Bangladesh Brunei China
+[1,]      13879                     3680   6972 31155       6786   3729 79599
+[2,]      13910                     1662   6056 27738       6314   3070 82074
+[3,]      13939                     3394   6220 31349       7502   4805 72546
+[4,]      13970                     3337   4764 26376       7333   3096 76112
+[5,]      14000                     2089   4460 26788       7988   3586 64808
+[6,]      14031                     2515   3888 29725       8301   5284 55238
+     Hong Kong SAR (China) India Indonesia Japan South Korea Kuwait Malaysia
+[1,]                 17103 41639     62683 37673       27937    284    31352
+[2,]                 21089 37170     47834 35297       22633    241    35030
+[3,]                 23230 44815     64688 42575       22876    206    37629
+[4,]                 17688 49527     58074 26839       20634    193    37521
+[5,]                 19340 67754     57089 30814       22785    140    38044
+[6,]                 19152 57380     70118 31001       22575    354    40419
+     Myanmar Pakistan Philippines Saudi Arabia Sri Lanka Taiwan Thailand
+[1,]    5269     1395       18622          406      5289  13757    18370
+[2,]    4643     1027       21609          591      4767  13921    16400
+[3,]    6218     1635       28464          626      4988  11181    23387
+[4,]    7324     1232       30131          644      7639  11665    24469
+[5,]    5395     1306       30193          470      5125  11436    21935
+[6,]    5542     1996       25800          772      4791  10689    19900
+     United Arab Emirates Vietnam Belgium &amp; Luxembourg Finland France Germany
+[1,]                 2652   10315                 1341    1179   6918   11982
+[2,]                 2230   13415                 1449    1207   7876   13256
+[3,]                 3353   14320                 1674    1071   8066   15185
+[4,]                 3245   15413                 1426     768   8312   11604
+[5,]                 2856   14424                 1243     690   7066    9853
+[6,]                 4292   21368                 1255     624   5926    9347
+     Italy Netherlands Spain Switzerland United Kingdom Australia New Zealand
+[1,]  2953        4938  1668        4450          41934     71260        7806
+[2,]  2704        4885  1568        4381          44029     45595        4729
+[3,]  2822        5015  2254        5015          49489     53191        6106
+[4,]  3018        4902  1503        5434          35771     56514        7560
+[5,]  2165        4397  1365        4427          24464     57808        9090
+[6,]  2022        4166  1446        3359          22473     63350        9681</code></pre>
+</div>
+</div>
+<p>Base ts objects differ from tibble dataframes in several ways. A ts object is specifically designed for time series analysis and has class types “mts”, “ts”, “matrix”, and “array”, whereas a tibble dataframe has class types “spec_tbl_df”, “tbl_df”, “tbl”, and “data.frame”.</p>
+</section>
+<section id="converting-to-tsibble-format" class="level3">
+<h3 class="anchored" data-anchor-id="converting-to-tsibble-format">2.2 Converting to tsibble format</h3>
+<p>The tsibble format allows us to work with time series data in a tidy framework, making it compatible with both dplyr/tidyr functions and time series analysis functions.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ts_tsibble <span class="ot">&lt;-</span> ts_data <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Month =</span> <span class="fu">yearmonth</span>(<span class="st">`</span><span class="at">Month-Year</span><span class="st">`</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tsibble</span>(<span class="at">index =</span> Month)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This creates a tbl_ts object which can be used in both dplyr/tidyr operations and time series analysis.</p>
+</section>
+</section>
+<section id="data-transformation-for-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="data-transformation-for-visualization">3. Data Transformation for Visualization</h2>
+<p>To visualize time series data effectively, we need to transform the data from wide to long format.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ts_longer <span class="ot">&lt;-</span> ts_data <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">34</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"Country"</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"Arrivals"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="visualizing-time-series-data" class="level2">
+<h2 class="anchored" data-anchor-id="visualizing-time-series-data">4. Visualizing Time Series Data</h2>
+<section id="single-time-series-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="single-time-series-visualization">4.1 Single Time Series Visualization</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>ts_longer <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Country <span class="sc">==</span> <span class="st">"Vietnam"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">Month-Year</span><span class="st">`</span>, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> Arrivals))<span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="multiple-time-series-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-time-series-visualization">4.2 Multiple Time Series Visualization</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> ts_longer, </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">Month-Year</span><span class="st">`</span>, </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> Arrivals,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">color =</span> Country))<span class="sc">+</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>, </span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.box.spacing =</span> <span class="fu">unit</span>(<span class="fl">0.5</span>, <span class="st">"cm"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="using-facets-for-better-comparison" class="level3">
+<h3 class="anchored" data-anchor-id="using-facets-for-better-comparison">4.3 Using Facets for Better Comparison</h3>
+<p>Using facet_wrap allows us to compare multiple time series more effectively by giving each country its own panel.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> ts_longer, </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">Month-Year</span><span class="st">`</span>, </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> Arrivals))<span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> Country,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">ncol =</span> <span class="dv">3</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>It’s important to note that intervals are not constant across these visualizations, as pointed out by the professor.</p>
+</section>
+</section>
+<section id="converting-tsibble-for-further-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="converting-tsibble-for-further-analysis">5. Converting tsibble for Further Analysis</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>tsibble_longer <span class="ot">&lt;-</span> ts_tsibble <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">34</span>),</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"Country"</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"Arrivals"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="analyzing-time-series-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="analyzing-time-series-patterns">6. Analyzing Time Series Patterns</h2>
+<section id="comparing-country-specific-patterns" class="level3">
+<h3 class="anchored" data-anchor-id="comparing-country-specific-patterns">6.1 Comparing Country-Specific Patterns</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>tsibble_longer <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Country <span class="sc">==</span> <span class="st">"Vietnam"</span> <span class="sc">|</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"Italy"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>(Arrivals) <span class="sc">+</span> </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(Country <span class="sc">~</span> ., <span class="at">scales =</span> <span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This visualization shows distinct patterns for different countries: - Italy shows a strong seasonal pattern with a large spike in August and relatively consistent lower values during the rest of the year - Vietnam shows higher arrivals in June and July with a peak in July, relatively stable numbers from September to December, and a gradual increase from January to May</p>
+</section>
+<section id="seasonal-subseries-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="seasonal-subseries-analysis">6.2 Seasonal Subseries Analysis</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>tsibble_longer <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Country <span class="sc">==</span> <span class="st">"Vietnam"</span> <span class="sc">|</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"Italy"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gg_subseries</span>(Arrivals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The subseries plot helps visualize seasonal patterns by month across years, making it easier to identify consistent seasonal behaviors.</p>
+</section>
+</section>
+<section id="autocorrelation-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="autocorrelation-analysis">7. Autocorrelation Analysis</h2>
+<section id="acf-plots" class="level3">
+<h3 class="anchored" data-anchor-id="acf-plots">7.1 ACF Plots</h3>
+<p>Autocorrelation Function (ACF) plots show how time series data is correlated with its lagged values.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>tsibble_longer <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Country <span class="sc">==</span> <span class="st">"Vietnam"</span> <span class="sc">|</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"Italy"</span> <span class="sc">|</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"United Kingdom"</span> <span class="sc">|</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"China"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ACF</span>(Arrivals) <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The ACF plots reveal important patterns: - China shows a 6-month periodicity - Italy shows a 12-month peak with weak correlation at first month (~0.3) - For statistically significant correlation, values should exceed the blue line (95% confidence level) - For China and Vietnam, most/all lags show statistical significance - For China and Vietnam, correlation decreases then increases again, but with different periodicity (Vietnam: 12 months, China: 6 months) - UK shows significant lag at t-1, then non-significant values, then significance again at 12 months, indicating weak trend but strong annual seasonality - Both UK and Italy show less pronounced seasonal patterns compared to Vietnam and China</p>
+</section>
+<section id="pacf-plots" class="level3">
+<h3 class="anchored" data-anchor-id="pacf-plots">7.2 PACF Plots</h3>
+<p>Partial Autocorrelation Function (PACF) plots show the direct correlation between observations at different lags after removing the effects of intermediate lags.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>tsibble_longer <span class="sc">%&gt;%</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Country <span class="sc">==</span> <span class="st">"Vietnam"</span> <span class="sc">|</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"Italy"</span> <span class="sc">|</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"United Kingdom"</span> <span class="sc">|</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"China"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">PACF</span>(Arrivals) <span class="sc">%&gt;%</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>PACF plots help identify what might happen with further decomposition: - For the UK, the first lag is positive while the second lag is negative, suggesting a turning point where arrival patterns change - Statistical significance is indicated when values extend beyond the blue confidence interval - These visualizations help identify both statistically significant patterns and potential turning points in the data</p>
+</section>
+</section>
+<section id="time-series-decomposition" class="level2">
+<h2 class="anchored" data-anchor-id="time-series-decomposition">8. Time Series Decomposition</h2>
+<p>Decomposing time series helps separate the data into trend, seasonal, and remainder components.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>tsibble_longer <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Country <span class="sc">==</span> <span class="st">"Vietnam"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">model</span>(<span class="at">stl =</span> <span class="fu">STL</span>(Arrivals)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">components</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The decomposition shows: - The trend component shows the long-term movement - The seasonal component shows regular patterns - The remainder shows what’s left after removing trend and seasonality</p>
+<p>If the remainder shows no clear pattern, it’s considered “white noise” - indicating a good decomposition. When patterns remain in the remainder, it suggests the decomposition is incomplete, which may indicate that more advanced methods like machine learning might be needed.</p>
+</section>
+<section id="forecasting" class="level2">
+<h2 class="anchored" data-anchor-id="forecasting">9. Forecasting</h2>
+<section id="creating-training-and-hold-out-sets" class="level3">
+<h3 class="anchored" data-anchor-id="creating-training-and-hold-out-sets">9.1 Creating Training and Hold-out Sets</h3>
+<p>For time series forecasting, we can’t use random sampling for validation. Instead, we keep the most recent data as a hold-out set.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>vietnam_ts <span class="ot">&lt;-</span> tsibble_longer <span class="sc">%&gt;%</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Country <span class="sc">==</span> <span class="st">"Vietnam"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Type =</span> <span class="fu">if_else</span>(</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Month-Year</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="st">"2019-01-01"</span>, </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Hold-out"</span>, <span class="st">"Training"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>vietnam_train <span class="ot">&lt;-</span> vietnam_ts <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="st">`</span><span class="at">Month-Year</span><span class="st">`</span> <span class="sc">&lt;</span> <span class="st">"2019-01-01"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="decomposing-the-training-data" class="level3">
+<h3 class="anchored" data-anchor-id="decomposing-the-training-data">9.2 Decomposing the Training Data</h3>
+<p>It’s important to analyze training data before forecasting to understand its components.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>vietnam_train <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">model</span>(<span class="at">stl =</span> <span class="fu">STL</span>(Arrivals)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">components</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="fitting-forecast-models" class="level3">
+<h3 class="anchored" data-anchor-id="fitting-forecast-models">9.3 Fitting Forecast Models</h3>
+<p>When fitting a good forecast model, the residuals should follow a normal distribution, indicating that the model has captured the systematic patterns in the data.</p>
+<p>Here we create an automatic ETS (Error, Trend, Seasonal) model:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>fit_autoETS <span class="ot">&lt;-</span> vietnam_train <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">model</span>(<span class="fu">ETS</span>(Arrivals))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="visualizing-the-forecast-results" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-the-forecast-results">9.4 Visualizing the Forecast Results</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>fc_autoETS <span class="ot">&lt;-</span> fit_autoETS <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forecast</span>(<span class="at">h =</span> <span class="st">"12 months"</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>vietnam_ts <span class="sc">%&gt;%</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Month, </span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> Arrivals)) <span class="sc">+</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autolayer</span>(fc_autoETS, </span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> Type), </span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span> </span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> .mean, </span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">colour =</span> <span class="st">"Forecast"</span>), </span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> fc_autoETS) <span class="sc">+</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> .fitted, </span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">colour =</span> <span class="st">"Fitted"</span>), </span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">augment</span>(fit_autoETS))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>When visualizing forecast results, it’s most useful to focus on the last few cycles rather than the entire history, as we want to assess the accuracy of predictions compared to the hold-out data.</p>
+</section>
+</section>
+<section id="additional-insights" class="level2">
+<h2 class="anchored" data-anchor-id="additional-insights">10. Additional Insights</h2>
+<section id="comparing-seasonal-patterns-across-countries" class="level3">
+<h3 class="anchored" data-anchor-id="comparing-seasonal-patterns-across-countries">10.1 Comparing Seasonal Patterns Across Countries</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>tsibble_longer <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Country <span class="sc">==</span> <span class="st">"Vietnam"</span> <span class="sc">|</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"Italy"</span> <span class="sc">|</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"Malaysia"</span> <span class="sc">|</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"Germany"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gg_season</span>(Arrivals) <span class="sc">+</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Seasonal Patterns by Country"</span>,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Visitor Arrivals"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This visualization shows how visitor arrivals vary by month across different countries, highlighting distinct seasonal tourism patterns.</p>
+</section>
+<section id="exploring-trend-vs-seasonality-strength" class="level3">
+<h3 class="anchored" data-anchor-id="exploring-trend-vs-seasonality-strength">10.2 Exploring Trend vs Seasonality Strength</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>country_features <span class="ot">&lt;-</span> tsibble_longer <span class="sc">%&gt;%</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">features</span>(Arrivals, feat_stl)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(country_features, <span class="fu">aes</span>(<span class="at">x =</span> trend_strength, <span class="at">y =</span> seasonal_strength_year)) <span class="sc">+</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> Country), <span class="at">check_overlap =</span> <span class="cn">TRUE</span>, <span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.1</span>, <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Trend Strength"</span>, <span class="at">y =</span> <span class="st">"Seasonal Strength"</span>, </span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Trend vs Seasonal Strength by Country"</span>) <span class="sc">+</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This scatter plot helps identify which countries have strong seasonal patterns versus consistent growth trends, providing insight for targeted tourism strategies.</p>
+</section>
+<section id="arima-model-fitting-and-comparison" class="level3">
+<h3 class="anchored" data-anchor-id="arima-model-fitting-and-comparison">10.3 ARIMA Model Fitting and Comparison</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>fit_arima <span class="ot">&lt;-</span> vietnam_train <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">model</span>(</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">arima_auto =</span> <span class="fu">ARIMA</span>(Arrivals),</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">ets_auto =</span> <span class="fu">ETS</span>(Arrivals)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>fit_arima <span class="sc">%&gt;%</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forecast</span>(<span class="at">h =</span> <span class="st">"12 months"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>(vietnam_ts, <span class="at">level =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"ARIMA vs ETS Model Comparison"</span>,</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Visitor Arrivals"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Comparing different forecasting methods helps identify which approach works best for specific time series patterns.</p>
+</section>
+<section id="detecting-anomalies-in-visitor-arrivals" class="level3">
+<h3 class="anchored" data-anchor-id="detecting-anomalies-in-visitor-arrivals">10.4 Detecting Anomalies in Visitor Arrivals</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(fit_autoETS) <span class="sc">%&gt;%</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">anomaly =</span> <span class="fu">abs</span>(.resid) <span class="sc">&gt;</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">sd</span>(.resid, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Month, <span class="at">y =</span> Arrivals)) <span class="sc">+</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> anomaly), <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"FALSE"</span> <span class="ot">=</span> <span class="cn">NA</span>, <span class="st">"TRUE"</span> <span class="ot">=</span> <span class="st">"red"</span>)) <span class="sc">+</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Anomaly Detection in Vietnam Visitor Arrivals"</span>,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Anomaly"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This visualization helps identify unusual spikes or drops in visitor arrivals that might warrant further investigation.</p>
+</section>
+<section id="visualizing-forecast-uncertainty" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-forecast-uncertainty">10.5 Visualizing Forecast Uncertainty</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>fc_autoETS <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>(vietnam_ts) <span class="sc">+</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Forecast with Prediction Intervals"</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Visitor Arrivals"</span>) <span class="sc">+</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex07_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Understanding forecast uncertainty is crucial for planning, as it shows the range of likely outcomes rather than just point estimates.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
