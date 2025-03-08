@@ -21,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -245,6 +279,11 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
   <li><a href="#the-task" id="toc-the-task" class="nav-link" data-scroll-target="#the-task">The Task</a></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting started</a>
+  <ul class="collapse">
+  <li><a href="#load-packages" id="toc-load-packages" class="nav-link" data-scroll-target="#load-packages">Load packages</a></li>
+  <li><a href="#import-data" id="toc-import-data" class="nav-link" data-scroll-target="#import-data">Import data</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -271,7 +310,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">March 8, 2025</p>
+      <p class="date-modified">March 9, 2025</p>
     </div>
   </div>
     
@@ -284,7 +323,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>This assignment requires the application of recently acquired visual analytics techniques to conduct a systematic exploration and analysis of Singapore’s international trade patterns and trends since 2015.</p>
+<p>This assignment requires the application of visual analytics techniques to conduct a systematic exploration and analysis of Singapore’s international trade patterns and trends since 2015.</p>
 </section>
 <section id="the-task" class="level2">
 <h2 class="anchored" data-anchor-id="the-task">The Task</h2>
@@ -299,8 +338,180 @@ ul.task-list li input[type="checkbox"] {
 <li><p>Implement enhanced versions of the selected visualizations with R packages.</p></li>
 <li><p>Perform time-series forecasting methodologies on the trade data to support analytical findings.</p></li>
 </ol>
+</section>
+<section id="getting-started" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started">Getting started</h2>
+<section id="load-packages" class="level3">
+<h3 class="anchored" data-anchor-id="load-packages">Load packages</h3>
+<p>First, we load packages required:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, readxl, dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="import-data" class="level3">
+<h3 class="anchored" data-anchor-id="import-data">Import data</h3>
+<p>Next, we import the “Merchandise Trade by Region/Market” dataset. The dataset has a hierarchical structure with continents and their respective countries, along with various trade metrics across multiple time periods.</p>
+<p>The data preparation process handles the dataset’s structure by:</p>
+<ul>
+<li>Skipping metadata and header rows</li>
+<li>Processing the hierarchical relationship between regions and countries</li>
+<li>Cleaning country names by removing indentation</li>
+<li>Creating a standardized tabular structure with clear column naming</li>
+<li>Combining domestic exports and re-exports to calculate total exports</li>
+</ul>
+<p>We created four key dataframes, each corresponding to a specific trade flow:</p>
+<ol type="1">
+<li><code>imports</code>: Contains all import data by country and region</li>
+<li><code>domestic_exports</code>: Contains Singapore’s direct exports of locally produced goods</li>
+<li><code>reexports</code>: Contains goods that were imported and then exported with minimal processing</li>
+<li><code>total_exports</code>: Combines domestic exports and re-exports</li>
+</ol>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>file_path <span class="ot">&lt;-</span> <span class="st">"data/outputFile.xlsx"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>clean_trade_data <span class="ot">&lt;-</span> <span class="cf">function</span>(file_path, sheet_name) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  raw_data <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(file_path, <span class="at">sheet =</span> sheet_name, <span class="at">skip =</span> <span class="dv">10</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Find where footnotes begin</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(raw_data)) {</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    first_col_value <span class="ot">&lt;-</span> raw_data[[<span class="dv">1</span>]][i]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">is.na</span>(first_col_value) <span class="sc">||</span> <span class="fu">grepl</span>(<span class="st">"Footnotes:"</span>, first_col_value) <span class="sc">||</span> first_col_value <span class="sc">==</span> <span class="st">""</span>) {</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>      <span class="cf">break</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Keep only the rows before footnotes</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  clean_data <span class="ot">&lt;-</span> raw_data[<span class="dv">1</span><span class="sc">:</span>(i<span class="dv">-1</span>), ]</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  current_region <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  result_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(clean_data)) {</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    row_value <span class="ot">&lt;-</span> clean_data<span class="sc">$</span><span class="st">`</span><span class="at">Data Series</span><span class="st">`</span>[j]</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(row_value <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"America"</span>, <span class="st">"Asia"</span>, <span class="st">"Europe"</span>, <span class="st">"Oceania"</span>, <span class="st">"Africa"</span>)) {</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>      current_region <span class="ot">&lt;-</span> row_value</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>      <span class="cf">next</span>  <span class="co"># Skip the region row itself</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Skip the "Total All Markets" row</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(row_value <span class="sc">==</span> <span class="st">"Total All Markets"</span>) {</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>      <span class="cf">next</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">grepl</span>(<span class="st">"^ +"</span>, row_value) <span class="sc">||</span> <span class="sc">!</span><span class="fu">is.na</span>(current_region)) {</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>      country_name <span class="ot">&lt;-</span> <span class="fu">trimws</span>(row_value)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>      country_row <span class="ot">&lt;-</span> clean_data[j, ]</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>      country_row<span class="sc">$</span>Region <span class="ot">&lt;-</span> current_region</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>      country_row<span class="sc">$</span><span class="st">`</span><span class="at">Data Series</span><span class="st">`</span> <span class="ot">&lt;-</span> country_name</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>      result_df <span class="ot">&lt;-</span> <span class="fu">rbind</span>(result_df, country_row)</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(result_df)[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="st">"Country"</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  result_df <span class="ot">&lt;-</span> result_df <span class="sc">%&gt;%</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(Country, Region, <span class="fu">everything</span>())</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result_df)</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>imports <span class="ot">&lt;-</span> <span class="fu">clean_trade_data</span>(file_path, <span class="st">"T1"</span>)</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>domestic_exports <span class="ot">&lt;-</span> <span class="fu">clean_trade_data</span>(file_path, <span class="st">"T2"</span>)</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>reexports <span class="ot">&lt;-</span> <span class="fu">clean_trade_data</span>(file_path, <span class="st">"T3"</span>)</span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Make sure both dataframes have the same countries and regions</span></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>all_countries <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">c</span>(domestic_exports<span class="sc">$</span>Country, reexports<span class="sc">$</span>Country))</span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>all_regions <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">c</span>(domestic_exports<span class="sc">$</span>Region, reexports<span class="sc">$</span>Region))</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>standardize_df <span class="ot">&lt;-</span> <span class="cf">function</span>(df, all_countries, all_regions) {</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>  template <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>    <span class="at">Country =</span> all_countries,</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>    <span class="at">Region =</span> all_regions,</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>    <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span></span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">semi_join</span>(</span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>      <span class="fu">bind_rows</span>(</span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a>        <span class="fu">select</span>(domestic_exports, Country, Region),</span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>        <span class="fu">select</span>(reexports, Country, Region)</span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>      <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"Country"</span>, <span class="st">"Region"</span>)</span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> template <span class="sc">%&gt;%</span></span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(df, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"Country"</span>, <span class="st">"Region"</span>))</span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> result <span class="sc">%&gt;%</span></span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span><span class="fu">ifelse</span>(<span class="fu">is.na</span>(.), <span class="dv">0</span>, .)))</span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>domestic_exports <span class="ot">&lt;-</span> <span class="fu">standardize_df</span>(domestic_exports, all_countries, all_regions)</span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a>reexports <span class="ot">&lt;-</span> <span class="fu">standardize_df</span>(reexports, all_countries, all_regions)</span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>total_exports <span class="ot">&lt;-</span> domestic_exports <span class="sc">%&gt;%</span></span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Country, Region) <span class="sc">%&gt;%</span></span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(</span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>    domestic_exports <span class="sc">%&gt;%</span> </span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rename_with</span>(<span class="sc">~</span><span class="fu">paste0</span>(., <span class="st">"_domestic"</span>), <span class="fu">everything</span>()),</span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>    reexports <span class="sc">%&gt;%</span> </span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Rename columns to identify source</span></span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rename_with</span>(<span class="sc">~</span><span class="fu">paste0</span>(., <span class="st">"_reexport"</span>), <span class="fu">everything</span>())</span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>date_cols <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">sub</span>(<span class="st">"_domestic$|_reexport$"</span>, <span class="st">""</span>, </span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">names</span>(total_exports)[<span class="sc">-</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)]))</span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a><span class="co"># For each date, add domestic and re-export values</span></span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(date <span class="cf">in</span> date_cols) {</span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>  total_exports[[date]] <span class="ot">&lt;-</span> total_exports[[<span class="fu">paste0</span>(date, <span class="st">"_domestic"</span>)]] <span class="sc">+</span> </span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a>                           total_exports[[<span class="fu">paste0</span>(date, <span class="st">"_reexport"</span>)]]</span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="co"># Keep only the total columns plus Country and Region</span></span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a>total_exports <span class="ot">&lt;-</span> total_exports <span class="sc">%&gt;%</span></span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Country, Region, <span class="fu">all_of</span>(date_cols))</span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="do">## Check dimensions to verify. Should be the same</span></span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(domestic_exports)</span></span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(reexports)      </span></span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(total_exports)   </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(imports)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 267
+  Country          Region `2025 Jan` `2024 Dec` `2024 Nov` `2024 Oct` `2024 Sep`
+  &lt;chr&gt;            &lt;chr&gt;       &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+1 Antigua And Bar… Ameri…         0         0           0         0          0  
+2 Argentina        Ameri…         4        12.5       116.        4.1        8.1
+3 Bahamas          Ameri…         0         8.1         0         0          0  
+4 Bermuda          Ameri…         0         0           0         0          0  
+5 Brazil           Ameri…       870.      587.        942.      640.       787. 
+6 Canada           Ameri…       268.      213.        222.      324.       236. 
+# ℹ 260 more variables: `2024 Aug` &lt;dbl&gt;, `2024 Jul` &lt;dbl&gt;, `2024 Jun` &lt;dbl&gt;,
+#   `2024 May` &lt;dbl&gt;, `2024 Apr` &lt;dbl&gt;, `2024 Mar` &lt;dbl&gt;, `2024 Feb` &lt;dbl&gt;,
+#   `2024 Jan` &lt;dbl&gt;, `2023 Dec` &lt;dbl&gt;, `2023 Nov` &lt;dbl&gt;, `2023 Oct` &lt;dbl&gt;,
+#   `2023 Sep` &lt;dbl&gt;, `2023 Aug` &lt;dbl&gt;, `2023 Jul` &lt;dbl&gt;, `2023 Jun` &lt;dbl&gt;,
+#   `2023 May` &lt;dbl&gt;, `2023 Apr` &lt;dbl&gt;, `2023 Mar` &lt;dbl&gt;, `2023 Feb` &lt;dbl&gt;,
+#   `2023 Jan` &lt;dbl&gt;, `2022 Dec` &lt;dbl&gt;, `2022 Nov` &lt;dbl&gt;, `2022 Oct` &lt;dbl&gt;,
+#   `2022 Sep` &lt;dbl&gt;, `2022 Aug` &lt;dbl&gt;, `2022 Jul` &lt;dbl&gt;, `2022 Jun` &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

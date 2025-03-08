@@ -10,11 +10,15 @@ execute:
   eval: true
   warning: false
   freeze: true
+format:
+  html:
+    code-fold: true
+    code-summary: "Code"
 ---
 
 ## Overview
 
-This assignment requires the application of recently acquired visual analytics techniques to conduct a systematic exploration and analysis of Singapore's international trade patterns and trends since 2015.
+This assignment requires the application of visual analytics techniques to conduct a systematic exploration and analysis of Singapore's international trade patterns and trends since 2015.
 
 ## The Task
 
@@ -29,4 +33,162 @@ This take-home exercise comprises the following requirements:
 3. Implement enhanced versions of the selected visualizations with R packages.
 
 4. Perform time-series forecasting methodologies on the trade data to support analytical findings.
+
+## Getting started
+
+### Load packages
+
+First, we load packages required:
+
+```{r}
+pacman::p_load(tidyverse, readxl, dplyr)
+```
+
+
+### Import data
+
+Next, we import the "Merchandise Trade by Region/Market" dataset. The dataset has a hierarchical structure with continents and their respective countries, along with various trade metrics across multiple time periods.
+
+The data preparation process handles the dataset's structure by:
+
+- Skipping metadata and header rows
+- Processing the hierarchical relationship between regions and countries
+- Cleaning country names by removing indentation
+- Creating a standardized tabular structure with clear column naming
+- Combining domestic exports and re-exports to calculate total exports
+
+We created four key dataframes, each corresponding to a specific trade flow:
+
+1. `imports`: Contains all import data by country and region
+2. `domestic_exports`: Contains Singapore's direct exports of locally produced goods
+3. `reexports`: Contains goods that were imported and then exported with minimal processing
+4. `total_exports`: Combines domestic exports and re-exports
+
+
+```{r}
+#| code-fold: true
+#| code-summary: "Code"
+
+file_path <- "data/outputFile.xlsx"
+
+clean_trade_data <- function(file_path, sheet_name) {
+  raw_data <- read_excel(file_path, sheet = sheet_name, skip = 10)
+  
+  # Find where footnotes begin
+  for(i in 1:nrow(raw_data)) {
+    first_col_value <- raw_data[[1]][i]
+    if(is.na(first_col_value) || grepl("Footnotes:", first_col_value) || first_col_value == "") {
+      break
+    }
+  }
+  
+  # Keep only the rows before footnotes
+  clean_data <- raw_data[1:(i-1), ]
+  
+  current_region <- NA
+  result_df <- data.frame()
+  
+  for(j in 1:nrow(clean_data)) {
+    row_value <- clean_data$`Data Series`[j]
+    
+    if(row_value %in% c("America", "Asia", "Europe", "Oceania", "Africa")) {
+      current_region <- row_value
+      next  # Skip the region row itself
+    }
+    
+    # Skip the "Total All Markets" row
+    if(row_value == "Total All Markets") {
+      next
+    }
+    
+    if(grepl("^ +", row_value) || !is.na(current_region)) {
+      country_name <- trimws(row_value)
+      
+      country_row <- clean_data[j, ]
+      country_row$Region <- current_region
+      country_row$`Data Series` <- country_name
+      
+      result_df <- rbind(result_df, country_row)
+    }
+  }
+  
+  names(result_df)[1] <- "Country"
+  
+  result_df <- result_df %>%
+    select(Country, Region, everything())
+  
+  return(result_df)
+}
+
+imports <- clean_trade_data(file_path, "T1")
+domestic_exports <- clean_trade_data(file_path, "T2")
+reexports <- clean_trade_data(file_path, "T3")
+
+
+# Make sure both dataframes have the same countries and regions
+all_countries <- unique(c(domestic_exports$Country, reexports$Country))
+all_regions <- unique(c(domestic_exports$Region, reexports$Region))
+
+standardize_df <- function(df, all_countries, all_regions) {
+  template <- expand.grid(
+    Country = all_countries,
+    Region = all_regions,
+    stringsAsFactors = FALSE
+  ) %>%
+
+    semi_join(
+      bind_rows(
+        select(domestic_exports, Country, Region),
+        select(reexports, Country, Region)
+      ),
+      by = c("Country", "Region")
+    )
+  
+  result <- template %>%
+    left_join(df, by = c("Country", "Region"))
+  
+  result <- result %>%
+    mutate(across(where(is.numeric), ~ifelse(is.na(.), 0, .)))
+  
+  return(result)
+}
+
+domestic_exports <- standardize_df(domestic_exports, all_countries, all_regions)
+reexports <- standardize_df(reexports, all_countries, all_regions)
+
+total_exports <- domestic_exports %>%
+  select(Country, Region) %>%
+  bind_cols(
+    domestic_exports %>% 
+      select(where(is.numeric)) %>%
+      rename_with(~paste0(., "_domestic"), everything()),
+    
+    reexports %>% 
+      select(where(is.numeric)) %>%
+      # Rename columns to identify source
+      rename_with(~paste0(., "_reexport"), everything())
+  )
+
+date_cols <- unique(sub("_domestic$|_reexport$", "", 
+                        names(total_exports)[-(1:2)]))
+
+# For each date, add domestic and re-export values
+for(date in date_cols) {
+  total_exports[[date]] <- total_exports[[paste0(date, "_domestic")]] + 
+                           total_exports[[paste0(date, "_reexport")]]
+}
+
+# Keep only the total columns plus Country and Region
+total_exports <- total_exports %>%
+  select(Country, Region, all_of(date_cols))
+
+## Check dimensions to verify. Should be the same
+# dim(domestic_exports)
+# dim(reexports)      
+# dim(total_exports)   
+```
+
+```{r}
+head(imports)
+```
 
