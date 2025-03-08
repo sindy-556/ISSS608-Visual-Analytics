@@ -1,0 +1,678 @@
+---
+title: "Take-home Exercise 1: Examining Heart Attack Risk in Japan"
+author: "Sindy"
+date-modified: "last-modified"
+output:
+  html_document:
+    css: styles.css
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## Overview
+
+This dataset investigates the epidemiology of heart attacks among different segments of the Japanese population. Japan’s rapidly aging demographic and high healthcare standards make it a unique context in which lifestyle, clinical parameters, and heart attack occurrence interact in complex ways.
+
+### Our task
+
+In this exercise, we will:
+
+- **Examine Heart Attack Occurrence**: Explore how heart attacks are distributed across the dataset and identify any relevant predictors.
+- **Conduct Demographic Analysis**: Investigate the role of age, gender, and region, especially comparing younger vs. older cohorts.
+- **Explore Health Metrics**: Visualize relationships among BMI, blood pressure, cholesterol, and heart attack status.
+- **Assess Lifestyle Factors**: Evaluate how smoking, physical activity, diet quality, alcohol consumption, and stress influence heart health.
+
+## Getting started
+
+### Load packages
+
+We load the following R packages using the `pacman::p_load()` function:
+
+- **tidyverse**: Core collection of R packages for data wrangling and visualization (e.g., `dplyr`, `ggplot2`)  
+- **SmartEDA**: For the `ExpData()` function used in exploratory data analysis  
+- **easystats**: Specifically for `check_collinearity()` to diagnose multicollinearity issues  
+- **reshape2**: Provides the `melt()` function for reshaping data from wide to long format  
+- **caret**: Functions for data partitioning (`createDataPartition`) and model training workflows  
+- **yardstick**: Offers `conf_mat()` and other classification metrics  
+- **pROC**: For ROC curves and AUC calculations (`roc`, `auc`)  
+- **GGally**: For the `ggpairs()` function to create pairwise scatterplot matrices  
+- **ggmosaic**: To create mosaic plots via `geom_mosaic()`  
+- **patchwork**: For arranging multiple ggplot figures into a composite layout  
+- **xgboost**: Gradient boosting library for classification and regression tasks
+
+```{r}
+pacman::p_load(tidyverse, SmartEDA, easystats, reshape2, caret, yardstick, pROC, GGally, ggmosaic, patchwork, xgboost)
+```
+
+
+This dataset contains information about heart attack occurrences in Japan, focusing on various demographic and health-related factors.
+
+### Import data
+```{r}
+heart_data <- read_csv("./data/japan_heart_attack_dataset.csv")
+```
+
+## Data pre-processing
+
+### Glimpse of data
+Using the `glimpse()` function, we see that the dataset consists of 30,000 rows and 32 columns. The output displays the column names, their data types, and the first few entries for each variable. Additionally, there are 15 extra columns (Extra_Column_1 to Extra_Column_15) which are not clearly defined.
+
+```{r}
+glimpse(heart_data)
+```
+
+The following provides an overview of the Japan Heart Attack dataset using the `ExpData()` function, summarizing both overall and variable-level details. 
+
+::: panel-tabset
+### Overall data summary
+
+```{r}
+summary1 <- heart_data %>%
+  ExpData(type = 1)
+
+# Display the summary (further customization possible)
+summary1
+```
+
+### Variable level summary
+
+```{r}
+summary2 <- heart_data %>%
+  ExpData(type = 2)
+
+# Display the summary (further customization possible)
+summary2
+```
+
+:::
+
+### Convert categorical variables to factors
+
+From the overview above, we see that the dataset contains no missing values, and the categorical variables have a maximum of 4 unique values. Converting these variables into factors ensures they are correctly treated as categorical data during analysis and visualization.
+
+```{r}
+# Convert selected categorical variables into factors
+heart_data <- heart_data %>%
+  mutate(
+    Gender = as.factor(Gender),
+    Region = as.factor(Region),
+    Smoking_History = as.factor(Smoking_History),
+    Diabetes_History = as.factor(Diabetes_History),
+    Hypertension_History = as.factor(Hypertension_History),
+    Physical_Activity = as.factor(Physical_Activity),
+    Diet_Quality = as.factor(Diet_Quality),
+    Alcohol_Consumption = as.factor(Alcohol_Consumption),
+    Family_History = as.factor(Family_History),
+    Heart_Attack_Occurrence = as.factor(Heart_Attack_Occurrence)
+  )
+```
+
+### Drop extra columns
+
+```{r}
+#| fig-width: 12
+#| fig-height: 10
+
+# Select only the Extra_Columns and the outcome variable
+extra_data <- heart_data %>%
+  select(starts_with("Extra_Column_"), Heart_Attack_Occurrence)
+
+# Reshape to long format
+extra_data_long <- melt(extra_data, id.vars = "Heart_Attack_Occurrence")
+
+# Create boxplots comparing each Extra_Column by Heart_Attack_Occurrence
+ggplot(extra_data_long, aes(x = Heart_Attack_Occurrence, y = value)) +
+  geom_boxplot() +
+  facet_wrap(~ variable, scales = "free") +
+  labs(
+    title = "Distribution of Extra Columns by Heart Attack Occurrence",
+    x = "Heart Attack Occurrence",
+    y = "Value"
+  )
+```
+Since these variables do not appear to vary by heart attack status, they are unlikely to provide useful information for any downstream analysis (e.g., modeling, hypothesis testing). Dropping them will simplify the dataset and help focus on variables that do relate to heart attack risk. 
+
+We can drop them with the following code:
+```{r}
+heart_data <- heart_data %>%
+  select(-starts_with("Extra_Column_"))
+```
+
+
+### Cleaned dataset
+```{r}
+glimpse(heart_data)
+```
+## Exploratory visuals 
+
+### Create new variables
+
+We create a new variable, `Age_Group`, classifying individuals as “Over50” or “50OrBelow” to compare younger vs. older individuals.
+
+```{r}
+heart_data_eda <- heart_data %>%
+  mutate(Age_Group = ifelse(Age > 50, "Over50", "50OrBelow") %>% as.factor())
+```
+
+
+We create `AgeGender` by combining the `Age_Group` and `gender`. We also combine `smoking status` and `physical activity` into `SmokeAct` and reorder `alcohol consumption` levels.
+
+```{r}
+# Demographic variables
+heart_data_eda <- heart_data_eda %>%
+  mutate(
+    AgeGender = case_when(
+      Age_Group == "Over50" & Gender == "Male"   ~ "Over 50 Male",
+      Age_Group == "Over50" & Gender == "Female" ~ "Over 50 Female",
+      Age_Group == "50OrBelow" & Gender == "Male"   ~ "≤50 Male",
+      Age_Group == "50OrBelow" & Gender == "Female" ~ "≤50 Female"
+    ) %>% factor(levels = c("≤50 Female","≤50 Male","Over 50 Female","Over 50 Male"))
+  )
+
+# Lifestyle variables
+heart_data_eda <- heart_data_eda %>%
+  mutate(
+    SmokeAct = case_when(
+      Smoking_History == "Yes" & Physical_Activity == "Low"      ~ "Smoker, PA:Low",
+      Smoking_History == "Yes" & Physical_Activity == "Moderate" ~ "Smoker, PA:Mod",
+      Smoking_History == "Yes" & Physical_Activity == "High"     ~ "Smoker, PA:High",
+      Smoking_History == "No"  & Physical_Activity == "Low"      ~ "Non-Smoker, PA:Low",
+      Smoking_History == "No"  & Physical_Activity == "Moderate" ~ "Non-Smoker, PA:Mod",
+      Smoking_History == "No"  & Physical_Activity == "High"     ~ "Non-Smoker, PA:High"
+    ) %>% 
+    # Order them in a sensible sequence:
+    factor(levels = c("Non-Smoker, PA:Low","Non-Smoker, PA:Mod","Non-Smoker, PA:High",
+                      "Smoker, PA:Low","Smoker, PA:Mod","Smoker, PA:High"))
+  )
+```
+
+
+### Mosaic Plot: Demographic Analysis
+We plot a mosaic where `AgeGender` is on the x-axis, color indicates heart attack occurrence, and each facet represents a different region.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 5
+
+p_demo <- ggplot(heart_data_eda) +
+  geom_mosaic(
+    aes(x = product(AgeGender),
+        fill = Heart_Attack_Occurrence,
+        text = paste0("Group: ", AgeGender,
+                      "<br>Region: ", Region,
+                      "<br>Heart Attack: ", Heart_Attack_Occurrence)
+    ),
+    alpha = 0.9
+  ) +
+  facet_wrap(~ Region) +
+  scale_fill_manual(values = c("No" = "#F1B1B5", "Yes" = "#97B3AE")) +
+  labs(
+    title = "Demographic Mosaic: Age & Gender by Region vs. Heart Attack",
+    x     = "Age & Gender",
+    y     = " ",
+    fill  = "Heart Attack"
+  ) +
+  theme_minimal()
+
+p_demo
+```
+##### Explanation of the plot
+
+This mosaic plot illustrates heart attack occurrences across different age and gender groups within rural and urban regions. The width of each bar segment corresponds to the relative size of that demographic group, while the height indicates the proportion of individuals who experienced a heart attack. 
+
+Overall, heart attack rates remain relatively consistent between rural and urban areas. However, males tend to have a higher probability of heart attack than females, regardless of age or region.
+
+
+### Mosaic plot: Lifestyle factors
+
+We create a mosaic plot with `SmokeAct` on the x-axis, color by heart attack occurrence, and facet by the four alcohol consumption levels.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+
+# Reorder factor levels for Alcohol_Consumption
+heart_data_eda <- heart_data_eda %>%
+  mutate(
+    Alcohol_Consumption = factor(
+      Alcohol_Consumption,
+      levels = c("High", "Moderate", "Low", "None")
+    )
+  )
+
+ggplot(heart_data_eda) +
+  geom_mosaic(aes(
+    x    = product(SmokeAct),
+    fill = Heart_Attack_Occurrence
+  ), alpha = 0.9) +
+  facet_wrap(~ Alcohol_Consumption, ncol = 2) +
+  scale_fill_manual(values = c("No" = "#F1B1B5", "Yes" = "#97B3AE")) +
+  labs(
+    title = "Lifestyle Mosaic: Smoking, Activity, and Alcohol vs. Heart Attack",
+    subtitle = "PA = Physical Activity. Each facet represents a different Alcohol Consumption level.",
+    x = "Smoking & PA Group",
+    y = "",
+    fill = "Heart Attack"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title    = element_text(face = "bold", size = 14, hjust=0.5),
+    plot.subtitle = element_text(size = 10, hjust=0.5),
+    strip.text    = element_text(face="bold"),
+    axis.text.x   = element_text(angle=40, hjust=1, size=7),
+    panel.spacing = unit(2, "lines")
+  )
+```
+##### Explanation of the plot
+
+
+This mosaic plot explores how smoking, physical activity (PA), and alcohol consumption interact to influence heart attack occurrences. Each facet represents a different alcohol consumption level (High, Moderate, Low, None).
+
+Interestingly, non-smokers who report no alcohol consumption but high physical activity exhibit one of the highest heart attack rates. Additionally, smokers with moderate physical activity tend to have higher heart attack rates compared to smokers with low or high physical activity.
+
+### Pairwise numeric plot (Health metrics)
+This code uses `ggpairs()` to create a matrix of pairwise plots for all numeric variables in heart_data. The `mapping = aes(color = Heart_Attack_Occurrence)` argument adds a color-coded grouping by heart attack status.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+
+# Automatically select all numeric columns from the dataset
+numeric_cols <- sapply(heart_data, is.numeric)
+
+pairwise_plot <- ggpairs(
+  data = heart_data,
+  columns = which(numeric_cols),
+  mapping = aes(color = Heart_Attack_Occurrence),
+  lower = list(continuous = wrap("smooth", alpha = 0.3, size = 0.5)),
+  diag = list(continuous = wrap("densityDiag", alpha = 0.5)),
+  upper = list(continuous = wrap("cor", size = 4))
+) +
+  ggtitle("Pairwise Correlations Among All Numeric Metrics")
+
+pairwise_plot
+```
+
+##### Explanation of the plot
+
+This grid compares health metrics like BMI, blood pressure, cholesterol, and stress. The **diagonal panels** show density curves for each variable, revealing, for instance, that `Age` has a broader distribution compared to the other variables.
+
+The **upper panels** list correlation coefficients and their significance, most of which are near zero (e.g., **`Corr: 0.025, 0.048`**), indicating that these variables do not strongly co-vary. In the **lower scatter plots**, points are colored by heart attack occurrence; no tight clustering suggests no single numeric threshold exclusively separates “Yes” vs. “No.” For instance, `Systolic_BP` and `Diastolic_BP` show little correlation as high `Systolic_BP` often coexists with both high and low `Diastolic_BP`. Overall, **no single numeric factor** stands out as a strictly linear driver of heart attack, though there may be subtle nonlinear or interactive effects to explore later.
+
+
+## Train test split
+
+Before building a predictive model, it is best practice to split the data into training and testing sets. The `createDataPartition` function ensures that the distribution of the target class is approximately the same in both sets. Here, we allocate 80% of the data for training and 20% for testing.
+
+```{r}
+set.seed(123)
+
+train_index <- createDataPartition(heart_data$Heart_Attack_Occurrence, p = 0.8, list = FALSE)
+
+train_data <- heart_data[train_index, ]
+test_data  <- heart_data[-train_index, ]
+```
+
+
+## Naive logistic regression
+
+Here, we build an initial (“naive”) logistic regression model that includes **all** available predictors (except the 15 “Extra_Column” variables we dropped). This approach gives us a baseline.
+
+
+### Fit the model
+
+We will fit a logistic regression using `glm()`.
+
+```{r}
+# Use a standard glm with all predictors
+naive_glm <- glm(
+  Heart_Attack_Occurrence ~ .,
+  data   = train_data,
+  family = binomial
+)
+```
+
+
+### Understanding the model
+
+We use `check_collinearity()` to see if any variables are highly correlated or cause near‐complete separation. A “good” logistic regression typically avoids extremely high VIFs or indefinite confidence intervals.
+
+```{r}
+# Capture the output
+result <- check_collinearity(naive_glm)
+
+# Coerce to a data frame
+df <- as.data.frame(result)
+
+# Use knitr::kable to print the table neatly
+knitr::kable(df, caption = "Check for Multicollinearity", 
+             format = "html", 
+             table.attr = "style='width:100%; white-space:nowrap;'")
+```
+
+#### Interpreting the collinearity results
+
+- VIF ~1.0 but extremely large upper confidence bounds: This indicates the algorithm is unsure about the exact magnitude of possible collinearity. In simpler terms, the model’s variance–covariance matrix is nearly singular.
+- This often happens when:
+  - Quasi‐complete separation: Certain variables or combinations nearly “perfectly” predict the outcome.
+  - Imbalance in the dataset (many more “No” than “Yes”) plus insufficient signal in some predictors.
+  - Over‐parametrization: Too many correlated predictors for the sample size.
+
+### Model performance
+
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+
+# 1) Collinearity plot
+check_c <- check_collinearity(naive_glm)
+p_collinearity <- plot(check_c) +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1))
+
+# 2) Confusion matrix heatmap
+pred_prob_naive <- predict(naive_glm, newdata = test_data, type = "response")
+
+pred_class_naive <- ifelse(pred_prob_naive >= 0.5, "Yes", "No") %>%
+  factor(levels = levels(test_data$Heart_Attack_Occurrence))
+
+# Evaluate
+naive_results <- data.frame(
+  obs   = test_data$Heart_Attack_Occurrence,
+  pred  = pred_class_naive,
+  prob  = pred_prob_naive
+)
+
+naive_cm <- naive_results %>%
+  conf_mat(obs, pred)
+
+p_confmat <- autoplot(naive_cm, type = "heatmap") +
+  labs(title = "Naive Logistic Regression: Confusion Matrix")
+
+# 3) ROC curve as a ggplot object using ggroc()
+roc_naive <- roc(
+  response  = as.numeric(naive_results$obs),
+  predictor = as.numeric(naive_results$prob)
+)
+
+p_roc <- ggroc(roc_naive, colour = "#1c61b6", legacy.axes = TRUE) +
+  labs(title = "ROC Curve: Naïve Logistic Model") +
+  theme_minimal()
+
+
+combined_plot <- p_collinearity / (p_confmat + p_roc)
+
+# Display the combined plot
+combined_plot
+```
+
+#### Explanation of the plot
+
+1. **Collinearity Plot:**  
+  - This bar chart displays VIF estimates, where the ideal values fall in the green region.
+  - Individual VIF point estimates hover around 1.0, but their upper confidence intervals extend into the red, indicating extremely high values. 
+  - This suggests that the model’s parameter estimates are unstable due to quasi‐complete separation or an excess of correlated predictors relative to the sample size. In essence, the model cannot reliably discern each variable’s true contribution, leading to artificially low VIF point estimates paired with massive uncertainty bounds.
+
+2. **Confusion Matrix:**  
+  - The matrix shows 0 true positives. 
+  - This is typical when a logistic model either encounters near-complete separation or opts to disregard the minority class in imbalanced datasets.
+
+3. **ROC Curve:**  
+  - The ROC curve lies near the diagonal reference line, confirming that the model lacks predictive power and is essentially guessing.
+
+
+## Improving logistic regression
+
+### Rationale
+
+Our naïve logistic regression suggested potential issues:
+- Very low sensitivity (predicting all “No”)
+- Large variance inflation factor (VIF) intervals
+
+Therefore, we refine the logistic model by:
+
+1. Use **weighted** logistic regression to handle class imbalance,  
+2. Incorporate mild non-linear terms for `BMI`, `Systolic_BP`, and `Diastolic_BP` with polynomial expansions,  
+3. Remove redundant variables.
+
+
+```{r}
+new_train <- train_data
+new_test  <- test_data
+
+
+new_formula <- as.formula(
+  "Heart_Attack_Occurrence ~ Age + Gender + Family_History + poly(BMI, 2, raw=TRUE) + 
+   Heart_Rate + poly(Systolic_BP, 2, raw=TRUE) + poly(Diastolic_BP, 2, raw=TRUE) + Cholesterol_Level + 
+   Diabetes_History + Hypertension_History + Physical_Activity + Smoking_History + 
+   Diet_Quality + Alcohol_Consumption + Stress_Levels"
+)
+```
+
+
+#### Creating observation weights
+We create balanced weights to give more importance to the minority class. This ensures misclassifying a minority‐class “Yes” is penalized more strongly than misclassifying a “No.”
+
+```{r}
+n_yes <- sum(new_train$Heart_Attack_Occurrence == "Yes")
+n_no  <- sum(new_train$Heart_Attack_Occurrence == "No")
+N     <- n_yes + n_no
+
+w_yes <- N / (2 * n_yes)
+w_no  <- N / (2 * n_no)
+
+# Assign weights in the new training dataset
+new_train$weights_col <- ifelse(
+  new_train$Heart_Attack_Occurrence == "Yes",
+  w_yes,
+  w_no
+)
+```
+
+
+### Fit weighted logistic model
+```{r}
+model_glm_weighted <- glm(
+  formula = new_formula,
+  data    = new_train,
+  family  = binomial(link = "logit"),
+  weights = weights_col
+)
+```
+```{r}
+# Capture the output
+result <- check_collinearity(model_glm_weighted)
+
+# Coerce to a data frame
+df <- as.data.frame(result)
+
+# Use knitr::kable to print the table neatly
+knitr::kable(df, caption = "Check for Multicollinearity", 
+             format = "html", 
+             table.attr = "style='width:100%; white-space:nowrap;'")
+```
+
+### Visualizing the model
+
+```{r}
+pred_prob_improved <- predict(model_glm_weighted, newdata = test_data, type = "response")
+
+
+ggplot(mapping = aes(x = pred_prob_improved)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "white") +
+  labs(title = "Distribution of Predicted Probabilities (Naïve Logistic)",
+       x = "Predicted Probability of Heart Attack",
+       y = "Count")
+
+```
+From the histogram above, we can see that the model is overpredicting positive cases at `0.50` threshold. As the positive cases is approximately 10% of the dataset, we will take a threshold of `0.55` instead.
+
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+check_c <- check_collinearity(model_glm_weighted)
+p_collinearity <- plot(check_c) +
+  labs(title = "Collinearity of Weighted Logistic Model") +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1))
+
+pred_prob_improved <- predict(model_glm_weighted, newdata = test_data, type = "response")
+pred_class_improved <- ifelse(pred_prob_improved >= 0.55, "Yes", "No") %>%
+  factor(levels = levels(test_data$Heart_Attack_Occurrence))
+improved_cm <- data.frame(
+  obs  = test_data$Heart_Attack_Occurrence,
+  pred = pred_class_improved
+) %>% conf_mat(obs, pred)
+
+p_confmat <- autoplot(improved_cm, type = "heatmap") +
+  labs(title = "Weighted Logistic: Confusion Matrix")
+
+roc_improved <- roc(
+  response  = as.numeric(test_data$Heart_Attack_Occurrence),
+  predictor = as.numeric(pred_prob_improved)
+)
+p_roc <- ggroc(roc_improved, colour = "#1c61b6", legacy.axes = TRUE) +
+  labs(title = "ROC Curve: Weighted Logistic Model") +
+  theme_minimal()
+
+## Combine the three plots
+library(patchwork)
+combined_plot <- p_collinearity / (p_confmat + p_roc)
+combined_plot
+```
+
+
+#### Weighted Logistic Regression Results
+
+After applying class weights and mild polynomial terms to BMI and Blood Pressure, our weighted logistic model shows some improvements compared to the naïve model:
+
+- No longer predicting all “No”
+  - The confusion matrix now reflects at least some “Yes” predictions: it is not trivially predicting “No” for every observation. This is a direct benefit of giving more weight to “Yes” in the training procedure, which pushes the model to separate out at least a portion of positive cases.
+
+- Collinearity appears more stable
+  - The VIF plot still shows point estimates around 1.0 for most variables, with moderate spikes in confidence intervals for a few. However, these are less extreme than in the naïve model, suggesting the parameter estimates are more stable overall.
+
+- Little change to overall accuracy (AUC)
+  - While the model does somewhat better at identifying positives, the ROC curve remains fairly close to the diagonal, reflecting an AUC only slightly better than 0.5.
+  - In other words, the model is still not very accurate overall, indicating that the available predictors may not strongly discriminate between “Yes” and “No”—or that we need further refinements (e.g., more complex interactions, alternative transformations, or additional data).
+
+
+## Fitting a xgboost
+
+### Data preparation
+
+We first convert the outcome `Heart_Attack_Occurrence` to a 0/1 numeric variable. Then, we build model matrices using `model.matrix()` which transforms both categorical and numeric predictors into a suitable format for XGBoost.
+
+```{r}
+# Convert outcome to 0/1
+train_data_xgb <- train_data %>%
+  mutate(YesNo = ifelse(Heart_Attack_Occurrence == "Yes", 1, 0))
+
+x_train <- model.matrix(YesNo ~ . - Heart_Attack_Occurrence, data=train_data_xgb)
+y_train <- train_data_xgb$YesNo
+
+test_data_xgb <- test_data %>%
+  mutate(YesNo = ifelse(Heart_Attack_Occurrence == "Yes", 1, 0))
+x_test <- model.matrix(YesNo ~ . - Heart_Attack_Occurrence, data=test_data_xgb)
+y_test <- test_data_xgb$YesNo
+
+n_yes <- sum(y_train == 1)
+n_no  <- sum(y_train == 0)
+scale_pos <- n_no / n_yes
+```
+
+
+### XGBoost model training
+
+We create DMatrix objects for both training and test sets, then specify key hyperparameters like `max_depth`, `eta`, and `scale_pos_weight.` The model is trained with early stopping if the test AUC does not improve after a certain number of rounds.
+
+```{r}
+dtrain <- xgb.DMatrix(data = x_train, label = y_train)
+dtest  <- xgb.DMatrix(data = x_test,  label = y_test)
+
+param <- list(
+  objective        = "binary:logistic",
+  eval_metric      = "auc",             # can also track "error" or "logloss"
+  max_depth        = 10,
+  eta              = 0.2,
+  scale_pos_weight = scale_pos          # imbalance correction
+)
+
+# Train with 100 rounds
+set.seed(123)
+xgb_model <- xgb.train(
+  params   = param,
+  data     = dtrain,
+  nrounds  = 1000,
+  watchlist= list(train=dtrain, test=dtest),
+  early_stopping_rounds = 50,  # optional, for early stop
+  print_every_n          = 10
+)
+
+```
+The training AUC climbs to ~0.999 or even 1.0, while the test set AUC remains near 0.52, suggesting no robust pattern is learnable from these features. This might indicate insufficient predictive signal in the data.
+
+
+### Model evaluation
+
+```{r}
+pred_prob_xgb <- predict(xgb_model, newdata = dtest, ntreelimit = xgb_model$best_iteration)
+
+pred_class_xgb <- ifelse(pred_prob_xgb >= 0.5, 1, 0)
+
+results_xgb <- data.frame(
+  obs  = factor(y_test, levels=c(0,1), labels=c("No","Yes")),
+  pred = factor(pred_class_xgb, levels=c(0,1), labels=c("No","Yes")),
+  prob = pred_prob_xgb
+)
+
+xgb_cm <- conf_mat(results_xgb, truth=obs, estimate=pred)
+xgb_cm %>% summary()
+```
+
+### ROC curve and confusion matrix
+```{r}
+p_confmat <- autoplot(xgb_cm, type="heatmap") +
+  labs(title="XGBoost Confusion Matrix", fill="Count")
+
+roc_xgb <- roc(response = as.numeric(results_xgb$obs), predictor = results_xgb$prob)
+auc_val <- auc(roc_xgb)
+
+p_roc <- ggroc(roc_xgb, colour="#1c61b6") +
+  labs(
+    title = paste0("XGBoost ROC Curve (AUC=", round(auc_val,3), ")"),
+    x     = "1 - Specificity",
+    y     = "Sensitivity"
+  ) +
+  theme_minimal()
+
+
+
+combined_plot <- p_confmat | p_roc
+
+combined_plot
+```
+#### Plot explanation:
+
+- Confusion matrix: Shows how many “No” vs. “Yes” cases are classified correctly vs. incorrectly. Despite the class‐imbalance correction, the model still misclassifies most “Yes” events.
+- ROC curve: The curve hovers close to the diagonal, with an AUC near ~0.52. This is only marginally better than random guessing (AUC=0.5).
+
+
+```{r}
+importance_xgb <- xgb.importance(model = xgb_model)
+importance_xgb  # see a data frame of feature importances
+
+# Plot
+xgb.plot.importance(importance_xgb, top_n = 15, 
+                    main="XGBoost Feature Importance")
+```
+#### Interpretation:
+
+- The plot ranks features by how frequently and effectively they split the data.
+- Even though certain variables like Cholesterol_Level or Systolic_BP appear at the top, the final predictive performance on the test set remains poor, indicating limited actual signal or potential overfitting to training noise.
+
+
+## Final thoughts
+Across multiple approaches (naive logistic, weighted logistic, XGBoost), the models struggle to achieve predictive accuracy on the test set. This may indicate that the available features (after dropping the undefined extras) do not strongly distinguish between heart attack occurrences. Additional data, refined feature engineering, or domain expertise might be necessary to improve predictive performance. Nonetheless, the exploratory visualizations provide insights into demographic and lifestyle patterns associated with heart attack risk in Japan.

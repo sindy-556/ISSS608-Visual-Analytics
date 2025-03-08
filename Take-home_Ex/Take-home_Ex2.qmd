@@ -1,0 +1,32 @@
+---
+title: "Take-home Exercise 2: Be Tradewise or Otherwise"
+author: "Sindy"
+date-modified: "last-modified"
+output:
+  html_document:
+    css: styles.css
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## Overview
+
+This assignment requires the application of recently acquired visual analytics techniques to conduct a systematic exploration and analysis of Singapore's international trade patterns and trends since 2015.
+
+## The Task
+
+This take-home exercise comprises the following requirements:
+
+1. Obtain the "Merchandise Trade by Region/Market" dataset from the [Department of Statistics Singapore, DOS](https://www.singstat.gov.sg/) website via the [Merchandise Trade by Region/Market](https://www.singstat.gov.sg/find-data/search-by-theme/trade-and-investment/merchandise-trade/latest-data) page.
+
+2. Conduct a critical evaluation of three data visualizations presented on [this page](https://www.singstat.gov.sg/modules/infographics/singapore-international-trade) by:
+   - Assessing their respective strengths and limitations
+   - Developing conceptual sketches for improved visualization alternatives
+
+3. Implement enhanced versions of the selected visualizations with R packages.
+
+4. Perform time-series forecasting methodologies on the trade data to support analytical findings.
+

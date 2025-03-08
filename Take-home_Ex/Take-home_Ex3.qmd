@@ -1,0 +1,15 @@
+---
+title: "Take-home Exercise 3:"
+author: "Sindy"
+date-modified: "last-modified"
+output:
+  html_document:
+    css: styles.css
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## Overview
