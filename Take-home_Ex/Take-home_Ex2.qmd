@@ -924,4 +924,329 @@ The slope chart format is particularly effective for this data as it:
 This enhanced visualization allows analysts to identify not just which partners Singapore trades with most, but how these relationships have evolved year by year, revealing patterns that might indicate changing economic priorities, effects of global events, or emerging trade opportunities.
 
 
+## Time-series forecasting
 
+Time series forecasting is a critical component of trade analysis, allowing us to project future trade patterns based on historical data. By forecasting Singapore's trade relationships, we can:
+
+- Identify emerging trade partners and markets with growth potential
+- Anticipate possible shifts in trade balance with key partners
+- Provide data-driven insights for strategic trade policy decisions
+- Quantify the stability or volatility of specific trade relationships
+
+In this section, we'll apply advanced forecasting methodologies to Singapore's merchandise trade data, focusing on predicting future import volumes for Singapore's top 5 trading partners.
+
+### Forecasting methodology
+
+Our forecasting approach compares multiple time series models to identify the most accurate predictors for each trading partner. We'll implement a systematic workflow:
+
+1. Data preparation and transformation for time series analysis
+2. Model training on historical data (90% of available data)
+3. Model validation on a test set (most recent 10% of data)
+4. Model comparison and selection based on accuracy metrics
+5. Forecasting future trade volumes for the next six months
+
+```{r}
+pacman::p_load(tidyverse, lubridate, tidymodels, timetk, modeltime, purrr)
+```
+
+#### Data preparation for forecasting
+
+First, we identify Singapore's top 5 trading partners by import volume in the latest available period. These partners will be the focus of our forecasting models.
+
+```{r}
+latest_col <- tail(names(imports), 1)
+
+top5_countries <- imports %>%
+  arrange(desc(.data[[latest_col]])) %>%
+  slice_head(n = 5) %>%
+  pull(Country)
+
+top5_countries
+```
+The top 5 trading partners for Singapore's imports are Malaysia, United States, Japan, China (Mainland), and Indonesia. These five countries represent a significant portion of Singapore's total import volume and provide diverse geographic and economic profiles for our forecasting analysis.
+
+
+### Forecasting workflow implementation
+We'll now implement a comprehensive forecasting workflow function that handles all steps of the modeling process for a specified country:
+
+```{r}
+forecast_one_country <- function(country_name, df_wide, forecast_h = "6 months") {
+  
+  # 1) Filter to the specified country
+  df_filtered <- df_wide %>%
+    filter(Country == country_name)
+  
+  # 2) Reshape from wide => long: [date, value]
+  #    Summation is not needed since we want *this* country's data specifically.
+  df_long <- df_filtered %>%
+    select(where(is.numeric)) %>% 
+    pivot_longer(
+      cols      = everything(), 
+      names_to  = "MonthYearCol", 
+      values_to = "TradeValue"
+    ) %>%
+    mutate(
+      date = lubridate::parse_date_time(MonthYearCol, orders = c("Y b", "b Y"))
+    ) %>%
+    filter(!is.na(date)) %>%
+    arrange(date)
+  
+  # Safety check
+  if (nrow(df_long) < 2) {
+    stop("Not enough data points for country: ", country_name)
+  }
+  
+  # 3) Split
+  splits <- initial_time_split(df_long, prop = 0.9)
+  
+  # 4) Create & Fit Models (4 from Chap 20)
+
+  ## (a) ETS
+  model_fit_ets <- exp_smoothing() %>%
+    set_engine("ets") %>%
+    fit(TradeValue ~ date, data = training(splits))
+  
+  ## (b) Auto ARIMA
+  model_fit_arima <- arima_reg() %>%
+    set_engine("auto_arima") %>%
+    fit(TradeValue ~ date, data = training(splits))
+  
+  ## (c) Boosted ARIMA
+  model_fit_arima_boost <- arima_boost(min_n = 2, learn_rate = 0.015) %>%
+    set_engine("auto_arima_xgboost") %>%
+    fit(TradeValue ~ date, data = training(splits))
+  
+  ## (d) Prophet
+  model_fit_prophet <- prophet_reg() %>%
+    set_engine("prophet") %>%
+    fit(TradeValue ~ date, data = training(splits))
+  
+  # 5) modeltime_table
+  models_tbl <- modeltime_table(
+    model_fit_ets,
+    model_fit_arima,
+    model_fit_arima_boost,
+    model_fit_prophet
+  )
+  
+  # 6) Calibrate on Test
+  calibration_tbl <- models_tbl %>%
+    modeltime_calibrate(testing(splits))
+  
+  # 7) Accuracy
+  accuracy_tbl <- calibration_tbl %>%
+    modeltime_accuracy() %>%
+    arrange(rmse)  # sort by RMSE ascending
+  
+  # 8) Refit on full data & Forecast h months ahead
+  refit_tbl <- calibration_tbl %>%
+    modeltime_refit(data = df_long)
+  
+  forecast_tbl <- refit_tbl %>%
+    modeltime_forecast(
+      h           = forecast_h,
+      actual_data = df_long
+    ) %>%
+    mutate(Country = country_name)
+  
+  # Return a list with relevant outputs
+  list(
+    country       = country_name,
+    data_long     = df_long,
+    splits        = splits,
+    models_tbl    = models_tbl,
+    calibration   = calibration_tbl,
+    accuracy      = accuracy_tbl,
+    refit_tbl     = refit_tbl,
+    forecast_data = forecast_tbl
+  )
+}
+```
+
+This function implements a complete forecasting workflow for a single country, including:
+
+- Data filtering and transformation to time series format
+- Time-based train/test splitting
+- Training of four different forecasting models:
+
+  - ETS (Exponential Smoothing): Effective for data with clear trend and seasonality patterns
+  - Auto ARIMA: Handles complex time series with autocorrelation structures
+  - Boosted ARIMA: Combines statistical time series with machine learning for enhanced accuracy
+  - Prophet: Facebook's decomposition-based forecasting model for robust trend analysis
+
+- Model calibration and accuracy evaluation
+- Future forecasting based on the complete historical data
+
+
+
+### Applying the forecasting workflow to top trading partners
+
+Now we apply our forecasting workflow to each of Singapore's top 5 trading partners:
+
+```{r}
+results_list <- map(top5_countries, ~ forecast_one_country(
+  country_name = .x, 
+  df_wide      = imports, 
+  forecast_h   = "6 months"
+))
+
+# Name each list element after the country
+names(results_list) <- top5_countries
+```
+This creates a structured list containing the complete forecasting workflow results for each country. The list organization allows us to easily access specific components like accuracy metrics or forecast data for any country.
+
+## Model performance evaluation
+
+### Accuracy metrics comparison
+
+First, we compare the forecasting accuracy across all models and countries:
+
+```{r}
+all_accuracy <- map_dfr(
+  .x = results_list,
+  .f = ~ .x$accuracy %>%
+    mutate(Country = .x$country),
+  .id = "list_element"
+)
+
+all_accuracy
+```
+
+The accuracy table shows multiple performance metrics for each model and country combination:
+
+- MAE (Mean Absolute Error): Average absolute prediction error
+- MAPE (Mean Absolute Percentage Error): Percentage error, useful for comparing across countries
+- RMSE (Root Mean Squared Error): Penalizes large errors more heavily, good for identifying models with occasional large misses
+- MASE (Mean Absolute Scaled Error): Scale-independent measure comparing to a naive forecast
+
+Lower values indicate better forecasting performance across all metrics.
+
+### Model performance visualization
+
+Let's examine how each model performs on the test data for each of our top trading partners:
+
+::: panel-tabset
+
+### Malaysia
+```{r}
+results_list[[1]]$calibration %>%
+  modeltime_forecast(
+    new_data = testing(results_list[[1]]$splits),
+    actual_data = results_list[[1]]$data_long
+  ) %>%
+  plot_modeltime_forecast(
+    .facet_ncol = 1,
+    .interactive = TRUE,
+    .title = paste("Test Set Performance for", results_list[[1]]$country)
+  )
+```
+
+
+### US
+```{r}
+results_list[[2]]$calibration %>%
+  modeltime_forecast(
+    new_data = testing(results_list[[2]]$splits),
+    actual_data = results_list[[2]]$data_long
+  ) %>%
+  plot_modeltime_forecast(
+    .facet_ncol = 1,
+    .interactive = TRUE,
+    .title = paste("Test Set Performance for", results_list[[2]]$country)
+  )
+```
+
+### Japan
+```{r}
+results_list[[3]]$calibration %>%
+  modeltime_forecast(
+    new_data = testing(results_list[[3]]$splits),
+    actual_data = results_list[[3]]$data_long
+  ) %>%
+  plot_modeltime_forecast(
+    .facet_ncol = 1,
+    .interactive = TRUE,
+    .title = paste("Test Set Performance for", results_list[[3]]$country)
+  )
+```
+
+### China
+```{r}
+results_list[[4]]$calibration %>%
+  modeltime_forecast(
+    new_data = testing(results_list[[4]]$splits),
+    actual_data = results_list[[4]]$data_long
+  ) %>%
+  plot_modeltime_forecast(
+    .facet_ncol = 1,
+    .interactive = TRUE,
+    .title = paste("Test Set Performance for", results_list[[4]]$country)
+  )
+```
+
+### Indonesia
+```{r}
+results_list[[5]]$calibration %>%
+  modeltime_forecast(
+    new_data = testing(results_list[[5]]$splits),
+    actual_data = results_list[[5]]$data_long
+  ) %>%
+  plot_modeltime_forecast(
+    .facet_ncol = 1,
+    .interactive = TRUE,
+    .title = paste("Test Set Performance for", results_list[[5]]$country)
+  )
+```
+:::
+
+### Results analysis
+
+Each country exhibits distinct patterns in their trade relationship with Singapore, necessitating different forecasting approaches rather than a one-size-fits-all model.
+
+#### Malaysia
+All forecasting models significantly overestimate the recent peak values, as the sudden drop in imports during the test period had no precedent in the training dataset.
+
+#### United States
+The ETS model (red line) aligns most closely with actual values. It also features narrower confidence intervals compared to other models, indicating higher prediction certainty.
+
+#### Japan
+
+The Auto ARIMA and boosted ARIMA models (yellow and green lines) capture the overall trend effectively but consistently overpredict. The Prophet model (blue line) provides estimates closest to actual values.
+
+#### China
+
+During the test period, the Prophet model (blue line) most accurately tracks actual import values. All four models identify an upward trajectory in imports.
+
+#### Indonesia
+
+Indonesia demonstrates the most volatile trading pattern among the five countries, with substantial fluctuations throughout the entire period. The Prophet model (blue line) outperforms other forecasting approaches for this challenging dataset.
+
+
+### Future trade projections
+
+Finally, we generate and visualize six-month forecasts for all five trading partners:
+```{r}
+all_forecasts <- map_dfr(results_list, ~ .x$forecast_data)
+
+all_forecasts %>%
+  filter(.index >= as.POSIXct("2023-01-01")) %>%
+  group_by(Country) %>%
+  plot_modeltime_forecast(
+    .facet_ncol   = 1,
+    .interactive  = TRUE,
+    .legend_max_width = 25
+  )
+```
+
+The combined forecast plot reveals distinct patterns for each country from January 2023 to July 2025, with the last six months showing the future projections.
+
+
+## Key findings from forecasting analysis
+
+Based on our time series forecasting and the actual visualizations, we can draw several insights about Singapore's trade relationships:
+
+1. Historical Growth Patterns: The long-term view reveals dramatically different growth trajectories - China shows the most substantial growth (7x increase since 2003), while Indonesia's trade has remained relatively flat after initial growth in the 2000s.
+2. Regional vs. Global Partners: The forecasts suggest that while both regional partners (Malaysia, China) and global partners (United States) remain important, the strongest recent growth has been with the United States and China, indicating Singapore's balanced approach to trade diversification.
+3. Model Performance Variation: Different forecasting models perform better for different countries - Prophet generally perform better overall, while ARIMA variants models capture the trends better.
+
+These forecasting insights complement our earlier visualizations by adding a predictive dimension that extends into the future, helping to identify not just past patterns but also the most likely near-term directions for Singapore's key trade relationships.
