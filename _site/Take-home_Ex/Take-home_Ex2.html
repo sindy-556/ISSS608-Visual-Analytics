@@ -284,6 +284,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#load-packages" id="toc-load-packages" class="nav-link" data-scroll-target="#load-packages">Load packages</a></li>
   <li><a href="#import-data" id="toc-import-data" class="nav-link" data-scroll-target="#import-data">Import data</a></li>
   </ul></li>
+  <li><a href="#visualisation-1-merchandise-trade-performance" id="toc-visualisation-1-merchandise-trade-performance" class="nav-link" data-scroll-target="#visualisation-1-merchandise-trade-performance">Visualisation 1: MERCHANDISE TRADE PERFORMANCE</a>
+  <ul class="collapse">
+  <li><a href="#original-design" id="toc-original-design" class="nav-link" data-scroll-target="#original-design">Original Design</a></li>
+  <li><a href="#critique" id="toc-critique" class="nav-link" data-scroll-target="#critique">Critique</a></li>
+  <li><a href="#animated-bubble-chart-of-singapores-trade-with-major-partners" id="toc-animated-bubble-chart-of-singapores-trade-with-major-partners" class="nav-link" data-scroll-target="#animated-bubble-chart-of-singapores-trade-with-major-partners">Animated Bubble Chart of Singapore’s Trade with Major Partners</a></li>
+  <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation">Data Preparation</a></li>
+  <li><a href="#creating-the-animated-bubble-chart" id="toc-creating-the-animated-bubble-chart" class="nav-link" data-scroll-target="#creating-the-animated-bubble-chart">Creating the Animated Bubble Chart</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -330,11 +338,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This take-home exercise comprises the following requirements:</p>
 <ol type="1">
 <li><p>Obtain the “Merchandise Trade by Region/Market” dataset from the <a href="https://www.singstat.gov.sg/">Department of Statistics Singapore, DOS</a> website via the <a href="https://www.singstat.gov.sg/find-data/search-by-theme/trade-and-investment/merchandise-trade/latest-data">Merchandise Trade by Region/Market</a> page.</p></li>
-<li><p>Conduct a critical evaluation of three data visualizations presented on <a href="https://www.singstat.gov.sg/modules/infographics/singapore-international-trade">this page</a> by:</p>
-<ul>
-<li>Assessing their respective strengths and limitations</li>
-<li>Developing conceptual sketches for improved visualization alternatives</li>
-</ul></li>
+<li><p>Conduct a critical evaluation of three data visualizations presented on <a href="https://www.singstat.gov.sg/modules/infographics/singapore-international-trade">this page</a> by assessing their respective strengths and limitations</p></li>
 <li><p>Implement enhanced versions of the selected visualizations with R packages.</p></li>
 <li><p>Perform time-series forecasting methodologies on the trade data to support analytical findings.</p></li>
 </ol>
@@ -345,7 +349,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="load-packages">Load packages</h3>
 <p>First, we load packages required:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, readxl, dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magick)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, readxl, dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, gganimate, gifski, scales, ggrepel, lubridate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="import-data" class="level3">
@@ -483,11 +489,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Country, Region, <span class="fu">all_of</span>(date_cols))</span>
 <span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="do">## Check dimensions to verify. Should be the same</span></span>
-<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(domestic_exports)</span></span>
-<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(reexports)      </span></span>
-<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(total_exports)   </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(domestic_exports)  # output: 154 267</span></span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(reexports)  # output: 154 267      </span></span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(total_exports)  # output: 154 267   </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>We can verify that imports is correctly configured by examining the initial rows of the dataframe.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(imports)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -508,6 +515,364 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 #   `2023 Jan` &lt;dbl&gt;, `2022 Dec` &lt;dbl&gt;, `2022 Nov` &lt;dbl&gt;, `2022 Oct` &lt;dbl&gt;,
 #   `2022 Sep` &lt;dbl&gt;, `2022 Aug` &lt;dbl&gt;, `2022 Jul` &lt;dbl&gt;, `2022 Jun` &lt;dbl&gt;, …</code></pre>
 </div>
+</div>
+</section>
+</section>
+<section id="visualisation-1-merchandise-trade-performance" class="level2">
+<h2 class="anchored" data-anchor-id="visualisation-1-merchandise-trade-performance">Visualisation 1: MERCHANDISE TRADE PERFORMANCE</h2>
+<section id="original-design" class="level3">
+<h3 class="anchored" data-anchor-id="original-design">Original Design</h3>
+<p>This visualization is intended to display Singapore’s trade relationships with its major trading partners, showing imports, exports, total trade volume, and trade balance simultaneously in a static bubble chart format. The chart uses a scatter plot framework with imports on the x-axis, exports on the y-axis, and bubble size representing total trade volume.</p>
+<p>The original design is shown below.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="bubble_chart.png" class="img-fluid figure-img"></p>
+<figcaption>MERCHANDISE TRADE PERFORMANCE WITH MAJOR TRADING PARTNERS, 2024</figcaption>
+</figure>
+</div>
+</section>
+<section id="critique" class="level3">
+<h3 class="anchored" data-anchor-id="critique">Critique</h3>
+<section id="clarity" class="level4">
+<h4 class="anchored" data-anchor-id="clarity">Clarity</h4>
+<p>Why it is clear:</p>
+<ul>
+<li><p>Intuitive coordinate mapping: The use of a diagonal reference line creates an immediate visual classifier for trade surplus vs deficit. This diagonal approach leverages our spatial reasoning abilities to quickly identify balanced trade positions.</p></li>
+<li><p>Multi-dimensional encoding: Successfully represents four data dimensions (imports, exports, total trade volume, and trade balance) in a single visualization, allowing viewers to grasp complex relationships at once.</p></li>
+<li><p>Direct labeling approach: Each bubble contains both qualitative (country name) and quantitative (exact trade value) information, eliminating the need to reference a separate legend for primary data points.</p></li>
+</ul>
+<p>Why it can be confusing:</p>
+<ul>
+<li>Axis labeling position: The imports and exports labels positioned in the bottom corners could be potentially confusing or misleading, as readers may be uncertain which axis corresponds to which label. The axes would be more clearly defined if labeled directly on the sides.</li>
+<li>Regional vs country-level comparison: Presenting the EU as a single entity while showing individual countries creates an inconsistent unit of analysis. This approach obscures the distribution of countries within the EU and their individual trade positions relative to Singapore.</li>
+<li>Static limitation: The single time-point snapshot fails to reveal trends or patterns in trading relationships that have evolved over time, limiting context for analysis.</li>
+</ul>
+</section>
+<section id="aesthetics" class="level4">
+<h4 class="anchored" data-anchor-id="aesthetics">Aesthetics</h4>
+<p>Why it is beautiful:</p>
+<ul>
+<li>Visual harmony: The consistent use of circular elements creates a visual rhythm across the chart, with the varying sizes creating a natural visual hierarchy that draws attention to major trading partners. -Bounded compositional structure: The diagonal line creates a clear compositional structure that organizes the visual space effectively, using the principle of visual balance across the chart.</li>
+</ul>
+<p>Why it can be ugly:</p>
+<ul>
+<li>While the visualization is generally attractive, the arbitrary color scheme for countries misses an opportunity to add meaningful encoding (such as by geographic region), which would enhance both the aesthetic appeal and analytical value of the chart.</li>
+</ul>
+</section>
+</section>
+<section id="animated-bubble-chart-of-singapores-trade-with-major-partners" class="level3">
+<h3 class="anchored" data-anchor-id="animated-bubble-chart-of-singapores-trade-with-major-partners">Animated Bubble Chart of Singapore’s Trade with Major Partners</h3>
+<p>Animated bubble chart of Singapore’s trade with major partners This visualization shows an animated bubble chart displaying Singapore’s merchandise trade performance with its top 20 trading partners over time. The animation provides several key insights that a static visualization cannot:</p>
+<ul>
+<li>Temporal evolution: We can observe how trading relationships have evolved over the years, with some partners becoming more significant while others decline in importance.</li>
+<li>Regional patterns: By color-coding bubbles by region, we can easily identify which regions have become increasingly important to Singapore’s trade network.</li>
+<li>Trade balance dynamics: The animation reveals how the trade balance (surplus or deficit) with key partners has shifted over time, with bubbles moving across the diagonal line that represents balanced trade.</li>
+<li>Comparative size changes: The changing size of bubbles represents the growth or decline in total trade volume with each partner, offering a visual representation of Singapore’s changing trade priorities.</li>
+<li>Market concentration or diversification: We can observe whether Singapore’s trade has become more concentrated among fewer partners or more diversified across many partners over the years.</li>
+</ul>
+</section>
+<section id="data-preparation" class="level3">
+<h3 class="anchored" data-anchor-id="data-preparation">Data Preparation</h3>
+<p>We’ll work with the existing dataframes (imports and total_exports) that were already created in the data preparation step.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get all date columns (excluding Country and Region columns)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>date_cols <span class="ot">&lt;-</span> <span class="fu">colnames</span>(imports)[<span class="sc">-</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert date columns to proper date format for sorting</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>date_objects <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(<span class="fu">paste0</span>(<span class="st">"01 "</span>, date_cols), <span class="at">format =</span> <span class="st">"%d %Y %b"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">any</span>(<span class="fu">is.na</span>(date_objects))) {</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Try alternative format if first attempt has NAs</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  date_objects <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(<span class="fu">paste0</span>(<span class="st">"01 "</span>, date_cols), <span class="at">format =</span> <span class="st">"%d %b %Y"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Sort date columns chronologically</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>date_cols_sorted <span class="ot">&lt;-</span> date_cols[<span class="fu">order</span>(date_objects)]</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the latest period</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>latest_period <span class="ot">&lt;-</span> <span class="fu">tail</span>(date_cols_sorted, <span class="dv">1</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Now identify top 20 countries by total trade volume in the latest period</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>top_countries <span class="ot">&lt;-</span> imports <span class="sc">%&gt;%</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add exports for the latest period</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(total_exports <span class="sc">%&gt;%</span> <span class="fu">select</span>(Country, Region, <span class="fu">all_of</span>(latest_period)), </span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"Country"</span>, <span class="st">"Region"</span>), </span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">"_imports"</span>, <span class="st">"_exports"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate total trade (imports + exports) for latest period</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">total_trade =</span> .data[[<span class="fu">paste0</span>(latest_period, <span class="st">"_imports"</span>)]] <span class="sc">+</span> </span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>                      .data[[<span class="fu">paste0</span>(latest_period, <span class="st">"_exports"</span>)]]) <span class="sc">%&gt;%</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Sort by total trade volume, descending</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(total_trade)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Take top 20</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">20</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Select just the country and region</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Country, Region)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Print top countries for reference</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>top_countries</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 2
+   Country              Region 
+   &lt;chr&gt;                &lt;chr&gt;  
+ 1 Taiwan               Asia   
+ 2 Malaysia             Asia   
+ 3 China                Asia   
+ 4 United States        America
+ 5 Hong Kong            Asia   
+ 6 Korea, Rep Of        Asia   
+ 7 Indonesia            Asia   
+ 8 Japan                Asia   
+ 9 Viet Nam             Asia   
+10 Thailand             Asia   
+11 India                Asia   
+12 United Arab Emirates Asia   
+13 Australia            Oceania
+14 Philippines          Asia   
+15 Germany              Europe 
+16 United Kingdom       Europe 
+17 France               Europe 
+18 Switzerland          Europe 
+19 Netherlands          Europe 
+20 Brazil               America</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a long format dataset for trade data over time for the top 20 countries</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>trade_data_long <span class="ot">&lt;-</span> <span class="fu">tibble</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(date_col <span class="cf">in</span> date_cols_sorted) {</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Extract imports data for this period</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  period_imports <span class="ot">&lt;-</span> imports <span class="sc">%&gt;%</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">semi_join</span>(top_countries, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"Country"</span>, <span class="st">"Region"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(Country, Region, <span class="fu">all_of</span>(date_col)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">Imports =</span> <span class="fu">all_of</span>(date_col))</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Extract exports data for this period</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  period_exports <span class="ot">&lt;-</span> total_exports <span class="sc">%&gt;%</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">semi_join</span>(top_countries, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"Country"</span>, <span class="st">"Region"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(Country, Region, <span class="fu">all_of</span>(date_col)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">Exports =</span> <span class="fu">all_of</span>(date_col))</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Join imports and exports</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  period_data <span class="ot">&lt;-</span> period_imports <span class="sc">%&gt;%</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(period_exports, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"Country"</span>, <span class="st">"Region"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add period information</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">Period =</span> date_col,</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Parse the date from the column name</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">Date =</span> <span class="fu">as.Date</span>(<span class="fu">paste0</span>(<span class="st">"01 "</span>, date_col), <span class="at">format =</span> <span class="st">"%d %Y %b"</span>, <span class="at">tz =</span> <span class="st">"UTC"</span>),</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>      <span class="co"># If the above format doesn't work, try this alternative format</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">Date =</span> <span class="cf">if</span>(<span class="fu">all</span>(<span class="fu">is.na</span>(Date))) <span class="fu">as.Date</span>(<span class="fu">paste0</span>(<span class="st">"01 "</span>, date_col), <span class="at">format =</span> <span class="st">"%d %b %Y"</span>, <span class="at">tz =</span> <span class="st">"UTC"</span>) <span class="cf">else</span> Date,</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Calculate trade metrics</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">TotalTrade =</span> Imports <span class="sc">+</span> Exports,</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">TradeBalance =</span> Exports <span class="sc">-</span> Imports,</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">NetExporter =</span> Exports <span class="sc">&gt;</span> Imports,</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Year and month for easier filtering/grouping</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">Year =</span> <span class="fu">year</span>(Date),</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">Month =</span> <span class="fu">month</span>(Date)</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add to our growing dataframe</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>  trade_data_long <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(trade_data_long, period_data)</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Handle any NA dates that might have occurred during parsing</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">any</span>(<span class="fu">is.na</span>(trade_data_long<span class="sc">$</span>Date))) {</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create a sequence of dates for plotting purposes</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>  periods <span class="ot">&lt;-</span> <span class="fu">unique</span>(trade_data_long<span class="sc">$</span>Period)</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>  period_dates <span class="ot">&lt;-</span> <span class="fu">seq.Date</span>(<span class="at">from =</span> <span class="fu">as.Date</span>(<span class="st">"2003-01-01"</span>), </span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>                           <span class="at">by =</span> <span class="st">"month"</span>, </span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>                           <span class="at">length.out =</span> <span class="fu">length</span>(periods))</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>  period_map <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">Period =</span> periods,</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">MappedDate =</span> period_dates</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Join with our mapping</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>  trade_data_long <span class="ot">&lt;-</span> trade_data_long <span class="sc">%&gt;%</span></span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(period_map, <span class="at">by =</span> <span class="st">"Period"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Date =</span> <span class="fu">coalesce</span>(Date, MappedDate)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>MappedDate)</span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a><span class="co"># Format periods for display</span></span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>trade_data_long <span class="ot">&lt;-</span> trade_data_long <span class="sc">%&gt;%</span></span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">PeriodLabel =</span> <span class="fu">format</span>(Date, <span class="st">"%b %Y"</span>))</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the structure of the final dataset</span></span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(trade_data_long)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 5,300
+Columns: 12
+$ Country      &lt;chr&gt; "Brazil", "United States", "China", "Hong Kong", "India",…
+$ Region       &lt;chr&gt; "America", "America", "Asia", "Asia", "Asia", "Asia", "As…
+$ Imports      &lt;dbl&gt; 77.6, 2129.9, 1539.1, 427.0, 172.8, 1255.1, 1902.4, 676.3…
+$ Exports      &lt;dbl&gt; 27.1, 2777.5, 1258.9, 2277.8, 435.0, 2356.8, 1426.5, 1012…
+$ Period       &lt;chr&gt; "2003 Jan", "2003 Jan", "2003 Jan", "2003 Jan", "2003 Jan…
+$ Date         &lt;date&gt; 2003-01-01, 2003-01-01, 2003-01-01, 2003-01-01, 2003-01-…
+$ TotalTrade   &lt;dbl&gt; 104.7, 4907.4, 2798.0, 2704.8, 607.8, 3611.9, 3328.9, 168…
+$ TradeBalance &lt;dbl&gt; -50.5, 647.6, -280.2, 1850.8, 262.2, 1101.7, -475.9, 336.…
+$ NetExporter  &lt;lgl&gt; FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, …
+$ Year         &lt;dbl&gt; 2003, 2003, 2003, 2003, 2003, 2003, 2003, 2003, 2003, 200…
+$ Month        &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+$ PeriodLabel  &lt;chr&gt; "Jan 2003", "Jan 2003", "Jan 2003", "Jan 2003", "Jan 2003…</code></pre>
+</div>
+</div>
+</section>
+<section id="creating-the-animated-bubble-chart" class="level3">
+<h3 class="anchored" data-anchor-id="creating-the-animated-bubble-chart">Creating the Animated Bubble Chart</h3>
+<p>Now, we will create an animated bubble chart showing Singapore’s trade patterns over time. The animation showcases:</p>
+<ul>
+<li>Regional color-coding to identify geographic trade patterns</li>
+<li>Bubble size representing total trade volume</li>
+<li>Position relative to the diagonal line showing trade balance (surplus/deficit)</li>
+<li>Special highlighting for top 5 trading partners</li>
+<li>Clear annotations explaining the trade balance zones</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define color scheme for regions</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>region_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Asia"</span> <span class="ot">=</span> <span class="st">"#1E88E5"</span>,       <span class="co"># Blue</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"America"</span> <span class="ot">=</span> <span class="st">"#D81B60"</span>,    <span class="co"># Red</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Europe"</span> <span class="ot">=</span> <span class="st">"#8E24AA"</span>,     <span class="co"># Purple</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Oceania"</span> <span class="ot">=</span> <span class="st">"#43A047"</span>,    <span class="co"># Green</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Africa"</span> <span class="ot">=</span> <span class="st">"#F57C00"</span>      <span class="co"># Orange</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Identify top 5 trading partners by total trade in the latest period</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>top_partners <span class="ot">&lt;-</span> trade_data_long <span class="sc">%&gt;%</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Period <span class="sc">==</span> latest_period) <span class="sc">%&gt;%</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(TotalTrade)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">5</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(Country)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a new column to identify top partners</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>trade_data_long <span class="ot">&lt;-</span> trade_data_long <span class="sc">%&gt;%</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">TopPartner =</span> <span class="fu">if_else</span>(Country <span class="sc">%in%</span> top_partners, Country, <span class="st">"Other"</span>),</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">TopPartnerFactor =</span> <span class="fu">factor</span>(TopPartner, <span class="at">levels =</span> <span class="fu">c</span>(top_partners, <span class="st">"Other"</span>))</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Create custom color palette for top partners</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>partner_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setNames</span>(RColorBrewer<span class="sc">::</span><span class="fu">brewer.pal</span>(<span class="dv">5</span>, <span class="st">"Set1"</span>), top_partners),</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Other"</span> <span class="ot">=</span> <span class="st">"gray70"</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the base plot</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>  trade_data_long, </span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">x =</span> Imports, <span class="at">y =</span> Exports, </span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> TotalTrade, </span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> Region,</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">fill =</span> Region,</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.7</span>)</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Background shading - using polygons to properly show trade balance areas</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Base background (blue area - where imports &gt;= exports)</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"rect"</span>, <span class="at">xmin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">xmax =</span> <span class="cn">Inf</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>           <span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">alpha =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Green area where exports &gt; imports (above the diagonal)</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_polygon</span>(</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">max</span>(trade_data_long<span class="sc">$</span>Imports) <span class="sc">*</span> <span class="fl">1.2</span>, <span class="dv">0</span>),</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">max</span>(trade_data_long<span class="sc">$</span>Exports) <span class="sc">*</span> <span class="fl">1.2</span>, <span class="fu">max</span>(trade_data_long<span class="sc">$</span>Exports) <span class="sc">*</span> <span class="fl">1.2</span>)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y),</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"white"</span>, </span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fl">0.2</span>,</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">inherit.aes =</span> <span class="cn">FALSE</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add diagonal line</span></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"gray70"</span>) <span class="sc">+</span></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add the bubbles</span></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">shape =</span> <span class="dv">21</span>, <span class="at">stroke =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Highlight top partners with different outline</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> <span class="cf">function</span>(x) <span class="fu">filter</span>(x, Country <span class="sc">%in%</span> top_partners),</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">color =</span> Country), </span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>    <span class="at">shape =</span> <span class="dv">21</span>, </span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke =</span> <span class="fl">1.5</span>,</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fl">0.9</span></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add country labels</span></span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(</span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> Country),</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">3</span>,</span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">force =</span> <span class="dv">3</span>,</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">max.iter =</span> <span class="dv">3000</span>,</span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">segment.color =</span> <span class="st">"gray50"</span>,</span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>    <span class="at">segment.alpha =</span> <span class="fl">0.6</span>,</span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">box.padding =</span> <span class="fl">0.5</span>,</span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>    <span class="at">point.padding =</span> <span class="fl">0.3</span>,</span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>    <span class="at">max.overlaps =</span> <span class="dv">100</span>,</span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"black"</span></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Format the scales</span></span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> <span class="fu">label_number</span>(<span class="at">suffix =</span> <span class="st">" Bil"</span>), </span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>                     <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>))) <span class="sc">+</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> <span class="fu">label_number</span>(<span class="at">suffix =</span> <span class="st">" Bil"</span>), </span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>                     <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>))) <span class="sc">+</span></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Hide the size legend but keep the region and country legends</span></span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_size_continuous</span>(<span class="at">range =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">20</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(region_colors, partner_colors)) <span class="sc">+</span></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> region_colors) <span class="sc">+</span></span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Customize the theme with legend at bottom left</span></span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>,</span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.box =</span> <span class="st">"vertical"</span>,</span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.justification =</span> <span class="st">"left"</span>,    <span class="co"># Align the legend to the left</span></span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.box.just =</span> <span class="st">"left"</span>,         <span class="co"># Justify the legend box to the left</span></span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.margin =</span> <span class="fu">margin</span>(<span class="at">t =</span> <span class="dv">5</span>, <span class="at">r =</span> <span class="dv">5</span>, <span class="at">b =</span> <span class="dv">5</span>, <span class="at">l =</span> <span class="dv">5</span>),</span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">11</span>, <span class="at">face =</span> <span class="st">"italic"</span>),</span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">11</span>, <span class="at">face =</span> <span class="st">"bold"</span>)</span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set labels</span></span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Singapore's Merchandise Trade Performance"</span>,</span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Period: {closest_state}"</span>,</span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Imports (S$ Bil)"</span>,</span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Exports (S$ Bil)"</span>,</span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Region / Top Partners"</span>,</span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"Region"</span>) <span class="sc">+</span></span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add explanatory annotations - with correct colors to match background shading</span></span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">max</span>(trade_data_long<span class="sc">$</span>Imports) <span class="sc">*</span> <span class="fl">0.25</span>, <span class="at">y =</span> <span class="fu">max</span>(trade_data_long<span class="sc">$</span>Exports) <span class="sc">*</span> <span class="fl">0.85</span>, </span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a>           <span class="at">label =</span> <span class="st">"Singapore's exports exceed imports"</span>, </span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>           <span class="at">size =</span> <span class="dv">3</span>, <span class="at">color =</span> <span class="st">"darkblue"</span>, <span class="at">hjust =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">max</span>(trade_data_long<span class="sc">$</span>Imports) <span class="sc">*</span> <span class="fl">0.75</span>, <span class="at">y =</span> <span class="fu">max</span>(trade_data_long<span class="sc">$</span>Exports) <span class="sc">*</span> <span class="fl">0.25</span>, </span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>           <span class="at">label =</span> <span class="st">"Singapore's imports exceed exports"</span>, </span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a>           <span class="at">size =</span> <span class="dv">3</span>, <span class="at">color =</span> <span class="st">"darkgreen"</span>, <span class="at">hjust =</span> <span class="dv">1</span>)</span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a><span class="co"># Create animation with MUCH slower transitions</span></span>
+<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>animated_chart <span class="ot">&lt;-</span> p <span class="sc">+</span> </span>
+<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transition_states</span>(</span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a>    <span class="at">states =</span> PeriodLabel,</span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a>    <span class="at">transition_length =</span> <span class="dv">3</span>,    <span class="co"># Longer transitions between states</span></span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>    <span class="at">state_length =</span> <span class="dv">15</span>         <span class="co"># Much longer pause on each state</span></span>
+<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ease_aes</span>(<span class="st">'cubic-in-out'</span>) <span class="sc">+</span></span>
+<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a>  <span class="fu">enter_fade</span>() <span class="sc">+</span> </span>
+<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a>  <span class="fu">exit_fade</span>()</span>
+<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the animation object</span></span>
+<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a>trade_animation <span class="ot">&lt;-</span> <span class="fu">animate</span>(</span>
+<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a>  animated_chart, </span>
+<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a>  <span class="at">nframes =</span> <span class="dv">300</span>,   <span class="co"># More frames for smoother transitions</span></span>
+<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a>  <span class="at">fps =</span> <span class="dv">2</span>,         <span class="co"># Very slow frame rate</span></span>
+<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">800</span>, </span>
+<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">800</span>,</span>
+<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a>  <span class="at">renderer =</span> <span class="fu">gifski_renderer</span>(<span class="at">loop =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a>  <span class="at">res =</span> <span class="dv">100</span></span>
+<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the animation to a file</span></span>
+<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a><span class="fu">anim_save</span>(<span class="st">"trade_animation.gif"</span>, trade_animation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="trade_animation.gif" class="img-fluid figure-img"></p>
+<figcaption>Singapore Trade Animation</figcaption>
+</figure>
 </div>
 
 

@@ -10,10 +10,6 @@ execute:
   eval: true
   warning: false
   freeze: true
-format:
-  html:
-    code-fold: true
-    code-summary: "Code"
 ---
 
 ## Overview
@@ -26,9 +22,7 @@ This take-home exercise comprises the following requirements:
 
 1. Obtain the "Merchandise Trade by Region/Market" dataset from the [Department of Statistics Singapore, DOS](https://www.singstat.gov.sg/) website via the [Merchandise Trade by Region/Market](https://www.singstat.gov.sg/find-data/search-by-theme/trade-and-investment/merchandise-trade/latest-data) page.
 
-2. Conduct a critical evaluation of three data visualizations presented on [this page](https://www.singstat.gov.sg/modules/infographics/singapore-international-trade) by:
-   - Assessing their respective strengths and limitations
-   - Developing conceptual sketches for improved visualization alternatives
+2. Conduct a critical evaluation of three data visualizations presented on [this page](https://www.singstat.gov.sg/modules/infographics/singapore-international-trade) by assessing their respective strengths and limitations
 
 3. Implement enhanced versions of the selected visualizations with R packages.
 
@@ -41,7 +35,9 @@ This take-home exercise comprises the following requirements:
 First, we load packages required:
 
 ```{r}
+library(magick)
 pacman::p_load(tidyverse, readxl, dplyr)
+pacman::p_load(tidyverse, gganimate, gifski, scales, ggrepel, lubridate)
 ```
 
 
@@ -183,12 +179,330 @@ total_exports <- total_exports %>%
   select(Country, Region, all_of(date_cols))
 
 ## Check dimensions to verify. Should be the same
-# dim(domestic_exports)
-# dim(reexports)      
-# dim(total_exports)   
+# dim(domestic_exports)  # output: 154 267
+# dim(reexports)  # output: 154 267      
+# dim(total_exports)  # output: 154 267   
 ```
 
+
+We can verify that imports is correctly configured by examining the initial rows of the dataframe.
 ```{r}
 head(imports)
 ```
 
+
+## Visualisation 1: MERCHANDISE TRADE PERFORMANCE
+
+### Original Design
+
+This visualization is intended to display Singapore's trade relationships with its major trading partners, showing imports, exports, total trade volume, and trade balance simultaneously in a static bubble chart format. The chart uses a scatter plot framework with imports on the x-axis, exports on the y-axis, and bubble size representing total trade volume.
+
+The original design is shown below.
+
+![MERCHANDISE TRADE PERFORMANCE WITH MAJOR TRADING PARTNERS, 2024](bubble_chart.png)
+
+
+### Critique
+
+#### Clarity
+
+Why it is clear:
+
+- Intuitive coordinate mapping: The use of a diagonal reference line creates an immediate visual classifier for trade surplus vs deficit. This diagonal approach leverages our spatial reasoning abilities to quickly identify balanced trade positions.
+
+- Multi-dimensional encoding: Successfully represents four data dimensions (imports, exports, total trade volume, and trade balance) in a single visualization, allowing viewers to grasp complex relationships at once.
+
+- Direct labeling approach: Each bubble contains both qualitative (country name) and quantitative (exact trade value) information, eliminating the need to reference a separate legend for primary data points.
+
+
+Why it can be confusing:
+
+- Axis labeling position: The imports and exports labels positioned in the bottom corners could be potentially confusing or misleading, as readers may be uncertain which axis corresponds to which label. The axes would be more clearly defined if labeled directly on the sides.
+- Regional vs country-level comparison: Presenting the EU as a single entity while showing individual countries creates an inconsistent unit of analysis. This approach obscures the distribution of countries within the EU and their individual trade positions relative to Singapore.
+- Static limitation: The single time-point snapshot fails to reveal trends or patterns in trading relationships that have evolved over time, limiting context for analysis.
+
+
+#### Aesthetics
+
+Why it is beautiful:
+
+- Visual harmony: The consistent use of circular elements creates a visual rhythm across the chart, with the varying sizes creating a natural visual hierarchy that draws attention to major trading partners.
+-Bounded compositional structure: The diagonal line creates a clear compositional structure that organizes the visual space effectively, using the principle of visual balance across the chart.
+
+Why it can be ugly:
+
+- While the visualization is generally attractive, the arbitrary color scheme for countries misses an opportunity to add meaningful encoding (such as by geographic region), which would enhance both the aesthetic appeal and analytical value of the chart.
+
+
+### Animated Bubble Chart of Singapore's Trade with Major Partners
+
+Animated bubble chart of Singapore's trade with major partners
+This visualization shows an animated bubble chart displaying Singapore's merchandise trade performance with its top 20 trading partners over time. The animation provides several key insights that a static visualization cannot:
+
+- Temporal evolution: We can observe how trading relationships have evolved over the years, with some partners becoming more significant while others decline in importance.
+- Regional patterns: By color-coding bubbles by region, we can easily identify which regions have become increasingly important to Singapore's trade network.
+- Trade balance dynamics: The animation reveals how the trade balance (surplus or deficit) with key partners has shifted over time, with bubbles moving across the diagonal line that represents balanced trade.
+- Comparative size changes: The changing size of bubbles represents the growth or decline in total trade volume with each partner, offering a visual representation of Singapore's changing trade priorities.
+- Market concentration or diversification: We can observe whether Singapore's trade has become more concentrated among fewer partners or more diversified across many partners over the years.
+
+
+### Data Preparation
+
+We'll work with the existing dataframes (imports and total_exports) that were already created in the data preparation step.
+
+```{r}
+# Get all date columns (excluding Country and Region columns)
+date_cols <- colnames(imports)[-(1:2)]
+
+# Convert date columns to proper date format for sorting
+date_objects <- as.Date(paste0("01 ", date_cols), format = "%d %Y %b")
+if(any(is.na(date_objects))) {
+  # Try alternative format if first attempt has NAs
+  date_objects <- as.Date(paste0("01 ", date_cols), format = "%d %b %Y")
+}
+
+# Sort date columns chronologically
+date_cols_sorted <- date_cols[order(date_objects)]
+
+# Get the latest period
+latest_period <- tail(date_cols_sorted, 1)
+
+# Now identify top 20 countries by total trade volume in the latest period
+top_countries <- imports %>%
+  # Add exports for the latest period
+  left_join(total_exports %>% select(Country, Region, all_of(latest_period)), 
+            by = c("Country", "Region"), 
+            suffix = c("_imports", "_exports")) %>%
+  # Calculate total trade (imports + exports) for latest period
+  mutate(total_trade = .data[[paste0(latest_period, "_imports")]] + 
+                      .data[[paste0(latest_period, "_exports")]]) %>%
+  # Sort by total trade volume, descending
+  arrange(desc(total_trade)) %>%
+  # Take top 20
+  slice_head(n = 20) %>%
+  # Select just the country and region
+  select(Country, Region)
+
+# Print top countries for reference
+top_countries
+
+# Create a long format dataset for trade data over time for the top 20 countries
+trade_data_long <- tibble()
+
+for(date_col in date_cols_sorted) {
+  # Extract imports data for this period
+  period_imports <- imports %>%
+    semi_join(top_countries, by = c("Country", "Region")) %>%
+    select(Country, Region, all_of(date_col)) %>%
+    rename(Imports = all_of(date_col))
+  
+  # Extract exports data for this period
+  period_exports <- total_exports %>%
+    semi_join(top_countries, by = c("Country", "Region")) %>%
+    select(Country, Region, all_of(date_col)) %>%
+    rename(Exports = all_of(date_col))
+  
+  # Join imports and exports
+  period_data <- period_imports %>%
+    left_join(period_exports, by = c("Country", "Region")) %>%
+    # Add period information
+    mutate(
+      Period = date_col,
+      # Parse the date from the column name
+      Date = as.Date(paste0("01 ", date_col), format = "%d %Y %b", tz = "UTC"),
+      # If the above format doesn't work, try this alternative format
+      Date = if(all(is.na(Date))) as.Date(paste0("01 ", date_col), format = "%d %b %Y", tz = "UTC") else Date,
+      # Calculate trade metrics
+      TotalTrade = Imports + Exports,
+      TradeBalance = Exports - Imports,
+      NetExporter = Exports > Imports,
+      # Year and month for easier filtering/grouping
+      Year = year(Date),
+      Month = month(Date)
+    )
+  
+  # Add to our growing dataframe
+  trade_data_long <- bind_rows(trade_data_long, period_data)
+}
+
+# Handle any NA dates that might have occurred during parsing
+if(any(is.na(trade_data_long$Date))) {
+  # Create a sequence of dates for plotting purposes
+  periods <- unique(trade_data_long$Period)
+  period_dates <- seq.Date(from = as.Date("2003-01-01"), 
+                           by = "month", 
+                           length.out = length(periods))
+  period_map <- tibble(
+    Period = periods,
+    MappedDate = period_dates
+  )
+  
+  # Join with our mapping
+  trade_data_long <- trade_data_long %>%
+    left_join(period_map, by = "Period") %>%
+    mutate(Date = coalesce(Date, MappedDate)) %>%
+    select(-MappedDate)
+}
+
+# Format periods for display
+trade_data_long <- trade_data_long %>%
+  mutate(PeriodLabel = format(Date, "%b %Y"))
+
+# Check the structure of the final dataset
+glimpse(trade_data_long)
+```
+
+### Creating the Animated Bubble Chart
+
+Now, we will create an animated bubble chart showing Singapore's trade patterns over time. The animation showcases:
+
+- Regional color-coding to identify geographic trade patterns
+- Bubble size representing total trade volume
+- Position relative to the diagonal line showing trade balance (surplus/deficit)
+- Special highlighting for top 5 trading partners
+- Clear annotations explaining the trade balance zones
+
+
+```{r, eval=FALSE}
+# Define color scheme for regions
+region_colors <- c(
+  "Asia" = "#1E88E5",       # Blue
+  "America" = "#D81B60",    # Red
+  "Europe" = "#8E24AA",     # Purple
+  "Oceania" = "#43A047",    # Green
+  "Africa" = "#F57C00"      # Orange
+)
+
+# Identify top 5 trading partners by total trade in the latest period
+top_partners <- trade_data_long %>%
+  filter(Period == latest_period) %>%
+  arrange(desc(TotalTrade)) %>%
+  slice_head(n = 5) %>%
+  pull(Country)
+
+# Add a new column to identify top partners
+trade_data_long <- trade_data_long %>%
+  mutate(
+    TopPartner = if_else(Country %in% top_partners, Country, "Other"),
+    TopPartnerFactor = factor(TopPartner, levels = c(top_partners, "Other"))
+  )
+
+# Create custom color palette for top partners
+partner_colors <- c(
+  setNames(RColorBrewer::brewer.pal(5, "Set1"), top_partners),
+  "Other" = "gray70"
+)
+
+# Create the base plot
+p <- ggplot(
+  trade_data_long, 
+  aes(x = Imports, y = Exports, 
+      size = TotalTrade, 
+      color = Region,
+      fill = Region,
+      alpha = 0.7)
+) +
+  # Background shading - using polygons to properly show trade balance areas
+  # Base background (blue area - where imports >= exports)
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf,
+           fill = "white", alpha = 0.2) +
+  # Green area where exports > imports (above the diagonal)
+  geom_polygon(
+    data = data.frame(
+      x = c(0, max(trade_data_long$Imports) * 1.2, 0),
+      y = c(0, max(trade_data_long$Exports) * 1.2, max(trade_data_long$Exports) * 1.2)
+    ),
+    aes(x = x, y = y),
+    fill = "white", 
+    alpha = 0.2,
+    inherit.aes = FALSE
+  ) +
+  # Add diagonal line
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray70") +
+  # Add the bubbles
+  geom_point(shape = 21, stroke = 0.5) +
+  # Highlight top partners with different outline
+  geom_point(
+    data = function(x) filter(x, Country %in% top_partners),
+    aes(color = Country), 
+    shape = 21, 
+    stroke = 1.5,
+    alpha = 0.9
+  ) +
+  # Add country labels
+  geom_text_repel(
+    aes(label = Country),
+    size = 3,
+    force = 3,
+    max.iter = 3000,
+    segment.color = "gray50",
+    segment.alpha = 0.6,
+    box.padding = 0.5,
+    point.padding = 0.3,
+    max.overlaps = 100,
+    color = "black"
+  ) +
+  # Format the scales
+  scale_x_continuous(labels = label_number(suffix = " Bil"), 
+                     expand = expansion(mult = c(0.1, 0.1))) +
+  scale_y_continuous(labels = label_number(suffix = " Bil"), 
+                     expand = expansion(mult = c(0.1, 0.1))) +
+  # Hide the size legend but keep the region and country legends
+  scale_size_continuous(range = c(3, 20), guide = "none") + 
+  scale_color_manual(values = c(region_colors, partner_colors)) +
+  scale_fill_manual(values = region_colors) +
+  # Customize the theme with legend at bottom left
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.box = "vertical",
+    legend.justification = "left",    # Align the legend to the left
+    legend.box.just = "left",         # Justify the legend box to the left
+    legend.margin = margin(t = 5, r = 5, b = 5, l = 5),
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 11, face = "italic"),
+    axis.title = element_text(size = 11, face = "bold")
+  ) +
+  # Set labels
+  labs(
+    title = "Singapore's Merchandise Trade Performance",
+    subtitle = "Period: {closest_state}",
+    x = "Imports (S$ Bil)",
+    y = "Exports (S$ Bil)",
+    color = "Region / Top Partners",
+    fill = "Region") +
+  # Add explanatory annotations - with correct colors to match background shading
+  annotate("text", x = max(trade_data_long$Imports) * 0.25, y = max(trade_data_long$Exports) * 0.85, 
+           label = "Singapore's exports exceed imports", 
+           size = 3, color = "darkblue", hjust = 0) +
+  annotate("text", x = max(trade_data_long$Imports) * 0.75, y = max(trade_data_long$Exports) * 0.25, 
+           label = "Singapore's imports exceed exports", 
+           size = 3, color = "darkgreen", hjust = 1)
+
+# Create animation with MUCH slower transitions
+animated_chart <- p + 
+  transition_states(
+    states = PeriodLabel,
+    transition_length = 3,    # Longer transitions between states
+    state_length = 15         # Much longer pause on each state
+  ) +
+  ease_aes('cubic-in-out') +
+  enter_fade() + 
+  exit_fade()
+
+# Create the animation object
+trade_animation <- animate(
+  animated_chart, 
+  nframes = 300,   # More frames for smoother transitions
+  fps = 2,         # Very slow frame rate
+  width = 800, 
+  height = 800,
+  renderer = gifski_renderer(loop = TRUE),
+  res = 100
+)
+
+# Save the animation to a file
+anim_save("trade_animation.gif", trade_animation)
+```
+![Singapore Trade Animation](trade_animation.gif)
