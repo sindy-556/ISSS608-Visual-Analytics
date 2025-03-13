@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise"
+title: "Hands-on Exercise 8b: Visualising Geospatial Point Data"
 author: "Sindy"
 date-modified: "last-modified"
 execute:
@@ -9,4 +9,219 @@ execute:
   freeze: true
 ---
 
-## Getting started
+## 1. Overview
+
+This chapter explores proportional symbol maps, a powerful technique for visualizing discrete spatial phenomena through the visual variable of size. These maps, also known as graduate symbol maps, come in two variants: range-graded (classed) and proportional symbols (unclassed). The focus will be on creating proportional symbol maps showing Singapore Pools' outlets using the **tmap** package in R.
+
+
+## 2. Getting Started
+
+The first step involves loading the necessary R packages for geospatial data handling and visualization.
+
+```{r}
+pacman::p_load(sf, tmap, tidyverse)
+```
+
+## 3. Geospatial Data Wrangling
+
+### 3.1 The Data
+
+The dataset used for this exercise is *SGPools_svy21.csv*, which contains information about Singapore Pools outlets. The dataset consists of seven columns, including XCOORD and YCOORD which represent the x-coordinates and y-coordinates in Singapore SVY21 Projected Coordinate System.
+
+### 3.2 Data Import and Preparation
+
+The following code uses the *read_csv()* function from the **readr** package to import the data as a tibble.
+
+```{r}
+sgpools <- read_csv("data/aspatial/SGPools_svy21.csv")
+```
+
+Examining the imported data structure ensures proper data loading:
+
+```{r}
+list(sgpools) 
+```
+
+Notice that sgpools is stored as a tibble data frame rather than a standard R data frame.
+
+### 3.3 Creating a **sf** Data Frame from an Aspatial Data Frame
+
+Converting the tabular data into a spatial format requires the *st_as_sf()* function from the **sf** package:
+
+```{r}
+sgpools_sf <- st_as_sf(sgpools, 
+                       coords = c("XCOORD", "YCOORD"),
+                       crs= 3414)
+```
+
+This transformation requires: - The *coords* argument specifying the column names for x-coordinates followed by y-coordinates - The *crs* argument indicating the coordinate reference system in EPSG format (3414 corresponds to Singapore SVY21 Projected Coordinate System)
+
+Inspecting the new spatial object:
+
+```{r}
+list(sgpools_sf)
+```
+
+The output confirms that sgpools_sf is a point feature class with EPSG:3414 projection. The bounding box (bbox) indicates the geographical extent of the data.
+
+### 3.4 Exploring Spatial Properties of Point Data
+
+Understanding the spatial distribution of the data helps inform mapping decisions. The following code summarizes key spatial characteristics:
+
+```{r}
+st_bbox(sgpools_sf)
+```
+
+Calculating the distance between points can reveal potential clustering:
+
+```{r}
+nearest_neighbor <- st_distance(sgpools_sf, sgpools_sf)
+diag(nearest_neighbor) <- NA
+min_distances <- apply(nearest_neighbor, 1, min, na.rm=TRUE)
+summary(as.numeric(min_distances))
+```
+
+This analysis shows the minimum, maximum, and average distances between outlets, helping determine appropriate symbol sizes for the map.
+
+## 4. Drawing Proportional Symbol Maps
+
+### 4.1 Setting Up Interactive Mode
+
+To create interactive maps, the view mode of tmap is activated:
+
+```{r}
+tmap_mode("view")
+```
+
+### 4.2 Basic Interactive Point Symbol Map
+
+The first step in creating a proportional symbol map is plotting simple point symbols:
+
+```{r}
+tm_shape(sgpools_sf)+
+tm_bubbles(col = "red",
+           size = 1,
+           border.col = "black",
+           border.lwd = 1)
+```
+
+### 4.3 Creating Proportional Symbols
+
+To create a true proportional symbol map, a numerical variable must be assigned to the size visual attribute:
+
+```{r}
+tm_shape(sgpools_sf)+
+tm_bubbles(col = "red",
+           size = "Gp1Gp2 Winnings",
+           border.col = "black",
+           border.lwd = 1)
+```
+
+### 4.4 Handling Symbol Overlap with Transparency
+
+When mapping densely clustered points, symbol overlap can obscure patterns. Adding transparency helps mitigate this issue:
+
+```{r}
+tm_shape(sgpools_sf)+
+tm_bubbles(col = "red",
+           size = "Gp1Gp2 Winnings",
+           border.col = "black",
+           border.lwd = 1,
+           alpha = 0.7,
+           scale = 0.8)
+```
+
+The *alpha* parameter controls transparency (0 = fully transparent, 1 = fully opaque), while *scale* adjusts the overall size of symbols. This combination maintains proportionality while reducing visual clutter.
+
+### 4.5 Adding Categorical Color Dimension
+
+The map can be enhanced by using color to represent categorical data:
+
+```{r}
+tm_shape(sgpools_sf)+
+tm_bubbles(fill = "OUTLET TYPE", 
+          size = "Gp1Gp2 Winnings",
+          border.col = "black",
+          border.lwd = 1)
+```
+
+### 4.6 Optimizing Color Palettes for Categorical Data
+
+Color choice significantly impacts map readability. The *palette* parameter allows selection of appropriate color schemes:
+
+```{r}
+tm_shape(sgpools_sf)+
+tm_bubbles(col = "OUTLET TYPE", 
+          size = "Gp1Gp2 Winnings",
+          border.col = "black",
+          border.lwd = 1,
+          palette = "Dark2") +
+tm_layout(legend.outside = TRUE)
+```
+
+The "Dark2" palette from ColorBrewer provides distinct colors that work well for categorical data. The *legend.outside* parameter prevents the legend from obscuring map data.
+
+### 4.7 Creating Faceted Maps
+
+Faceted maps allow comparison of subsets of data:
+
+```{r}
+tm_shape(sgpools_sf) +
+  tm_bubbles(col = "OUTLET TYPE", 
+          size = "Gp1Gp2 Winnings",
+          border.col = "black",
+          border.lwd = 1) +
+  tm_facets(by= "OUTLET TYPE",
+            nrow = 1,
+            sync = TRUE)
+```
+
+The *sync* parameter ensures all facets maintain synchronized zoom and pan settings for easier comparison.
+
+### 4.8 Adding Essential Map Elements
+
+Professional maps include contextual elements that improve interpretation:
+
+```{r}
+tm_shape(sgpools_sf) +
+  tm_bubbles(col = "OUTLET TYPE", 
+          size = "Gp1Gp2 Winnings",
+          border.col = "black",
+          border.lwd = 1) +
+  tm_layout(title = "Singapore Pools Outlets and Winnings",
+            title.position = c("center", "top"),
+            title.size = 1.2,
+            legend.outside = TRUE,
+            legend.title.size = 0.9,
+            legend.text.size = 0.7)
+```
+
+This code adds a clear title and configures legend positioning and sizing for better readability.
+
+### 4.9 Incorporating Basemaps for Context
+
+Adding a basemap provides valuable geographic context:
+
+```{r}
+tm_shape(sgpools_sf) +
+  tm_bubbles(col = "OUTLET TYPE", 
+          size = "Gp1Gp2 Winnings",
+          border.col = "black",
+          border.lwd = 1) +
+  tm_basemap("OpenStreetMap") +
+  tm_layout(legend.outside = TRUE)
+```
+
+OpenStreetMap provides street-level detail that helps viewers locate familiar landmarks and understand the distribution of outlets in relation to urban features.
+
+### 4.10 Returning to Plot Mode
+
+Before ending the session, switch tmap back to plot mode:
+
+```{r}
+tmap_mode("plot")
+```
+
+## 5. Reference
+
+Credits to [Prof Kam](https://r4va.netlify.app/chap22).
