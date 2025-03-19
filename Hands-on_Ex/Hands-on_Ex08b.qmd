@@ -13,7 +13,6 @@ execute:
 
 This chapter explores proportional symbol maps, a powerful technique for visualizing discrete spatial phenomena through the visual variable of size. These maps, also known as graduate symbol maps, come in two variants: range-graded (classed) and proportional symbols (unclassed). The focus will be on creating proportional symbol maps showing Singapore Pools' outlets using the **tmap** package in R.
 
-
 ## 2. Getting Started
 
 The first step involves loading the necessary R packages for geospatial data handling and visualization.

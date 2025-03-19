@@ -29,7 +29,6 @@ NGA_wp <- read_rds("data/rds/NGA_wp.rds")
 
 ### 2.1 Visualising distribution of water points
 
-
 ```{r}
 #| fig-width: 16
 
@@ -56,9 +55,6 @@ p1 <- tm_shape(NGA_wp) +
 # Arrange maps side by side
 tmap_arrange(p2, p1, nrow = 1)
 ```
-
-
-
 
 ### 2.2 Impact of Classification Methods on Visualizations
 
@@ -178,14 +174,13 @@ quantile(var[,1], percent)
 
 When variables are extracted from an sf data.frame, the geometry is extracted as well. For mapping and spatial manipulation, this is the expected behavior, but many base R functions cannot deal with the geometry. Specifically, the `quantile()` gives an error. As a result `st_set_geomtry(NULL)` is used to drop geometry field.
 
-
 #### Why writing functions?
 
 Writing a function has three big advantages over using copy-and-paste:
 
-- You can give a function an evocative name that makes your code easier to understand.
-- As requirements change, you only need to update code in one place, instead of many.
-- You eliminate the chance of making incidental mistakes when you copy and paste (i.e. updating a variable name in one place, but not in another).
+-   You can give a function an evocative name that makes your code easier to understand.
+-   As requirements change, you only need to update code in one place, instead of many.
+-   You eliminate the chance of making incidental mistakes when you copy and paste (i.e. updating a variable name in one place, but not in another).
 
 Source: [Chapter 19: Functions](https://r4ds.had.co.nz/functions.html#functions) of **R for Data Science**.
 
@@ -193,11 +188,11 @@ Source: [Chapter 19: Functions](https://r4ds.had.co.nz/functions.html#functions)
 
 Firstly, we will write an R function as shown below to extract a variable (i.e. *wp_nonfunctional*) as a vector out of an sf data.frame.
 
-- arguments:
-    - vname: variable name (as character, in quotes)
-    - df: name of sf data frame
-- returns:
-    - v: vector with values (without a column name)
+-   arguments:
+    -   vname: variable name (as character, in quotes)
+    -   df: name of sf data frame
+-   returns:
+    -   v: vector with values (without a column name)
 
 ```{r}
 get.var <- function(vname,df) {
@@ -253,19 +248,19 @@ ggplot(data = NGA_wp,
   geom_boxplot()
 ```
 
-- Displaying summary statistics on a choropleth map by using the basic principles of boxplot.
+-   Displaying summary statistics on a choropleth map by using the basic principles of boxplot.
 
-- To create a box map, a custom breaks specification will be used. However, there is a complication. The break points for the box map vary depending on whether lower or upper outliers are present.
+-   To create a box map, a custom breaks specification will be used. However, there is a complication. The break points for the box map vary depending on whether lower or upper outliers are present.
 
 #### Creating the boxbreaks function
 
 The code chunk below is an R function that creating break points for a box map.
 
-- arguments:
-    - v: vector with observations
-    - mult: multiplier for IQR (default 1.5)
-- returns:
-    - bb: vector with 7 break points compute quartile and fences
+-   arguments:
+    -   v: vector with observations
+    -   mult: multiplier for IQR (default 1.5)
+-   returns:
+    -   bb: vector with 7 break points compute quartile and fences
 
 ```{r}
 boxbreaks <- function(v,mult=1.5) {
@@ -306,14 +301,14 @@ boxbreaks(var)
 
 The code chunk below is an R function to create a box map.
 
-- arguments:
-  - vnam: variable name (as character, in quotes)
-  - df: simple features polygon layer
-  - legtitle: legend title
-  - mtitle: map title
-  - mult: multiplier for IQR
-- returns:
-  - a tmap-element (plots a map)
+-   arguments:
+    -   vnam: variable name (as character, in quotes)
+    -   df: simple features polygon layer
+    -   legtitle: legend title
+    -   mtitle: map title
+    -   mult: multiplier for IQR
+-   returns:
+    -   a tmap-element (plots a map)
 
 ```{r}
 boxmap <- function(vnam, df, 
@@ -436,7 +431,6 @@ tm_shape(NGA_wp) +
 ```
 
 This approach reveals LGAs facing compound challenges (low functionality and high non-functionality) as well as those performing well across both metrics.
-
 
 ### 5.2 Spatial Pattern Analysis
 

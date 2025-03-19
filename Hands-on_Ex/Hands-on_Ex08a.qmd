@@ -159,9 +159,7 @@ qtm(mpsz_pop2020,
     fill = "DEPENDENCY")
 ```
 
-Note that:
--   *tmap_mode()* with "plot" option is used to produce a static map. For interactive mode, "view" option should be used.
--   *fill* argument is used to map the attribute (i.e. DEPENDENCY)
+Note that: - *tmap_mode()* with "plot" option is used to produce a static map. For interactive mode, "view" option should be used. - *fill* argument is used to map the attribute (i.e. DEPENDENCY)
 
 ### 4.2 Interactive vs. Static Mapping
 
@@ -209,10 +207,7 @@ tm_shape(mpsz_pop2020)+
   tm_polygons("DEPENDENCY")
 ```
 
-Key points about *tm_polygons()*:
--   The default interval binning used is called "pretty"
--   The default color scheme is `YlOrRd` of ColorBrewer
--   Missing values are shaded in grey by default
+Key points about *tm_polygons()*: - The default interval binning used is called "pretty" - The default color scheme is `YlOrRd` of ColorBrewer - Missing values are shaded in grey by default
 
 ### 4.5 Drawing a choropleth map using *tm_fill()* and *tm_border()*
 
@@ -462,8 +457,6 @@ tm_shape(mpsz_pop2020) +
              position = c("left", "bottom"))
 ```
 
-
-
 Reset to the default style:
 
 ```{r}
@@ -540,7 +533,6 @@ tmap_arrange(c(region_maps, list(legend_map)),
              heights = c(1, 1, 0.1)) 
 ```
 
-
 ### 4.13 Mapping Spatial Object Meeting a Selection Criterion
 
 Instead of creating small multiple choropleth maps, you can also use selection functions to map spatial objects meeting specific criteria:
@@ -560,9 +552,6 @@ tm_shape(mpsz_pop2020[mpsz_pop2020$REGION_N=="CENTRAL REGION", ])+
   tm_borders(alpha = 0.5)
 ```
 
-
-
 ## 5. Reference
 
 Credits to [Prof Kam](https://r4va.netlify.app/chap21).
-
