@@ -15,11 +15,11 @@ This chapter explores techniques for modeling, analyzing and visualizing network
 
 Core learning objectives include:
 
-- Creating graph object data frames with *dplyr*, *lubridate*, and *tidygraph*
-- Building network visualizations using *ggraph*
-- Computing network metrics to quantify structural properties
-- Creating advanced graph visualizations incorporating network metrics
-- Developing interactive network visualizations with *visNetwork*
+-   Creating graph object data frames with *dplyr*, *lubridate*, and *tidygraph*
+-   Building network visualizations using *ggraph*
+-   Computing network metrics to quantify structural properties
+-   Creating advanced graph visualizations incorporating network metrics
+-   Developing interactive network visualizations with *visNetwork*
 
 ## 2. Getting Started
 
@@ -39,13 +39,13 @@ The dataset comes from an oil exploration and extraction company called GAStech.
 
 ### 3.1 The edges data
 
-- *GAStech-email_edges.csv* contains 9063 email correspondences between employees.
+-   *GAStech-email_edges.csv* contains 9063 email correspondences between employees.
 
 Each record represents a single email sent from one employee to another, with attributes including the date, subject, and other metadata.
 
 ### 3.2 The nodes data
 
-- *GAStech_email_nodes.csv* contains information about the 55 employees, including their names, departments, and job titles.
+-   *GAStech_email_nodes.csv* contains information about the 55 employees, including their names, departments, and job titles.
 
 These two datasets together form a complete network representation, where employees are nodes and emails are edges connecting them.
 
@@ -85,10 +85,10 @@ GAStech_edges <- GAStech_edges %>%
 ::: callout-tip
 #### Key date manipulation concepts
 
-- The *dmy()* function from **lubridate** transforms text dates to Date data type
-- *wday()* extracts the day of the week as an ordered factor when label = TRUE
-- Setting abbr = FALSE returns full day names like "Monday" instead of abbreviations
-- These functions create proper temporal dimensions for network analysis
+-   The *dmy()* function from **lubridate** transforms text dates to Date data type
+-   *wday()* extracts the day of the week as an ordered factor when label = TRUE
+-   Setting abbr = FALSE returns full day names like "Monday" instead of abbreviations
+-   These functions create proper temporal dimensions for network analysis
 :::
 
 ### 3.6 Reviewing the revised date fields
@@ -112,42 +112,39 @@ GAStech_edges_aggregated <- GAStech_edges %>%
 ```
 
 ::: callout-tip
-## 4. Understanding the aggregation process
+#### Understanding the aggregation process
 
-- Filtering for work-related emails focuses the analysis on professional communications
-- Grouping by source, target, and weekday preserves temporal patterns
-- The Weight field counts the number of emails between each pair
-- Removing self-emails (where source = target) eliminates self-loops
-- Filtering for Weight > 1 focuses on repeated communications, revealing stronger relationships
+-   Filtering for work-related emails focuses the analysis on professional communications
+-   Grouping by source, target, and weekday preserves temporal patterns
+-   The Weight field counts the number of emails between each pair
+-   Removing self-emails (where source = target) eliminates self-loops
+-   Filtering for Weight \> 1 focuses on repeated communications, revealing stronger relationships
 :::
 
-### 4.1 Reviewing the revised edges file
+### 3.8 Reviewing the revised edges file
 
 ```{r}
 glimpse(GAStech_edges_aggregated)
 ```
 
-## 5. Creating network objects using **tidygraph**
+## 4. Creating network objects using **tidygraph**
 
 The tidygraph package provides a tidy API for graph/network manipulation. It conceptualizes network data as two tidy tables - one for nodes and one for edges - and allows seamless switching between them while maintaining the relational structure.
 
-### 5.1 The **tbl_graph** object
+### 4.1 The **tbl_graph** object
 
 Two key functions for creating network objects:
 
-- `tbl_graph()` creates a network object from separate nodes and edges data frames
-- `as_tbl_graph()` converts various existing network data formats into a tbl_graph object
+-   `tbl_graph()` creates a network object from separate nodes and edges data frames
+-   `as_tbl_graph()` converts various existing network data formats into a tbl_graph object
 
-### 5.2 The **dplyr** verbs in **tidygraph**
+### 4.2 The **dplyr** verbs in **tidygraph**
 
 The *activate()* function serves as a switch between the nodes and edges tables. All dplyr verbs applied to a **tbl_graph** object affect only the currently active table.
 
-Special accessor functions provide access to different parts of the graph:
-- *.N()* accesses node data while manipulating edges
-- *.E()* accesses edge data while manipulating nodes
-- *.G()* accesses the entire tbl_graph object
+Special accessor functions provide access to different parts of the graph: - *.N()* accesses node data while manipulating edges - *.E()* accesses edge data while manipulating nodes - *.G()* accesses the entire tbl_graph object
 
-### 5.3 Using `tbl_graph()` to build a tidygraph data model
+### 4.3 Using `tbl_graph()` to build a tidygraph data model
 
 Creating the network graph object:
 
@@ -157,7 +154,7 @@ GAStech_graph <- tbl_graph(nodes = GAStech_nodes,
                            directed = TRUE)
 ```
 
-### 5.4 Reviewing the output tidygraph's graph object
+### 4.4 Reviewing the output tidygraph's graph object
 
 ```{r}
 GAStech_graph
@@ -165,7 +162,7 @@ GAStech_graph
 
 The output shows that *GAStech_graph* is a tbl_graph object with 54 nodes and 1372 edges. It displays the first rows of both node and edge data, and indicates that the Node Data is currently **active**.
 
-### 5.5 Graph Summary Statistics
+### 4.5 Graph Summary Statistics
 
 Network summary statistics provide a quantitative overview of the graph structure:
 
@@ -182,7 +179,7 @@ GAStech_graph %>%
 
 These statistics help understand the overall connectivity patterns in the network and identify potential outliers.
 
-### 5.6 Changing the active object
+### 4.6 Changing the active object
 
 Switching between nodes and edges using *activate()*:
 
@@ -192,16 +189,13 @@ GAStech_graph %>%
   arrange(desc(Weight))
 ```
 
-## 6. Plotting Static Network Graphs with **ggraph** package
+## 5. Plotting Static Network Graphs with **ggraph** package
 
 The **ggraph** package extends **ggplot2** for network visualization, making it easier to apply familiar ggplot skills to network graphs.
 
-Three main components of a ggraph network visualization:
-- nodes (the entities in the network)
-- edges (the connections between entities)
-- layouts (the spatial arrangement of nodes)
+Three main components of a ggraph network visualization: - nodes (the entities in the network) - edges (the connections between entities) - layouts (the spatial arrangement of nodes)
 
-### 6.1 Plotting a basic network graph
+### 5.1 Plotting a basic network graph
 
 ```{r}
 ggraph(GAStech_graph) +
@@ -212,13 +206,13 @@ ggraph(GAStech_graph) +
 ::: callout-tip
 #### Core ggraph functions
 
-- `ggraph()` initializes the plot with data and layout specifications
-- `geom_edge_link()` draws the connections between nodes
-- `geom_node_point()` visualizes the nodes themselves
-- These functions mirror the layered grammar of graphics from ggplot2
+-   `ggraph()` initializes the plot with data and layout specifications
+-   `geom_edge_link()` draws the connections between nodes
+-   `geom_node_point()` visualizes the nodes themselves
+-   These functions mirror the layered grammar of graphics from ggplot2
 :::
 
-### 6.2 Changing the default network graph theme
+### 5.2 Changing the default network graph theme
 
 ```{r}
 g <- ggraph(GAStech_graph) + 
@@ -230,7 +224,7 @@ g + theme_graph()
 
 The `theme_graph()` function provides better defaults for network visualization by removing axes, grids, and borders that aren't relevant for networks.
 
-### 6.3 Changing the coloring of the plot
+### 5.3 Changing the coloring of the plot
 
 ```{r}
 g <- ggraph(GAStech_graph) + 
@@ -241,11 +235,11 @@ g + theme_graph(background = 'grey10',
                 text_colour = 'white')
 ```
 
-### 6.4 Working with **ggraph**'s layouts
+### 5.4 Working with **ggraph**'s layouts
 
 ggraph supports multiple layout algorithms that determine how nodes are positioned in the visualization. Options include: star, circle, nicely (default), dh, gem, graphopt, grid, mds, sphere, randomly, fr, kk, drl and lgl.
 
-### 6.5 Comparing Network Layouts
+### 5.5 Comparing Network Layouts
 
 Different layout algorithms reveal different aspects of network structure:
 
@@ -266,13 +260,9 @@ for (i in 1:length(layout_options)) {
 gridExtra::grid.arrange(grobs = plots, ncol = 2)
 ```
 
-This comparison helps select the most appropriate layout for revealing specific network patterns. Each algorithm has strengths:
-- FR (Fruchterman-Reingold): Good for revealing clusters
-- KK (Kamada-Kawai): Emphasizes overall structure
-- DRL: Handles large networks efficiently
-- LGL: Good for hierarchical structures
+This comparison helps select the most appropriate layout for revealing specific network patterns. Each algorithm has strengths: - FR (Fruchterman-Reingold): Good for revealing clusters - KK (Kamada-Kawai): Emphasizes overall structure - DRL: Handles large networks efficiently - LGL: Good for hierarchical structures
 
-### 6.6 Fruchterman and Reingold layout
+### 5.6 Fruchterman and Reingold layout
 
 ```{r}
 g <- ggraph(GAStech_graph, 
@@ -285,7 +275,7 @@ g + theme_graph()
 
 The "fr" layout (Fruchterman-Reingold) uses a force-directed algorithm that positions nodes as if they repel each other while edges act as springs pulling connected nodes together.
 
-### 6.7 Modifying network nodes
+### 5.7 Modifying network nodes
 
 Coloring nodes by department reveals organizational structure:
 
@@ -301,7 +291,7 @@ g + theme_graph()
 
 This visualization immediately reveals department-based clustering in communication patterns.
 
-### 6.8 Modifying edges
+### 5.8 Modifying edges
 
 Mapping edge thickness to the Weight variable (number of emails exchanged):
 
@@ -319,7 +309,7 @@ g + theme_graph()
 
 This visualization now shows both organizational structure through node color and communication intensity through edge thickness.
 
-### 6.9 Node Degree Visualization
+### 5.9 Node Degree Visualization
 
 Node degree (number of connections) is a fundamental centrality measure that identifies highly connected individuals:
 
@@ -342,16 +332,13 @@ g
 
 This visualization immediately identifies communication hubs within the organization, regardless of department affiliation.
 
-## 7. Creating facet graphs
+## 6. Creating facet graphs
 
 Faceting is a powerful technique to split visualization into subplots based on categorical variables. For networks, this helps reduce edge over-plotting and reveals patterns across different categories.
 
-Three faceting functions in ggraph:
-- *facet_nodes()* - draws edges only when both connected nodes appear in the panel
-- *facet_edges()* - always draws all nodes in all panels
-- *facet_graph()* - facets on two variables simultaneously
+Three faceting functions in ggraph: - *facet_nodes()* - draws edges only when both connected nodes appear in the panel - *facet_edges()* - always draws all nodes in all panels - *facet_graph()* - facets on two variables simultaneously
 
-### 7.1 Working with *facet_edges()*
+### 6.1 Working with *facet_edges()*
 
 Faceting by the day of the week:
 
@@ -371,7 +358,7 @@ g + facet_edges(~Weekday)
 
 This visualization shows how communication patterns evolve throughout the week.
 
-### 7.2 Working with *facet_edges()* and theme adjustments
+### 6.2 Working with *facet_edges()* and theme adjustments
 
 ```{r}
 set_graph_style()
@@ -388,7 +375,7 @@ g <- ggraph(GAStech_graph,
 g + facet_edges(~Weekday)
 ```
 
-### 7.3 A framed facet graph
+### 6.3 A framed facet graph
 
 Adding frames around each facet improves visual separation:
 
@@ -409,7 +396,7 @@ g + facet_edges(~Weekday) +
   theme(legend.position = 'bottom')
 ```
 
-### 7.4 Department Communication Patterns
+### 6.4 Department Communication Patterns
 
 Analyzing which departments communicate most frequently with each other reveals organizational workflow:
 
@@ -450,7 +437,7 @@ GAStech_graph %>%
 
 This analysis reveals which departments are most tightly coupled in their work processes.
 
-### 7.5 Working with *facet_nodes()*
+### 6.5 Working with *facet_nodes()*
 
 Faceting by department shows communication patterns within each organizational unit:
 
@@ -471,11 +458,11 @@ g + facet_nodes(~Department)+
   theme(legend.position = 'bottom')
 ```
 
-## 8. Network Metrics Analysis
+## 7. Network Metrics Analysis
 
 Network metrics provide quantitative measurements of structural properties and help identify important nodes, clusters, and overall network characteristics.
 
-### 8.1 Computing centrality indices
+### 7.1 Computing centrality indices
 
 Centrality measures identify influential nodes in the network. Betweenness centrality measures how often a node lies on shortest paths between other nodes, identifying potential information brokers:
 
@@ -495,7 +482,7 @@ g + theme_graph()
 
 This visualization reveals individuals who control information flow between different parts of the network.
 
-### 8.2 Visualising network metrics
+### 7.2 Visualising network metrics
 
 From ggraph v2.0 onward, centrality measures can be computed directly within the plotting call:
 
@@ -512,7 +499,7 @@ g <- GAStech_graph %>%
 g + theme_graph()
 ```
 
-### 8.3 Visualising Community
+### 7.3 Visualising Community
 
 Community detection algorithms identify clusters of densely connected nodes. tidygraph provides many algorithms for this purpose:
 
@@ -530,7 +517,7 @@ g + theme_graph()
 
 This visualization reveals natural clusters in the communication network that may not align perfectly with formal organizational structure.
 
-### 8.4 Community vs Department Alignment
+### 7.4 Community vs Department Alignment
 
 Comparing algorithmic communities with formal departments reveals organizational structure effectiveness:
 
@@ -555,11 +542,11 @@ ggplot(community_dept, aes(x = Department, y = community, size = prop, color = p
 
 Perfect alignment would show a one-to-one mapping; dispersed departments across multiple communities suggest informal communication structures that cross formal boundaries.
 
-## 9. Building Interactive Network Graph with visNetwork
+## 8. Building Interactive Network Graph with visNetwork
 
 The visNetwork package creates interactive network visualizations using the vis.js JavaScript library, enabling exploration through interaction.
 
-### 9.1 Data preparation
+### 8.1 Data preparation
 
 Preparing data for visNetwork requires specific formatting:
 
@@ -577,14 +564,14 @@ GAStech_edges_aggregated <- GAStech_edges %>%
   ungroup()
 ```
 
-### 9.2 Plotting the first interactive network graph
+### 8.2 Plotting the first interactive network graph
 
 ```{r eval=FALSE}
 visNetwork(GAStech_nodes, 
            GAStech_edges_aggregated)
 ```
 
-### 9.3 Working with layout
+### 8.3 Working with layout
 
 Using the Fruchterman and Reingold layout for the interactive visualization:
 
@@ -594,7 +581,7 @@ visNetwork(GAStech_nodes,
   visIgraphLayout(layout = "layout_with_fr") 
 ```
 
-### 9.4 Working with visual attributes - Nodes
+### 8.4 Working with visual attributes - Nodes
 
 visNetwork uses a "group" field for node coloring. Renaming the Department field to match this convention:
 
@@ -613,7 +600,7 @@ visNetwork(GAStech_nodes,
   visLayout(randomSeed = 123)
 ```
 
-### 9.5 Working with visual attributes - Edges
+### 8.5 Working with visual attributes - Edges
 
 Customizing edge appearance with arrows and smooth curves:
 
@@ -628,7 +615,7 @@ visNetwork(GAStech_nodes,
   visLayout(randomSeed = 123)
 ```
 
-### 9.6 Interactivity
+### 8.6 Interactivity
 
 Adding interactive features to enhance exploration:
 
@@ -644,6 +631,6 @@ visNetwork(GAStech_nodes,
 
 The *highlightNearest* option highlights connected nodes when clicking on a node, while *nodesIdSelection* adds a dropdown menu for selecting specific nodes.
 
-## 10. Reference
+## 9. Reference
 
 Credits to [Prof Kam](https://r4va.netlify.app/chap27).
