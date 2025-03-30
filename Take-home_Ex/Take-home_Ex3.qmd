@@ -1219,6 +1219,42 @@ create_rfm_analysis <- function(data,
 }
 ```
 
+#### RFM Analysis Parameters
+
+The `create_rfm_analysis()` function offers extensive customization through various parameters that control filtering, segmentation granularity, and output configuration. Understanding these parameters is crucial for effectively tailoring the RFM analysis to specific analytical needs.
+
+
+Filtering Parameters
+
+- `year_filter`: Numeric or NULL. Restricts analysis to a specific year. When NULL (default), all years are included.
+- `ministry_filter`: Character vector or NULL. Limits analysis to specific ministries. When NULL (default), all ministries are included.
+- `agency_filter`: Character vector or NULL. Restricts analysis to specific agencies. When NULL (default), all agencies are included.
+- `supplier_filter`: Character vector or NULL. Limits analysis to specific suppliers. When NULL (default), all suppliers are included.
+
+Value and Sample Size Controls
+
+- `min_monetary_value`: Numeric, default 10,000. Sets the minimum procurement value threshold for including a supplier in the analysis. Suppliers with total values below this threshold are excluded to focus on significant relationships.
+- `max_suppliers`: Numeric, default 1,000. Limits the number of suppliers included in visualization outputs. If the number of suppliers exceeds this value, a stratified sample is selected to maintain representation across segments.
+
+Segmentation Controls
+
+- `recency_quartiles`: Numeric, default 4. Sets the number of segments for the recency dimension. Higher values create more granular segmentation.
+- `frequency_quartiles`: Numeric, default 4. Sets the number of segments for the frequency dimension. Higher values create more granular segmentation.
+- `monetary_quartiles`: Numeric, default 4. Sets the number of segments for the monetary value dimension. Higher values create more granular segmentation.
+
+Additional Options
+
+- `include_financial_grade`: Logical, default TRUE. When TRUE, incorporates supplier financial grade information into the RFM analysis, enabling correlation between financial capacity and procurement behavior.
+- `analysis_date`: Date or NULL. Specifies the reference date for calculating recency (days since last contract). When NULL (default), uses the most recent date in the dataset plus one day.
+- `debug`: Logical, default FALSE. When TRUE, outputs diagnostic messages during analysis to assist with troubleshooting.
+
+
+The function outputs a comprehensive list containing:
+- `rfm_data`: Complete RFM analysis for all suppliers
+- `rfm_sample`: A sample of suppliers for visualization (limited by max_suppliers)
+- `segment_summary`: Aggregated metrics for each RFM segment
+- `analysis_date`: The reference date used for recency calculations
+
 ### 7.2 Creating RFM Visualizations
 
 Various visualization functions to represent RFM analysis: - `create_rfm_heatmap()`: Visualizes the distribution of suppliers across RFM scores - `create_rfm_bubble_chart()`: Maps suppliers across the RFM dimensions - `create_segment_distribution()`: Compares supplier count vs. procurement value - `create_grade_segment_heatmap()`: Shows the relationship between financial grades and RFM segments - `create_rfm_datatable()`: Provides an interactive table of RFM analysis results
