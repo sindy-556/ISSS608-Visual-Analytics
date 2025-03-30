@@ -1651,7 +1651,7 @@ moe_segment_dist
 
 :::
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 # Check the structure of rfm_results_all
 str(rfm_results_all)
 
@@ -1678,7 +1678,7 @@ cat("Segment column present:", segment_cols %in% colnames(rfm_results_all$rfm_da
 cat("Score columns present:", score_cols %in% colnames(rfm_results_all$rfm_data), "\n")
 ```
 
-### 7.4 RFM Analysis: Financial Grade Integration
+### 7.5 RFM Analysis: Financial Grade Integration
 
 Demonstrates integration of financial grade information with RFM analysis.
 
