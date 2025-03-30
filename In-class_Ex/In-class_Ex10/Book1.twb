@@ -8,10 +8,12 @@
     <AutoCreateAndUpdateDSDPhoneLayouts />
     <MarkAnimation />
     <ObjectModelEncapsulateLegacy />
+    <ObjectModelExtractV2 />
     <ObjectModelTableType />
     <SchemaViewerObjectModel />
     <SetMembershipControl />
     <SheetIdentifierTracking />
+    <_.fcp.VConnDownstreamExtractsWithWarnings.true...VConnDownstreamExtractsWithWarnings />
     <WindowsPersistSimpleIdentifiers />
     <ZoneBackgroundTransparency />
   </document-format-change-manifest>
@@ -345,6 +347,288 @@
       <column caption='Cogs' datatype='real' name='[COGS]' role='measure' type='quantitative' />
       <column datatype='string' name='[State]' role='dimension' semantic-role='[State].[Name]' type='nominal' />
       <column caption='CoffeeChain Query' datatype='table' name='[__tableau_internal_object_id__].[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]' role='measure' type='quantitative' />
+      <extract _.fcp.VConnDownstreamExtractsWithWarnings.true...user-specific='false' count='-1' enabled='false' object-id='' units='records'>
+        <connection access_mode='readonly' authentication='auth-none' author-locale='en_US' class='hyper' dbname='C:/Users/simpl/Desktop/sindy-556/ISSS608/In-class_Ex/In-class_Ex10/CoffeeChain Query (Coffee Chain).hyper' default-settings='yes' schema='Extract' sslmode='' tablename='Extract' update-time='03/29/2025 07:15:37 AM' username='tableau_internal_user'>
+          <relation name='Extract' table='[Extract].[Extract]' type='table' />
+          <refresh>
+            <refresh-event add-from-file-path='CoffeeChain Query (Coffee Chain)' increment-value='%null%' refresh-type='create' rows-inserted='4248' timestamp-start='2025-03-29 07:15:36.269' />
+          </refresh>
+          <metadata-records>
+            <metadata-record class='column'>
+              <remote-name>Profit</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Profit]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Profit</remote-alias>
+              <ordinal>0</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>421</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Margin</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Margin]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Margin</remote-alias>
+              <ordinal>1</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>285</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Sales</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Sales]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Sales</remote-alias>
+              <ordinal>2</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>417</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>COGS</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[COGS]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>COGS</remote-alias>
+              <ordinal>3</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>171</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Total Expenses</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Total Expenses]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Total Expenses</remote-alias>
+              <ordinal>4</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>160</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Marketing</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Marketing]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Marketing</remote-alias>
+              <ordinal>5</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>104</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Inventory</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Inventory]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Inventory</remote-alias>
+              <ordinal>6</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>619</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Budget Profit</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Budget Profit]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Budget Profit</remote-alias>
+              <ordinal>7</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>85</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Budget Margin</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Budget Margin]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Budget Margin</remote-alias>
+              <ordinal>8</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>80</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Budget Sales</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Budget Sales]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Budget Sales</remote-alias>
+              <ordinal>9</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>98</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Budget COGS</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[Budget COGS]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Budget COGS</remote-alias>
+              <ordinal>10</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>44</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Date</remote-name>
+              <remote-type>135</remote-type>
+              <local-name>[Date]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Date</remote-alias>
+              <ordinal>11</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>datetime</local-type>
+              <aggregation>Year</aggregation>
+              <approx-count>24</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Market</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[Market]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Market</remote-alias>
+              <ordinal>12</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>4</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='1' name='LEN_RUS_S2' />
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>State</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[State]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>State</remote-alias>
+              <ordinal>13</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>20</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='1' name='LEN_RUS_S2' />
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Area Code</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[Area Code]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Area Code</remote-alias>
+              <ordinal>14</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>157</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Market Size</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[Market Size]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Market Size</remote-alias>
+              <ordinal>15</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>2</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='1' name='LEN_RUS_S2' />
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Product Type</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[Product Type]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Product Type</remote-alias>
+              <ordinal>16</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>4</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='1' name='LEN_RUS_S2' />
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Product</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[Product]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Product</remote-alias>
+              <ordinal>17</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>13</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='1' name='LEN_RUS_S2' />
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>Type</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[Type]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>Type</remote-alias>
+              <ordinal>18</ordinal>
+              <family>CoffeeChain Query</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>2</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='1' name='LEN_RUS_S2' />
+              <object-id>[CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96]</object-id>
+            </metadata-record>
+          </metadata-records>
+        </connection>
+      </extract>
       <layout dim-ordering='alphabetic' measure-ordering='alphabetic' show-structure='true' />
       <semantic-values>
         <semantic-value key='[Country].[Name]' value='&quot;Singapore&quot;' />
@@ -354,6 +638,9 @@
           <object caption='CoffeeChain Query' id='CoffeeChain Query_7FB3788C905C4143A8930CA0D76E8E96'>
             <properties context=''>
               <relation connection='msaccess.1s0b8d20l6mk6h1edmghu0n4p25c' name='CoffeeChain Query' table='[CoffeeChain Query]' type='table' />
+            </properties>
+            <properties context='extract'>
+              <relation name='Extract' table='[Extract].[Extract]' type='table' />
             </properties>
           </object>
         </objects>
@@ -564,8 +851,8 @@
         <devicelayout auto-generated='true' name='Phone'>
           <size maxheight='750' minheight='750' sizing-mode='vscroll' />
           <zones>
-            <zone h='100000' id='12' type-v2='layout-basic' w='100000' x='0' y='0'>
-              <zone h='98396' id='11' param='vert' type-v2='layout-flow' w='99002' x='499' y='802'>
+            <zone h='100000' id='14' type-v2='layout-basic' w='100000' x='0' y='0'>
+              <zone h='98396' id='13' param='vert' type-v2='layout-flow' w='99002' x='499' y='802'>
                 <zone forceUpdate='true' h='5711' id='10' type-v2='text' w='99002' x='499' y='802'>
                   <formatted-text>
                     <run bold='true' fontalignment='1' fontsize='12'>Coffee Chain Sales Report by Project and Product Type</run>

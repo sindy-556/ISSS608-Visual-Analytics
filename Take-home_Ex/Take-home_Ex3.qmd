@@ -1,5 +1,5 @@
 ---
-title: "Take-home Exercise 3:"
+title: "Take-home Exercise 3: GeBiz Procurement Data Visualization Prototype"
 author: "Sindy"
 date-modified: "last-modified"
 output:
@@ -12,4 +12,683 @@ execute:
   freeze: true
 ---
 
-## Overview
+## 1. Overview
+
+This document presents a visualization prototype for GeBiz procurement data. We will focus on creating Sankey diagrams to visualize procurement flows from ministries to agencies to suppliers.
+
+```{r}
+# Load required packages
+pacman::p_load(dplyr, stringr, lubridate, networkD3, tidyverse, 
+               plotly, DT, viridis, scales, htmlwidgets, htmltools)
+```
+
+## 2. Data Preparation
+
+### 2.1 Loading and Enriching Data
+
+Before creating our visualizations, we need to load and prepare the relevant datasets. We're working with with the GeBiz dataset and 2 other dataset that sourced online:
+
+1.  Procurement transaction data - the core dataset with details of each procurement activity from GeBiz
+
+2.  Supplier financial information - containing grading data for suppliers (note: this dataset is incomplete, as we were unable to obtain financial grades for all suppliers)
+
+3, Agency mapping data - providing the hierarchical relationships between agencies and ministries
+
+The code below loads these datasets from CSV files into R data frames. We'll need to handle the incomplete nature of the supplier financial data during our analysis.
+
+```{r}
+# Load the necessary datasets
+procurement_df <- read.csv('data/GovernmentProcurementviaGeBIZ.csv')  # Procurement data CSV
+financial_df <- read.csv('data/supplier_details.csv')  # CSV with supplier financial grades
+agency_mapping_df <- read.csv('data/agency_mapping.csv')  # Agency mapping data
+```
+
+### 2.2 Extracting Supplier Grades
+
+The `financial_df` dataset contains supplier grade information, which indicates the financial capacity of each supplier. The Singapore government classifies suppliers on a scale from S2 to S10, with each grade corresponding to specific monetary thresholds:
+
+-   S2: \$100,000 (EPU S2)
+-   S3: \$250,000 (EPU S3)
+-   S4: \$500,000 (EPU S4)
+-   S5: \$1,000,000 (EPU S5)
+-   S6: \$3,000,000 (EPU S6)
+-   S7: \$5,000,000 (EPU S7)
+-   S8: \$10,000,000 (EPU S8)
+-   S9: \$30,000,000 (EPU S9)
+-   S10: \>\$30,000,000 (EPU S10)
+
+Higher grades (S8-S10) represent larger companies with greater financial capacity, while lower grades (S2-S4) represent smaller contractors.
+
+```{r}
+# Function to extract just the S-grade (S2-S10) from the financial grade string
+extract_s_grade <- function(grade_string) {
+  if (is.na(grade_string)) {
+    return(NA)
+  }
+  
+  # Use regex to extract S followed by a number
+  match <- str_extract(grade_string, "S\\d+")
+  return(match)
+}
+
+# Create simplified financial grades
+financial_df$financial_grade <- sapply(financial_df$financial_grade, extract_s_grade)
+
+# Create mapping dataframes for lookups
+supplier_grade_map <- financial_df %>% 
+  select(supplier_name, financial_grade) %>%
+  distinct()
+```
+
+Since we were unable to obtain financial grades for all suppliers in our procurement dataset, we'll need to handle missing values appropriately in our analysis. We'll need to account for the incomplete coverage in our visualizations and interpretations.
+
+### 2.3 Joining Data and Creating an Enriched Dataset
+
+To create comprehensive visualizations, we need to combine all our datasets into one enriched procurement dataset. This includes:
+
+1.  Adding supplier financial grades to the procurement records
+2.  Adding ministry information to the agencies
+3.  Creating standardized abbreviations for agencies and ministries for cleaner visualization
+
+The code below performs these join operations and creates our main analysis dataset.
+
+```{r}
+procurement_enriched <- procurement_df %>%
+  left_join(supplier_grade_map, by = "supplier_name")
+
+agency_mapping <- agency_mapping_df %>%
+  select(agency, agency_abbr, ministry, ministry_abbr)
+
+procurement_enriched <- procurement_enriched %>%
+  left_join(agency_mapping, by = "agency")
+
+write.csv(procurement_enriched, 'procurement_output.csv', row.names = FALSE)
+```
+
+### 2.4 Verifying Data Enrichment
+
+After joining the datasets, it's important to verify that the enrichment was successful and understand the extent of missing data. The code below reports statistics on the completeness of our enriched dataset, including:
+
+-   Total number of procurement records
+-   Records with financial grades (expected to be incomplete due to data limitations)
+-   Records with agency abbreviations
+-   Records with ministry information
+
+This verification step is particularly important given that we're working with external datasets of varying completeness. Understanding these limitations will help us design appropriate visualizations and interpret results accurately.
+
+```{r}
+cat("Total procurement records:", nrow(procurement_enriched), "\n")
+cat("Records with financial grades:", sum(!is.na(procurement_enriched$financial_grade)), "\n")
+cat("Records with agency abbreviations:", sum(!is.na(procurement_enriched$agency_abbr)), "\n")
+cat("Records with ministry information:", sum(!is.na(procurement_enriched$ministry)), "\n")
+```
+
+```{r}
+glimpse(procurement_enriched)
+```
+
+### 2.5 Exploratory Data Analysis
+
+#### Basic summary statistics for key numeric variables.
+```{r}
+summary(procurement_df$awarded_amt)
+```
+
+
+#### Count of records by year to understand the temporal distribution
+```{r}
+yearly_counts <- procurement_df %>%
+  mutate(year = year(as.Date(award_date, format="%d/%m/%Y"))) %>%
+  group_by(year) %>%
+  summarise(count = n(),
+            total_value = sum(awarded_amt, na.rm = TRUE),
+            avg_value = mean(awarded_amt, na.rm = TRUE),
+            median_value = median(awarded_amt, na.rm = TRUE)) %>%
+  arrange(year)
+
+print(yearly_counts)
+```
+
+
+#### Examine the distribution of procurement by ministry and agency
+```{r}
+ministry_distribution <- procurement_enriched %>%
+  group_by(ministry) %>%
+  summarise(count = n(),
+            total_value = sum(awarded_amt, na.rm = TRUE),
+            avg_value = mean(awarded_amt, na.rm = TRUE)) %>%
+  arrange(desc(total_value))
+
+head(ministry_distribution, 10)
+```
+
+
+#### Top agencies by procurement value
+```{r}
+agency_distribution <- procurement_enriched %>%
+  group_by(agency) %>%
+  summarise(count = n(),
+            total_value = sum(awarded_amt, na.rm = TRUE),
+            avg_value = mean(awarded_amt, na.rm = TRUE)) %>%
+  arrange(desc(total_value))
+
+head(agency_distribution, 10)
+```
+
+
+#### Top suppliers by procurement value
+```{r}
+supplier_distribution <- procurement_enriched %>%
+  group_by(supplier_name) %>%
+  summarise(count = n(),
+            total_value = sum(awarded_amt, na.rm = TRUE),
+            avg_value = mean(awarded_amt, na.rm = TRUE)) %>%
+  arrange(desc(total_value))
+
+head(supplier_distribution, 10)
+
+```
+
+#### Distribution of suppliers by financial grade
+
+```{r}
+grade_distribution <- procurement_enriched %>%
+  group_by(financial_grade) %>%
+  summarise(count = n(),
+            unique_suppliers = n_distinct(supplier_name),
+            total_value = sum(awarded_amt, na.rm = TRUE),
+            pct_value = round(total_value/sum(procurement_enriched$awarded_amt, na.rm = TRUE)*100, 2),
+            avg_contract_value = mean(awarded_amt, na.rm = TRUE)) %>%
+  arrange(desc(total_value))
+
+print(grade_distribution)
+```
+#### Distribution by consolidated financial category
+```{r}
+if(!"financial_category" %in% colnames(procurement_enriched)) {
+  procurement_enriched <- procurement_enriched %>%
+    mutate(financial_category = case_when(
+      financial_grade %in% c("S1", "S2", "S3", "S4") ~ "Small (S1-S4)",
+      financial_grade %in% c("S5", "S6", "S7") ~ "Medium (S5-S7)",
+      financial_grade %in% c("S8", "S9", "S10") ~ "Large (S8-S10)",
+      TRUE ~ "Unspecified Grade"
+    ))
+}
+category_distribution <- procurement_enriched %>%
+  group_by(financial_category) %>%
+  summarise(count = n(),
+            unique_suppliers = n_distinct(supplier_name),
+            total_value = sum(awarded_amt, na.rm = TRUE),
+            pct_value = round(total_value/sum(procurement_enriched$awarded_amt, na.rm = TRUE)*100, 2),
+            avg_contract_value = mean(awarded_amt, na.rm = TRUE)) %>%
+  arrange(desc(total_value))
+
+print(category_distribution)
+```
+
+
+#### Are contracts awarded consistently with financial capacity?
+This checks if higher-grade suppliers tend to get higher-value contracts.
+```{r}
+grade_contract_match <- procurement_enriched %>%
+  filter(!is.na(financial_grade)) %>%
+  group_by(financial_grade) %>%
+  summarise(
+    median_contract_value = median(awarded_amt, na.rm = TRUE),
+    avg_contract_value = mean(awarded_amt, na.rm = TRUE),
+    max_contract_value = max(awarded_amt, na.rm = TRUE),
+    total_awarded = sum(awarded_amt, na.rm = TRUE),
+    contract_count = n()
+  ) %>%
+  arrange(financial_grade)
+
+print(grade_contract_match)
+```
+
+### 2.6 Temporal Patterns
+Examine monthly patterns in procurement
+```{r}
+monthly_patterns <- procurement_enriched %>%
+  mutate(month = month(award_date, label = TRUE),
+         year = year(award_date)) %>%
+  group_by(year, month) %>%
+  summarise(count = n(),
+            total_value = sum(awarded_amt, na.rm = TRUE)) %>%
+  ungroup()
+```
+
+Plot monthly procurement values over time
+```{r}
+ggplot(monthly_patterns, aes(x = month, y = total_value, group = year, color = factor(year))) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Monthly Procurement Patterns by Year",
+       x = "Month",
+       y = "Total Procurement Value (SGD)",
+       color = "Year") +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma)
+```
+
+
+### 2.7 Distribution of Award Amounts
+Create a histogram of award amounts to see the distribution
+```{r}
+ggplot(procurement_enriched, aes(x = awarded_amt)) +
+  geom_histogram(bins = 30, fill = "steelblue", alpha = 0.7) +
+  scale_x_log10() +  # Log scale for better visualization
+  labs(title = "Distribution of Award Amounts (Log Scale)",
+       x = "Award Amount (Log Scale)",
+       y = "Count") +
+  theme_minimal()
+```
+
+
+#### Box plot of award amounts by financial category
+```{r}
+if(!"financial_category" %in% colnames(procurement_enriched)) {
+  procurement_enriched <- procurement_enriched %>%
+    mutate(financial_category = case_when(
+      financial_grade %in% c("S1", "S2", "S3", "S4") ~ "Small (S1-S4)",
+      financial_grade %in% c("S5", "S6", "S7") ~ "Medium (S5-S7)",
+      financial_grade %in% c("S8", "S9", "S10") ~ "Large (S8-S10)",
+      TRUE ~ "Unspecified Grade"
+    ))
+}
+
+ggplot(procurement_enriched, aes(x = financial_category, y = awarded_amt)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.7) +
+  scale_y_log10() +  # Log scale for better visualization
+  labs(title = "Distribution of Award Amounts by Supplier Category",
+       x = "Supplier Financial Category",
+       y = "Award Amount (Log Scale)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Understanding missing supplier grade information.
+```{r}
+financial_grade_coverage <- sum(!is.na(procurement_enriched$financial_grade)) / nrow(procurement_enriched) * 100
+cat("Percentage of procurement records with financial grade information:", round(financial_grade_coverage, 2), "%\n")
+
+missing_grade_by_size <- procurement_enriched %>%
+  group_by(is_grade_missing = is.na(financial_grade)) %>%
+  summarise(
+    count = n(),
+    total_value = sum(awarded_amt, na.rm = TRUE),
+    avg_contract_value = mean(awarded_amt, na.rm = TRUE),
+    median_contract_value = median(awarded_amt, na.rm = TRUE),
+    pct_of_records = n() / nrow(procurement_enriched) * 100,
+    pct_of_value = sum(awarded_amt, na.rm = TRUE) / sum(procurement_enriched$awarded_amt, na.rm = TRUE) * 100
+  )
+
+print(missing_grade_by_size)
+```
+
+
+### 2.8 Relationship Between Variables
+Let's see if there's a relationship between award amount and number of contracts per supplier
+```{r}
+supplier_counts <- procurement_enriched %>%
+  group_by(supplier_name) %>%
+  summarise(contract_count = n(),
+            total_value = sum(awarded_amt, na.rm = TRUE),
+            avg_value = mean(awarded_amt, na.rm = TRUE))
+
+ggplot(supplier_counts, aes(x = contract_count, y = avg_value)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess") +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(title = "Relationship Between Number of Contracts and Average Value",
+       x = "Number of Contracts (Log Scale)",
+       y = "Average Contract Value (Log Scale)") +
+  theme_minimal()
+```
+
+
+## 3. Data Preprocessing
+
+### 3.1 Date Conversion and Handling Missing Values
+
+We'll perform several preprocessing steps to improve data quality:
+
+1.  Convert date strings to proper Date objects
+2.  Create a year field for filtering
+3.  Handle missing values in supplier names
+4.  Create financial grade categories for visualization
+
+For the financial grades, we'll consolidate the nine different S-grades (S2-S10) into three more manageable categories:
+
+-   Small (S1-S4): Suppliers with financial capacity up to \$500,000
+-   Medium (S5-S7): Suppliers with financial capacity between \$1,000,000 and \$5,000,000
+-   Large (S8-S10): Suppliers with financial capacity of \$10,000,000 and above
+
+These preprocessing steps ensure our data is clean, properly formatted, and appropriately categorized for visualization.
+
+```{r}
+# Convert award_date to proper date format
+procurement_enriched <- procurement_enriched %>%
+  mutate(award_date = as.Date(award_date, format="%d/%m/%Y"))
+
+# Create a year field for filtering
+procurement_enriched <- procurement_enriched %>%
+  mutate(year = year(award_date))
+
+# Handle missing values in supplier_name
+procurement_enriched <- procurement_enriched %>%
+  mutate(supplier_name = ifelse(is.na(supplier_name) | supplier_name == "Unknown", "Unspecified Supplier", supplier_name))
+
+# Create financial grade categories for better visualization
+procurement_enriched <- procurement_enriched %>%
+  mutate(financial_category = case_when(
+    financial_grade %in% c("S1", "S2", "S3", "S4") ~ "Small (S1-S4)",
+    financial_grade %in% c("S5", "S6", "S7") ~ "Medium (S5-S7)",
+    financial_grade %in% c("S8", "S9", "S10") ~ "Large (S8-S10)",
+    TRUE ~ "Unspecified Grade"
+  ))
+
+# Preview the processed data
+head(procurement_enriched)
+```
+
+## 4. Building the Sankey Diagram Visualization
+
+The heart of our visualization is the create_sankey() function defined below. This function creates a Sankey diagram showing the flow of procurement funds from ministries to agencies to suppliers.
+
+The function is highly customizable, allowing users to:
+
+- Filter by year, ministry, agency, or supplier
+- Show only the top K ministries, agencies, or suppliers by procurement value
+- Set a minimum value threshold to include only significant flows
+- Enable debug mode for troubleshooting when developing the Shiny application
+
+This customizability makes the function valuable for exploring different aspects of the procurement network.
+
+```{r}
+create_sankey <- function(data, 
+                          year_filter = NULL, 
+                          ministry_filter = NULL,
+                          agency_filter = NULL,
+                          supplier_filter = NULL,
+                          top_k_ministries = 10,
+                          top_k_agencies = 10,
+                          top_k_suppliers = 10,
+                          min_value = 1000000,
+                          debug = FALSE) {
+  
+  # Log data diagnostics if debug is enabled
+  if(debug) {
+    message("Data dimensions: ", nrow(data), " rows x ", ncol(data), " columns")
+    if("ministry" %in% colnames(data)) {
+      message("Unique ministries: ", length(unique(data$ministry)))
+      if(!is.null(ministry_filter)) {
+        message("Checking for requested ministry: ", 
+                ifelse(any(ministry_filter %in% unique(data$ministry)), "Found", "Not found"))
+      }
+    } else {
+      warning("'ministry' column not found in data")
+    }
+  }
+  
+  # Make a copy of the data
+  filtered_data <- data
+  
+  # Apply year filter if specified
+  if(!is.null(year_filter)) {
+    if("year" %in% colnames(filtered_data)) {
+      filtered_data <- filtered_data %>% filter(year == year_filter)
+      if(debug) message("After year filter: ", nrow(filtered_data), " rows")
+    } else {
+      warning("'year' column not found, skipping year filter")
+    }
+  }
+  
+  # 1. Determine which ministries to include
+  if(!is.null(ministry_filter)) {
+    # Use the specified ministries
+    ministries_to_include <- ministry_filter
+  } else {
+    # Get top ministries by award amount
+    ministries_to_include <- filtered_data %>%
+      group_by(ministry) %>%
+      summarize(total_value = sum(awarded_amt, na.rm = TRUE)) %>%
+      arrange(desc(total_value)) %>%
+      head(top_k_ministries) %>%
+      pull(ministry)
+  }
+  
+  # 2. Determine which agencies to include
+  if(!is.null(agency_filter)) {
+    # Use the specified agencies
+    agencies_to_include <- agency_filter
+  } else {
+    # Get top agencies by award amount
+    agencies_to_include <- filtered_data %>%
+      filter(ministry %in% ministries_to_include) %>%
+      group_by(agency) %>%
+      summarize(total_value = sum(awarded_amt, na.rm = TRUE)) %>%
+      arrange(desc(total_value)) %>%
+      head(top_k_agencies) %>%
+      pull(agency)
+  }
+  
+  # 3. Determine which suppliers to include
+  if(!is.null(supplier_filter)) {
+    # Use the specified suppliers
+    suppliers_to_include <- supplier_filter
+  } else {
+    # Get top suppliers by award amount
+    suppliers_to_include <- filtered_data %>%
+      filter(agency %in% agencies_to_include) %>%
+      group_by(supplier_name) %>%
+      summarize(total_value = sum(awarded_amt, na.rm = TRUE)) %>%
+      arrange(desc(total_value)) %>%
+      head(top_k_suppliers) %>%
+      pull(supplier_name)
+  }
+  
+  if(debug) {
+    message("Ministries to include: ", length(ministries_to_include))
+    message("Agencies to include: ", length(agencies_to_include))
+    message("Suppliers to include: ", length(suppliers_to_include))
+  }
+  
+  # Filter the data to only include the selected entities
+  filtered_data <- filtered_data %>%
+    filter(
+      ministry %in% ministries_to_include,
+      agency %in% agencies_to_include,
+      supplier_name %in% suppliers_to_include
+    )
+  
+  if(debug) message("After entity filtering: ", nrow(filtered_data), " rows")
+  
+  # Check if we have any data left
+  if(nrow(filtered_data) == 0) {
+    warning("No data remains after filtering")
+    return(NULL)
+  }
+  
+  # Create ministry-to-agency flow
+  ministry_agency_flow <- filtered_data %>%
+    group_by(ministry, agency) %>%
+    summarize(value = sum(awarded_amt, na.rm = TRUE), .groups = 'drop') %>%
+    filter(value >= min_value)
+  
+  # Create agency-to-supplier flow
+  agency_supplier_flow <- filtered_data %>%
+    group_by(agency, financial_category) %>%
+    summarize(value = sum(awarded_amt, na.rm = TRUE), .groups = 'drop') %>%
+    filter(value >= min_value) %>%
+    rename(supplier_name = financial_category)
+  
+  if(debug) {
+    message("Ministry-agency flows: ", nrow(ministry_agency_flow))
+    message("Agency-supplier flows: ", nrow(agency_supplier_flow))
+  }
+  
+  # Check if we have any flows above the minimum value
+  if(nrow(ministry_agency_flow) == 0 && nrow(agency_supplier_flow) == 0) {
+    warning("No flows remain after applying minimum value filter (", 
+            min_value, ")")
+    return(NULL)
+  }
+  
+  # Get unique lists of each entity type
+  ministry_nodes <- unique(ministry_agency_flow$ministry)
+  agency_nodes <- unique(c(ministry_agency_flow$agency, agency_supplier_flow$agency))
+  supplier_nodes <- unique(agency_supplier_flow$supplier_name)
+  
+  # Create a data frame to hold both display names and full names for tooltips
+  nodes <- data.frame(
+    name = character(),        # Full name
+    display_name = character(),  # Abbreviated name for display
+    group = character(),       # Node type
+    stringsAsFactors = FALSE
+  )
+  
+  # Add ministries with abbreviation
+  for (ministry in ministry_nodes) {
+    # Look up the abbreviation
+    ministry_abbr <- filtered_data %>%
+      filter(ministry == !!ministry) %>%
+      pull(ministry_abbr) %>%
+      unique()
+    
+    # Use abbreviation if available, otherwise use full name
+    display <- if(length(ministry_abbr) > 0 && !is.na(ministry_abbr[1])) ministry_abbr[1] else ministry
+    
+    nodes <- rbind(nodes, data.frame(
+      name = ministry,
+      display_name = display,
+      group = "ministry",
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Add agencies with abbreviation
+  for (agency in agency_nodes) {
+    # Look up the abbreviation
+    agency_abbr <- filtered_data %>%
+      filter(agency == !!agency) %>%
+      pull(agency_abbr) %>%
+      unique()
+    
+    # Use abbreviation if available, otherwise use full name
+    display <- if(length(agency_abbr) > 0 && !is.na(agency_abbr[1])) agency_abbr[1] else agency
+    
+    nodes <- rbind(nodes, data.frame(
+      name = agency,
+      display_name = display,
+      group = "agency",
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Add suppliers with truncation
+  for (supplier in supplier_nodes) {
+    # Truncate long supplier names
+    display <- if(nchar(supplier) > 50) paste0(substr(supplier, 1, 47), "...") else supplier
+    
+    nodes <- rbind(nodes, data.frame(
+      name = supplier,
+      display_name = display,
+      group = "supplier",
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Get the indices of each node
+  node_indices <- setNames(0:(nrow(nodes)-1), nodes$name)
+  
+  # Create the ministry to agency links
+  links_m2a <- ministry_agency_flow %>%
+    mutate(
+      source = node_indices[ministry],
+      target = node_indices[agency]
+    ) %>%
+    select(source, target, value)
+  
+  # Create the agency to supplier links
+  links_a2s <- agency_supplier_flow %>%
+    mutate(
+      source = node_indices[agency],
+      target = node_indices[supplier_name]
+    ) %>%
+    select(source, target, value)
+  
+  # Combine all links
+  links <- bind_rows(links_m2a, links_a2s)
+  
+  # Check if we have any links
+  if(nrow(links) == 0) {
+    warning("No links could be created")
+    return(NULL)
+  }
+  
+  # Create Sankey diagram
+  sankey <- sankeyNetwork(
+    Links = links, 
+    Nodes = nodes, 
+    Source = "source", 
+    Target = "target", 
+    Value = "value", 
+    NodeID = "display_name",
+    NodeGroup = "group",
+    # Custom color scheme
+    colourScale = JS('d3.scaleOrdinal()
+                     .domain(["ministry", "agency", "supplier"])
+                     .range(["#1f77b4", "#ff7f0e", "#2ca02c"])'),
+    # Layout parameters
+    nodeWidth = 30,
+    nodePadding = 20,
+    margin = list(top = 30, right = 30, bottom = 30, left = 30),
+    sinksRight = TRUE,
+    fontSize = 11,
+    height = 800,
+    width = 1200,
+    iterations = 64  # More iterations for better layout
+  )
+  
+  # Add JavaScript for better rendering and tooltip formatting
+  sankey <- htmlwidgets::onRender(
+    sankey,
+    '
+    function(el, x) {
+      // Ensure diagram is properly sized
+      d3.select(el).select("svg")
+        .attr("viewBox", "0 0 1200 800")
+        .attr("preserveAspectRatio", "xMidYMid meet");
+        
+      // Add formatted tooltips to links
+      d3.select(el).selectAll(".link")
+        .append("title")
+        .text(function(d) { 
+          return d.source.name + " → " + d.target.name + 
+                 "\\nValue: $" + d3.format(",.0f")(d.value); 
+        });
+    }
+    '
+  )
+  
+  return(sankey)
+}
+```
+
+## 5. Creating Sankey Visualization Examples
+
+In this section, we'll create several example Sankey diagrams to demonstrate different filtering capabilities:
+
+Filtering by ministry (1-2 examples)
+Filtering by agency (1-2 examples)
+Filtering by suppliers (1-2 examples)
+Filtering by top K for all 3 entity types
+
+These examples showcase the flexibility of our visualization approach and highlight different aspects of the procurement network.
+
+## 6. Embedding the Sankey Diagram
+
+```{=html}
+<iframe src="gebiz_sankey_2021.html" width="100%" height="600px" frameborder="0"></iframe>
+```
