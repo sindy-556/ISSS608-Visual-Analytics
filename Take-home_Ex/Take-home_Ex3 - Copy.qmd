@@ -20,7 +20,7 @@ This document presents a visualization prototype for GeBiz procurement data. We 
 # Load required packages
 pacman::p_load(dplyr, stringr, lubridate, networkD3, tidyverse, 
                plotly, DT, viridis, scales, htmlwidgets, htmltools,
-               RColorBrewer, treemapify)
+               RColorBrewer)
 ```
 
 ## 2. Data Preparation
@@ -920,7 +920,7 @@ This organization balances user control with information discovery, enabling bot
 
 The left panel is organized into two distinct functional areas to improve workflow efficiency:
 
-#### Data Filtering Section
+#### 6.2.1 Data Filtering Section
 
 - Time Period Filter
   - Year dropdown (2019-2023)
@@ -938,7 +938,7 @@ The left panel is organized into two distinct functional areas to improve workfl
   - Recently used filter combinations
   - Save/load filter configurations
 
-#### Visualization Settings
+#### 6.2.2 Visualization Settings
 
 - Threshold Controls
   - Minimum flow value slider with formatted value display
@@ -1034,8 +1034,440 @@ The dashboard implements several advanced interactive features:
 
 RFM (Recency, Frequency, Monetary) analysis is a powerful technique for segmenting suppliers based on their procurement behavior. This section implements a comprehensive RFM analysis of the GeBiz procurement dataset.
 
+### 7.1 Computing RFM Metrics
 
-## 8. RFM Analysis Dashboard UI Design
+First, we'll calculate the three core RFM metrics for each supplier in our dataset:
+
+```{r}
+# Set analysis date (latest date in dataset + 1 day for accurate recency calculation)
+if(!"award_date" %in% colnames(procurement_enriched) || !inherits(procurement_enriched$award_date, "Date")) {
+  procurement_enriched <- procurement_enriched %>%
+    mutate(award_date = as.Date(award_date, format="%d/%m/%Y"))
+}
+
+analysis_date <- max(procurement_enriched$award_date, na.rm = TRUE) + days(1)
+
+# Calculate RFM metrics for each supplier
+supplier_rfm <- procurement_enriched %>%
+  group_by(supplier_name) %>%
+  summarize(
+    # Recency: days since last contract (lower is better)
+    recency = as.numeric(difftime(analysis_date, max(award_date, na.rm = TRUE), units = "days")),
+    # Frequency: number of contracts
+    frequency = n(),
+    # Monetary: total value of contracts
+    monetary = sum(awarded_amt, na.rm = TRUE),
+    # Additional metrics
+    avg_contract = monetary / frequency,
+    first_contract = min(award_date, na.rm = TRUE),
+    last_contract = max(award_date, na.rm = TRUE),
+    days_active = as.numeric(difftime(max(award_date, na.rm = TRUE), 
+                                      min(award_date, na.rm = TRUE), 
+                                      units = "days")) + 1,
+    financial_grade = first(financial_grade),
+    financial_category = first(financial_category),
+    .groups = 'drop'
+  ) %>%
+  # Remove suppliers with missing names or identified as "Unknown"
+  filter(!is.na(supplier_name), supplier_name != "Unknown", supplier_name != "Unspecified Supplier") %>%
+  # Filter out suppliers with extremely low values (optional, for better visualization)
+  filter(monetary > 10000)  # Minimum threshold of $10,000
+
+# Preview the RFM data
+head(supplier_rfm)
+```
+
+### 7.2 Computing RFM Scores and Segmentation
+
+Next, we'll convert the raw metric values into quartile-based scores from 1-4 (4 being the highest value) and create meaningful segments:
+
+```{r}
+# Create RFM scores (4 is best, 1 is worst)
+supplier_rfm_scored <- supplier_rfm %>%
+  mutate(
+    # Recency score (note: lower recency days = higher score)
+    r_score = ntile(desc(recency), 4),
+    # Frequency score
+    f_score = ntile(frequency, 4),
+    # Monetary score
+    m_score = ntile(monetary, 4),
+    # Combined RFM score (3-12)
+    rfm_score = r_score + f_score + m_score
+  )
+
+# Create meaningful segment labels based on RFM scores
+supplier_rfm_scored <- supplier_rfm_scored %>%
+  mutate(
+    segment = case_when(
+      r_score >= 3 & f_score >= 3 & m_score >= 3 ~ "Top Suppliers",
+      r_score >= 3 & f_score >= 3 ~ "Active Contractors",
+      r_score >= 3 & m_score >= 3 ~ "Big-Ticket Recent",
+      f_score >= 3 & m_score >= 3 ~ "High Value Regular",
+      r_score >= 3 ~ "Recent Contractors",
+      f_score >= 3 ~ "Regular Contractors",
+      m_score >= 3 ~ "Big Spenders",
+      r_score == 1 & f_score == 1 & m_score == 1 ~ "Least Engaged",
+      TRUE ~ "Average Contractors"
+    )
+  )
+
+# Add segment description for tooltip and display
+segment_descriptions <- c(
+  "Top Suppliers" = "Recent, frequent, and high-value contractors",
+  "Active Contractors" = "Recent and frequent, but lower contract values",
+  "Big-Ticket Recent" = "Recent and high-value, but less frequent",
+  "High Value Regular" = "Frequent and high-value, but less recent",
+  "Recent Contractors" = "Recently engaged, but lower frequency and value",
+  "Regular Contractors" = "Frequent engagement, but lower recency and value",
+  "Big Spenders" = "High contract values, but less recent and frequent",
+  "Average Contractors" = "Middle-range performance across RFM metrics",
+  "Least Engaged" = "Low scores across all RFM dimensions"
+)
+
+supplier_rfm_scored <- supplier_rfm_scored %>%
+  mutate(segment_description = segment_descriptions[segment])
+
+# Preview the results
+head(supplier_rfm_scored)
+```
+
+### 3.3 Segment Analysis Summary
+
+Let's create summary statistics for each segment to understand their distribution and characteristics:
+
+```{r}
+# Create summary by segment
+segment_summary <- supplier_rfm_scored %>%
+  group_by(segment) %>%
+  summarize(
+    count = n(),
+    pct_suppliers = round(n() / nrow(supplier_rfm_scored) * 100, 1),
+    avg_recency = round(mean(recency)),
+    avg_frequency = round(mean(frequency), 1),
+    avg_monetary = round(mean(monetary)),
+    total_monetary = sum(monetary),
+    pct_spend = round(sum(monetary) / sum(supplier_rfm_scored$monetary) * 100, 1),
+    .groups = 'drop'
+  ) %>%
+  # Sort by total monetary value
+  arrange(desc(total_monetary))
+
+# Format for display
+segment_summary_formatted <- segment_summary %>%
+  mutate(
+    avg_monetary = scales::dollar(avg_monetary),
+    total_monetary = scales::dollar(total_monetary)
+  )
+
+# Show the segment summary
+segment_summary_formatted
+```
+
+### 3.4 RFM Heatmap Visualization
+
+We'll create a heatmap showing the distribution of suppliers across the RFM dimensions:
+
+```{r, fig.width=10, fig.height=8}
+# Prepare data for heatmap
+rfm_heatmap_data <- supplier_rfm_scored %>%
+  count(r_score, f_score, m_score) %>%
+  # Convert scores to factors for better visualization
+  mutate(
+    r_score = factor(r_score, levels = 4:1),
+    f_score = factor(f_score),
+    m_score = factor(m_score)
+  )
+
+# Create RFM heatmap
+rfm_heatmap <- ggplot(rfm_heatmap_data, aes(f_score, r_score, fill = n)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = n), color = "white", size = 3) +
+  scale_fill_viridis_c() +
+  labs(
+    title = "RFM Heatmap: Supplier Distribution",
+    subtitle = "Number of suppliers in each RFM score combination",
+    x = "Frequency Score (1-4)",
+    y = "Recency Score (1-4)",
+    fill = "Number of\nSuppliers"
+  ) +
+  facet_wrap(~m_score, labeller = labeller(m_score = function(x) paste("Monetary Score:", x))) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold"),
+    legend.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold", size = 12),
+    strip.background = element_rect(fill = "grey90", color = NA)
+  )
+
+# Convert to interactive plot
+rfm_heatmap_interactive <- ggplotly(rfm_heatmap) %>%
+  layout(title = list(text = paste0("RFM Heatmap: Supplier Distribution<br>",
+                                   "<sup>Number of suppliers in each RFM score combination</sup>")))
+
+rfm_heatmap_interactive
+```
+
+### 3.5 RFM Bubble Chart
+
+The bubble chart provides a clear visualization of how suppliers are distributed across the RFM dimensions:
+
+```{r, fig.width=10, fig.height=8}
+# Create RFM bubble chart
+rfm_bubble <- ggplot(supplier_rfm_scored %>% 
+                       sample_n(min(n(), 500)), # Sample for better visualization if too many points
+                     aes(frequency, recency, size = monetary, color = segment)) +
+  geom_point(alpha = 0.7) +
+  scale_size(range = c(2, 15), name = "Contract Value") +
+  scale_color_brewer(palette = "Set1") +
+  # Use log scale for frequency if it has high variance
+  scale_x_log10(labels = scales::comma) +
+  # Reverse y-axis so lower recency (better) is at the top
+  scale_y_reverse(labels = scales::comma) +
+  labs(
+    title = "Supplier RFM Analysis",
+    subtitle = "Bubble size represents total contract value",
+    x = "Frequency (Number of Contracts, log scale)",
+    y = "Recency (Days Since Last Contract)",
+    color = "Segment"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold"),
+    legend.title = element_text(face = "bold")
+  )
+
+# Convert to interactive plot
+rfm_bubble_interactive <- ggplotly(rfm_bubble) %>%
+  layout(title = list(text = paste0("Supplier RFM Analysis<br>",
+                                   "<sup>Bubble size represents total contract value</sup>")))
+
+rfm_bubble_interactive
+```
+
+### 3.6 Segment Distribution Charts
+
+Let's visualize the distribution of suppliers and procurement value across segments:
+
+```{r, fig.width=10, fig.height=8}
+# Prepare data for segment distribution
+segment_dist <- segment_summary %>%
+  select(segment, count, pct_suppliers, total_monetary, pct_spend)
+
+# Create a dual-bar chart showing supplier count vs. procurement value by segment
+segment_dist_chart <- ggplot(segment_dist, aes(x = reorder(segment, pct_spend))) +
+  geom_bar(aes(y = pct_suppliers, fill = "% of Suppliers"), stat = "identity", alpha = 0.7) +
+  geom_bar(aes(y = pct_spend, fill = "% of Spend"), stat = "identity", alpha = 0.7, position = position_nudge(x = 0.3)) +
+  scale_fill_manual(values = c("% of Suppliers" = "#1f77b4", "% of Spend" = "#ff7f0e")) +
+  labs(
+    title = "Supplier Segments: Distribution of Suppliers vs. Procurement Spend",
+    subtitle = "Comparing percentage of suppliers to percentage of total procurement value",
+    x = "Segment",
+    y = "Percentage (%)",
+    fill = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "top"
+  ) +
+  coord_flip()
+
+# Convert to interactive plot
+segment_dist_interactive <- ggplotly(segment_dist_chart) %>%
+  layout(title = list(text = paste0("Supplier Segments: Distribution<br>",
+                                  "<sup>Comparing percentage of suppliers to percentage of total procurement value</sup>")))
+
+segment_dist_interactive
+```
+
+### 3.7 Supplier Segmentation Data Table
+
+Finally, let's create an interactive data table to explore the supplier segments in detail:
+
+```{r}
+# Prepare data for the interactive table
+rfm_table_data <- supplier_rfm_scored %>%
+  select(
+    supplier_name, 
+    recency, 
+    frequency, 
+    monetary, 
+    r_score, 
+    f_score, 
+    m_score, 
+    rfm_score,
+    segment,
+    financial_category,
+    avg_contract
+  ) %>%
+  arrange(desc(rfm_score), desc(monetary))
+
+# Create a nicely formatted interactive table
+rfm_datatable <- datatable(
+  rfm_table_data,
+  caption = "Supplier RFM Analysis and Segmentation",
+  colnames = c(
+    "Supplier Name", "Recency (Days)", "Frequency", "Monetary Value ($)", 
+    "R Score", "F Score", "M Score", "RFM Score", "Segment", 
+    "Financial Category", "Avg Contract ($)"
+  ),
+  extensions = c('Buttons', 'Scroller'),
+  options = list(
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf'),
+    deferRender = TRUE,
+    scrollY = 400,
+    scrollX = TRUE,
+    scroller = TRUE,
+    columnDefs = list(
+      list(targets = c(3, 10), render = JS("function(data, type, row) { return type === 'display' ? '$' + data.toString().replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, '$1,') : data; }"))
+    )
+  )
+) %>%
+  formatRound(columns = c("recency", "monetary", "avg_contract"), digits = 0) %>%
+  formatStyle(
+    'segment',
+    backgroundColor = styleEqual(
+      unique(supplier_rfm_scored$segment),
+      colorRampPalette(brewer.pal(9, "Set1"))(length(unique(supplier_rfm_scored$segment)))
+    ),
+    fontWeight = 'bold',
+    color = 'white'
+  ) %>%
+  formatStyle(
+    columns = c('r_score', 'f_score', 'm_score'),
+    backgroundColor = styleInterval(
+      cuts = c(1, 2, 3),
+      values = c('#f7fbff', '#c6dbef', '#6baed6', '#08519c')
+    ),
+    color = styleInterval(
+      cuts = c(3),
+      values = c('black', 'white')
+    )
+  )
+
+rfm_datatable
+```
+
+### 3.8 RFM Analysis by Ministry or Agency
+
+For a more targeted analysis, we can examine the RFM distribution for suppliers working with specific ministries or agencies:
+
+```{r}
+# Function to perform RFM analysis for a specific ministry or agency
+rfm_by_entity <- function(data, entity_type, entity_name) {
+  # Filter data for the specified entity
+  entity_data <- data %>%
+    filter(if(entity_type == "ministry") ministry == entity_name else agency == entity_name)
+  
+  # Calculate RFM metrics for suppliers within this entity
+  entity_supplier_rfm <- entity_data %>%
+    group_by(supplier_name) %>%
+    summarize(
+      recency = as.numeric(difftime(analysis_date, max(award_date, na.rm = TRUE), units = "days")),
+      frequency = n(),
+      monetary = sum(awarded_amt, na.rm = TRUE),
+      avg_contract = monetary / frequency,
+      financial_category = first(financial_category),
+      .groups = 'drop'
+    ) %>%
+    filter(!is.na(supplier_name), supplier_name != "Unknown", monetary > 10000) %>%
+    # Create RFM scores
+    mutate(
+      r_score = ntile(desc(recency), 4),
+      f_score = ntile(frequency, 4),
+      m_score = ntile(monetary, 4),
+      rfm_score = r_score + f_score + m_score
+    ) %>%
+    # Create segments
+    mutate(
+      segment = case_when(
+        r_score >= 3 & f_score >= 3 & m_score >= 3 ~ "Top Suppliers",
+        r_score >= 3 & f_score >= 3 ~ "Active Contractors",
+        r_score >= 3 & m_score >= 3 ~ "Big-Ticket Recent",
+        f_score >= 3 & m_score >= 3 ~ "High Value Regular",
+        r_score >= 3 ~ "Recent Contractors",
+        f_score >= 3 ~ "Regular Contractors",
+        m_score >= 3 ~ "Big Spenders",
+        r_score == 1 & f_score == 1 & m_score == 1 ~ "Least Engaged",
+        TRUE ~ "Average Contractors"
+      )
+    )
+  
+  # Return the RFM analysis for this entity
+  return(entity_supplier_rfm)
+}
+
+# Example: RFM analysis for Ministry of Education
+moe_rfm <- rfm_by_entity(procurement_enriched, "ministry", "MINISTRY OF EDUCATION")
+
+# Create bubble chart for this ministry
+moe_bubble <- ggplot(moe_rfm, aes(frequency, recency, size = monetary, color = segment)) +
+  geom_point(alpha = 0.7) +
+  scale_size(range = c(2, 15), name = "Contract Value") +
+  scale_color_brewer(palette = "Set1") +
+  scale_x_log10(labels = scales::comma) +
+  scale_y_reverse(labels = scales::comma) +
+  labs(
+    title = "Ministry of Education: Supplier RFM Analysis",
+    subtitle = "Bubble size represents total contract value",
+    x = "Frequency (Number of Contracts, log scale)",
+    y = "Recency (Days Since Last Contract)",
+    color = "Segment"
+  ) +
+  theme_minimal()
+
+# Convert to interactive plot
+moe_bubble_interactive <- ggplotly(moe_bubble)
+moe_bubble_interactive
+```
+
+### 3.9 Cross-Analysis: Financial Grade vs. RFM Segments
+
+Let's examine the relationship between supplier financial grades and their RFM segmentation:
+
+```{r, fig.width=10, fig.height=8}
+# Prepare data for cross-analysis
+grade_rfm_data <- supplier_rfm_scored %>%
+  filter(!is.na(financial_category)) %>%
+  group_by(financial_category, segment) %>%
+  summarize(
+    count = n(),
+    total_monetary = sum(monetary),
+    .groups = 'drop'
+  )
+
+# Create a heatmap showing the distribution of segments across financial categories
+grade_segment_heatmap <- ggplot(grade_rfm_data, 
+                               aes(segment, financial_category, fill = count)) +
+  geom_tile() +
+  geom_text(aes(label = count), color = "white") +
+  scale_fill_viridis_c() +
+  labs(
+    title = "Supplier Distribution: Financial Grade vs. RFM Segment",
+    x = "RFM Segment",
+    y = "Financial Category",
+    fill = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold")
+  )
+
+# Convert to interactive plot
+grade_segment_interactive <- ggplotly(grade_segment_heatmap)
+grade_segment_interactive
+```
+
+## 4. RFM Analysis Dashboard UI Design
 
 This UI mockup demonstrates how the RFM analysis module would be integrated into your existing dashboard:
 

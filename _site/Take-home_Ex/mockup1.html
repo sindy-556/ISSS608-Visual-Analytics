@@ -9,10 +9,15 @@
             --primary-blue: #1f77b4;
             --primary-orange: #ff7f0e;
             --primary-green: #2ca02c;
+            --primary-action: #4a86e8;
+            --light-blue: #e8f1f8;
+            --light-orange: #fff3e8;
+            --light-green: #e8f5e8;
             --light-gray: #f8f9fa;
             --medium-gray: #e9ecef;
             --dark-gray: #343a40;
             --border-color: #dee2e6;
+            --shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         body {
@@ -32,12 +37,14 @@
         .panel {
             padding: 15px;
             overflow-y: auto;
-            border-right: 1px solid var(--border-color);
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
         
         .control-panel {
             width: 250px;
             background-color: white;
+            display: flex;
+            flex-direction: column;
         }
         
         .visualization-area {
@@ -47,12 +54,12 @@
             background-color: white;
         }
         
-        .info-panel {
-            width: 280px;
+        .insights-panel {
+            width: 300px;
             background-color: white;
         }
         
-        h1, h2, h3 {
+        h1, h2, h3, h4 {
             color: var(--dark-gray);
             margin-top: 0;
         }
@@ -66,22 +73,51 @@
         
         h2 {
             font-size: 1.2rem;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--medium-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h2 .toggle-icon {
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--dark-gray);
         }
         
         h3 {
             font-size: 1rem;
             margin-bottom: 10px;
+            color: #555;
+        }
+        
+        h4 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .section-card {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+            padding: 12px;
+            margin-bottom: 16px;
         }
         
         .control-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
+            font-size: 14px;
+            color: #555;
         }
         
         select, input {
@@ -90,11 +126,12 @@
             border: 1px solid var(--border-color);
             border-radius: 4px;
             margin-bottom: 10px;
+            font-size: 14px;
         }
         
         .tabs {
             display: flex;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border-bottom: 1px solid var(--border-color);
         }
         
@@ -106,12 +143,19 @@
             border-radius: 4px 4px 0 0;
             background-color: var(--light-gray);
             margin-right: 3px;
+            font-size: 14px;
+            transition: all 0.2s;
         }
         
         .tab.active {
             background-color: white;
             border-color: var(--border-color);
-            font-weight: bold;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: #e2e6ea;
         }
         
         .checkbox-group {
@@ -120,12 +164,21 @@
             border: 1px solid var(--border-color);
             padding: 5px;
             border-radius: 4px;
+            margin-bottom: 8px;
+            background-color: white;
         }
         
         .checkbox-item {
             display: flex;
             align-items: center;
             margin-bottom: 5px;
+            padding: 3px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            background-color: var(--light-gray);
         }
         
         .checkbox-item input {
@@ -134,29 +187,58 @@
             margin-bottom: 0;
         }
         
+        .checkbox-item label {
+            margin-bottom: 0;
+            font-weight: normal;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .slider-container {
+            margin: 12px 0;
+        }
+        
         .slider {
             width: 100%;
-            margin: 10px 0;
+            margin: 5px 0;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .current-value {
+            font-weight: 600;
+            text-align: center;
+            color: var(--primary-blue);
+            margin: 2px 0 8px 0;
+            font-size: 13px;
         }
         
         .button-group {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 8px;
+            margin-top: 16px;
         }
         
         button {
             padding: 8px 15px;
-            background-color: var(--primary-blue);
+            background-color: var(--primary-action);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
+            font-size: 14px;
+            transition: background-color 0.2s;
         }
         
         button:hover {
-            background-color: #0056b3;
+            background-color: #3a76d8;
         }
         
         .secondary-button {
@@ -168,46 +250,115 @@
             background-color: #ced4da;
         }
         
+        .toolbar {
+            display: flex;
+            padding: 8px 16px;
+            background-color: var(--light-gray);
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+        
+        .toolbar-group {
+            display: flex;
+            gap: 8px;
+            padding: 0 12px;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+        
+        .toolbar-button {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #555;
+        }
+        
+        .toolbar-button:hover {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+        }
+        
+        .legend {
+            display: flex;
+            padding: 8px 16px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+            border-radius: 2px;
+        }
+        
+        .legend-label {
+            color: #555;
+        }
+        
         .visualization {
             flex-grow: 1;
-            padding: 20px;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed var(--border-color);
-            margin: 15px;
-            border-radius: 8px;
             background-color: var(--light-gray);
+            position: relative;
         }
         
-        .vis-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #6c757d;
-        }
-        
-        .vis-placeholder-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
+        .sankey-container {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
         }
         
         .info-card {
             background-color: white;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
             padding: 12px;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
         
         .info-card h3 {
             margin-top: 0;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 8px;
+            font-size: 15px;
+        }
+        
+        .entity-header {
+            padding: 8px 0;
+            margin-bottom: 10px;
+        }
+        
+        .entity-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 4px;
+        }
+        
+        .entity-type {
+            font-size: 12px;
+            color: #666;
+            background-color: var(--light-blue);
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
         }
         
         .metric-grid {
@@ -219,32 +370,234 @@
         
         .metric {
             background-color: var(--light-gray);
-            padding: 8px;
-            border-radius: 4px;
+            padding: 10px 8px;
+            border-radius: 6px;
             text-align: center;
         }
         
         .metric-value {
-            font-size: 1.2rem;
+            font-size: 15px;
             font-weight: bold;
             color: var(--primary-blue);
         }
         
         .metric-label {
-            font-size: 0.8rem;
-            color: #6c757d;
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
         }
         
-        .mini-chart {
-            height: 100px;
+        .chart-container {
+            height: 120px;
             background-color: var(--light-gray);
-            border-radius: 4px;
+            border-radius: 6px;
             margin-top: 10px;
-            padding: 8px;
+            padding: 10px;
+            position: relative;
+        }
+        
+        .chart-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .distribution-bar {
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+            display: flex;
+        }
+        
+        .distribution-segment {
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .distribution-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .key-insight {
+            display: flex;
+            background-color: #fff8e1;
+            border-left: 3px solid #ffc107;
+            padding: 8px 12px;
+            margin: 10px 0;
+            font-size: 13px;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .key-insight-icon {
+            margin-right: 8px;
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        .insights-list {
+            margin: 0;
+            padding: 0 0 0 20px;
+        }
+        
+        .insights-list li {
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .comparison-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            font-size: 13px;
+        }
+        
+        .comparison-label {
+            color: #555;
+        }
+        
+        .comparison-value {
+            font-weight: 500;
+        }
+        
+        .positive {
+            color: #28a745;
+        }
+        
+        .negative {
+            color: #dc3545;
+        }
+        
+        .neutral {
             color: #6c757d;
+        }
+        
+        .action-row {
+            margin-top: 12px;
+            text-align: center;
+        }
+        
+        .action-link {
+            color: var(--primary-action);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .action-link:hover {
+            text-decoration: underline;
+        }
+        
+        .filter-pill-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        
+        .filter-pill {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .filter-pill .remove {
+            margin-left: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .quick-filters {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        
+        .quick-filter {
+            padding: 5px 10px;
+            background-color: var(--light-gray);
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+        
+        .quick-filter:hover {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            margin-right: 8px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-blue);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        
+        .toggle-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .toggle-label {
+            font-size: 13px;
+            color: #555;
         }
         
         /* Sample nodes for the Sankey diagram */
@@ -256,30 +609,47 @@
         
         .node {
             position: absolute;
-            background-color: #ccc;
             border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 12px;
+            box-shadow: var(--shadow);
         }
         
         .node-ministry {
-            background-color: rgba(31, 119, 180, 0.7);
+            background-color: rgba(31, 119, 180, 0.9);
             color: white;
         }
         
         .node-agency {
-            background-color: rgba(255, 127, 14, 0.7);
+            background-color: rgba(255, 127, 14, 0.9);
             color: white;
         }
         
         .node-supplier {
-            background-color: rgba(44, 160, 44, 0.7);
+            background-color: rgba(44, 160, 44, 0.9);
             color: white;
         }
         
         .link {
             position: absolute;
             background-color: #ddd;
-            opacity: 0.6;
+            opacity: 0.7;
             border-radius: 20px;
+        }
+        
+        /* Sparkline chart simulation */
+        .sparkline {
+            display: flex;
+            align-items: flex-end;
+            height: 40px;
+            gap: 2px;
+        }
+        
+        .sparkline-bar {
+            flex-grow: 1;
+            background-color: var(--primary-blue);
+            opacity: 0.7;
+            border-radius: 2px 2px 0 0;
         }
     </style>
 </head>
@@ -289,9 +659,12 @@
         <div class="panel control-panel">
             <h1>GeBiz Dashboard</h1>
             
-            <!-- Date Range Control -->
+            <!-- Data Filtering Section -->
+            <h2>Data Filters <span class="toggle-icon">▼</span></h2>
+            
+            <!-- Time Period Control -->
             <div class="control-group">
-                <label for="year-select">Select Year</label>
+                <label for="year-select">Time Period</label>
                 <select id="year-select">
                     <option value="2023" selected>2023</option>
                     <option value="2022">2022</option>
@@ -299,11 +672,26 @@
                     <option value="2020">2020</option>
                     <option value="2019">2019</option>
                 </select>
+                
+                <!-- Active Filters Display -->
+                <div class="filter-pill-container">
+                    <div class="filter-pill">Year: 2023 <span class="remove">×</span></div>
+                </div>
+            </div>
+            
+            <!-- Quick Filters -->
+            <div class="control-group">
+                <label>Quick Filters</label>
+                <div class="quick-filters">
+                    <div class="quick-filter">Education Sector</div>
+                    <div class="quick-filter">Healthcare</div>
+                    <div class="quick-filter">Top 5 by Value</div>
+                </div>
             </div>
             
             <!-- Entity Type Selector -->
             <div class="control-group">
-                <label>Entity Focus</label>
+                <label>Focus On</label>
                 <div class="tabs">
                     <div class="tab active">Ministry</div>
                     <div class="tab">Agency</div>
@@ -313,8 +701,11 @@
             
             <!-- Entity Selection -->
             <div class="control-group">
-                <label>Select Ministries</label>
-                <input type="text" placeholder="Search ministries...">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="margin: 0;">Select Ministries</label>
+                    <span style="font-size: 12px; color: #666;">2 selected</span>
+                </div>
+                <input type="text" placeholder="Search ministries..." style="margin-top: 8px;">
                 <div class="checkbox-group">
                     <div class="checkbox-item">
                         <input type="checkbox" id="ministry1" checked>
@@ -337,148 +728,204 @@
                         <label for="ministry5">Ministry of Transport</label>
                     </div>
                 </div>
+                <div style="margin-top: 8px; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="secondary-button" style="padding: 4px 8px; font-size: 12px;">Select All</button>
+                    <button class="secondary-button" style="padding: 4px 8px; font-size: 12px;">Clear</button>
+                </div>
+            </div>
+            
+            <!-- Visualization Settings -->
+            <h2>Display Settings <span class="toggle-icon">▼</span></h2>
+            
+            <!-- Min Value Threshold -->
+            <div class="control-group">
+                <label for="min-value">Minimum Flow Value</label>
+                <div class="current-value">$1,000,000</div>
+                <input type="range" id="min-value" class="slider" min="100000" max="5000000" value="1000000">
+                <div class="slider-labels">
+                    <span>$100K</span>
+                    <span>$5M</span>
+                </div>
             </div>
             
             <!-- Top K Selection -->
             <div class="control-group">
                 <label for="topk-ministries">Top Ministries</label>
                 <input type="range" id="topk-ministries" class="slider" min="3" max="15" value="5">
-                <div style="display: flex; justify-content: space-between;">
+                <div class="slider-labels">
                     <span>3</span>
-                    <span>5</span>
+                    <span>Current: 5</span>
                     <span>15</span>
                 </div>
                 
-                <label for="topk-agencies">Top Agencies</label>
+                <label for="topk-agencies" style="margin-top: 12px;">Top Agencies</label>
                 <input type="range" id="topk-agencies" class="slider" min="5" max="20" value="10">
-                <div style="display: flex; justify-content: space-between;">
+                <div class="slider-labels">
                     <span>5</span>
-                    <span>10</span>
+                    <span>Current: 10</span>
                     <span>20</span>
                 </div>
                 
-                <label for="topk-suppliers">Top Suppliers</label>
+                <label for="topk-suppliers" style="margin-top: 12px;">Top Suppliers</label>
                 <input type="range" id="topk-suppliers" class="slider" min="5" max="30" value="15">
-                <div style="display: flex; justify-content: space-between;">
+                <div class="slider-labels">
                     <span>5</span>
-                    <span>15</span>
+                    <span>Current: 15</span>
                     <span>30</span>
                 </div>
             </div>
             
-            <!-- Min Value Threshold -->
+            <!-- Display Options -->
             <div class="control-group">
-                <label for="min-value">Minimum Value Threshold</label>
-                <input type="range" id="min-value" class="slider" min="100000" max="5000000" value="1000000">
-                <div style="display: flex; justify-content: space-between;">
-                    <span>$100K</span>
-                    <span>$1M</span>
-                    <span>$5M</span>
+                <label>Display Options</label>
+                
+                <div class="toggle-option">
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Group by Financial Grade</span>
+                </div>
+                
+                <div class="toggle-option">
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Show Agency Abbreviations</span>
+                </div>
+                
+                <div class="toggle-option">
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Proportional Node Size</span>
                 </div>
             </div>
             
-            <!-- Group by Financial Grade -->
-            <div class="control-group">
-                <div class="checkbox-item">
-                    <input type="checkbox" id="group-grade">
-                    <label for="group-grade">Group by Financial Grade</label>
-                </div>
-            </div>
-            
-            <!-- Export and Share -->
+            <!-- Save & Share -->
             <div class="button-group">
-                <button>Export</button>
-                <button class="secondary-button">Share</button>
+                <button>Save View</button>
+                <button class="secondary-button">Export</button>
             </div>
         </div>
         
         <!-- Center Visualization Area -->
         <div class="panel visualization-area">
-            <div class="tabs">
-                <div class="tab active">Sankey Diagram</div>
-                <div class="tab">Network Graph</div>
-                <div class="tab">Treemap</div>
-                <div class="tab">Bar Charts</div>
+            <!-- Visualization Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <button class="toolbar-button">Zoom In</button>
+                    <button class="toolbar-button">Zoom Out</button>
+                    <button class="toolbar-button">Reset</button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="toolbar-button">Auto-Arrange</button>
+                    <button class="toolbar-button">Lock Positions</button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="toolbar-button">Download PNG</button>
+                    <button class="toolbar-button">Share</button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="toolbar-button">Help</button>
+                </div>
             </div>
             
-            <div class="visualization">
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-blue);"></div>
+                    <div class="legend-label">Ministries</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-orange);"></div>
+                    <div class="legend-label">Agencies</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-green);"></div>
+                    <div class="legend-label">Suppliers</div>
+                </div>
+                <div style="margin-left: auto; color: #666; font-size: 12px;">
+                    Link width = Procurement value
+                </div>
+            </div>
+            
+            <!-- Sankey Diagram Container -->
+            <div class="sankey-container">
                 <!-- Simplified Sankey Diagram Mockup -->
                 <div class="sankey-preview">
                     <!-- Ministry nodes (left) -->
-                    <div class="node node-ministry" style="top: 20%; left: 5%; width: 10%; height: 15%; padding: 10px;">
+                    <div class="node node-ministry" style="top: 20%; left: 5%; width: 12%; height: 6%; display: flex; align-items: center; justify-content: center;">
                         Ministry of Education
                     </div>
-                    <div class="node node-ministry" style="top: 50%; left: 5%; width: 10%; height: 15%; padding: 10px;">
+                    <div class="node node-ministry" style="top: 50%; left: 5%; width: 12%; height: 6%; display: flex; align-items: center; justify-content: center;">
                         Ministry of Health
                     </div>
                     
                     <!-- Agency nodes (middle) -->
-                    <div class="node node-agency" style="top: 10%; left: 40%; width: 10%; height: 8%; padding: 10px;">
+                    <div class="node node-agency" style="top: 10%; left: 40%; width: 10%; height: 4%; display: flex; align-items: center; justify-content: center;">
                         MOE HQ
                     </div>
-                    <div class="node node-agency" style="top: 25%; left: 40%; width: 10%; height: 8%; padding: 10px;">
+                    <div class="node node-agency" style="top: 25%; left: 40%; width: 10%; height: 6%; display: flex; align-items: center; justify-content: center;">
                         Schools
                     </div>
-                    <div class="node node-agency" style="top: 45%; left: 40%; width: 10%; height: 8%; padding: 10px;">
+                    <div class="node node-agency" style="top: 45%; left: 40%; width: 10%; height: 6%; display: flex; align-items: center; justify-content: center;">
                         Hospitals
                     </div>
-                    <div class="node node-agency" style="top: 60%; left: 40%; width: 10%; height: 8%; padding: 10px;">
+                    <div class="node node-agency" style="top: 60%; left: 40%; width: 10%; height: 4%; display: flex; align-items: center; justify-content: center;">
                         Polyclinics
                     </div>
                     
                     <!-- Supplier nodes (right) -->
-                    <div class="node node-supplier" style="top: 5%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                    <div class="node node-supplier" style="top: 5%; left: 75%; width: 13%; height: 4%; display: flex; align-items: center; justify-content: center;">
                         Large (S8-S10)
                     </div>
-                    <div class="node node-supplier" style="top: 20%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                    <div class="node node-supplier" style="top: 20%; left: 75%; width: 13%; height: 5%; display: flex; align-items: center; justify-content: center;">
                         Medium (S5-S7)
                     </div>
-                    <div class="node node-supplier" style="top: 35%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                    <div class="node node-supplier" style="top: 35%; left: 75%; width: 13%; height: 4%; display: flex; align-items: center; justify-content: center;">
                         Small (S1-S4)
                     </div>
-                    <div class="node node-supplier" style="top: 50%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                    <div class="node node-supplier" style="top: 50%; left: 75%; width: 13%; height: 5%; display: flex; align-items: center; justify-content: center;">
                         Medium (S5-S7)
                     </div>
-                    <div class="node node-supplier" style="top: 65%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                    <div class="node node-supplier" style="top: 65%; left: 75%; width: 13%; height: 4%; display: flex; align-items: center; justify-content: center;">
                         Small (S1-S4)
                     </div>
                     
                     <!-- Links (simplified) -->
-                    <div class="link" style="top: 22%; left: 15%; width: 25%; height: 3%;"></div>
-                    <div class="link" style="top: 30%; left: 15%; width: 25%; height: 5%;"></div>
-                    <div class="link" style="top: 52%; left: 15%; width: 25%; height: 4%;"></div>
-                    <div class="link" style="top: 58%; left: 15%; width: 25%; height: 6%;"></div>
+                    <div class="link" style="top: 22%; left: 17%; width: 23%; height: 3%;"></div>
+                    <div class="link" style="top: 27%; left: 17%; width: 23%; height: 5%;"></div>
+                    <div class="link" style="top: 47%; left: 17%; width: 23%; height: 4%;"></div>
+                    <div class="link" style="top: 55%; left: 17%; width: 23%; height: 6%;"></div>
                     
-                    <div class="link" style="top: 14%; left: 50%; width: 25%; height: 2%;"></div>
-                    <div class="link" style="top: 18%; left: 50%; width: 25%; height: 4%;"></div>
-                    <div class="link" style="top: 29%; left: 50%; width: 25%; height: 8%;"></div>
-                    <div class="link" style="top: 48%; left: 50%; width: 25%; height: 4%;"></div>
-                    <div class="link" style="top: 55%; left: 50%; width: 25%; height: 3%;"></div>
-                    <div class="link" style="top: 64%; left: 50%; width: 25%; height: 5%;"></div>
+                    <div class="link" style="top: 12%; left: 50%; width: 25%; height: 2%;"></div>
+                    <div class="link" style="top: 22%; left: 50%; width: 25%; height: 6%;"></div>
+                    <div class="link" style="top: 30%; left: 50%; width: 25%; height: 5%;"></div>
+                    <div class="link" style="top: 47%; left: 50%; width: 25%; height: 5%;"></div>
+                    <div class="link" style="top: 55%; left: 50%; width: 25%; height: 4%;"></div>
+                    <div class="link" style="top: 62%; left: 50%; width: 25%; height: 5%;"></div>
                 </div>
             </div>
         </div>
         
-        <!-- Right Information Panel -->
-        <div class="panel info-panel">
-            <h2>Analysis Details</h2>
+        <!-- Right Insights Panel -->
+        <div class="panel insights-panel">
+            <h2>Insights Dashboard</h2>
             
-            <!-- Selection Details -->
+            <!-- Selection Context -->
             <div class="info-card">
-                <h3>Selection Details</h3>
-                <p><strong>Ministry of Education</strong></p>
-                <p>Responsible for education policies and oversight of educational institutions.</p>
-                <p><strong>Total Agencies:</strong> 5</p>
-                <p><strong>Top Agency:</strong> Schools</p>
-            </div>
-            
-            <!-- Summary Metrics -->
-            <div class="info-card">
-                <h3>Summary Metrics</h3>
+                <div class="entity-header">
+                    <div class="entity-name">Ministry of Education</div>
+                    <div class="entity-type">Ministry</div>
+                </div>
+                
                 <div class="metric-grid">
                     <div class="metric">
                         <div class="metric-value">$1.2B</div>
-                        <div class="metric-label">Total Value</div>
+                        <div class="metric-label">Total Procurement</div>
                     </div>
                     <div class="metric">
                         <div class="metric-value">87</div>
@@ -486,38 +933,104 @@
                     </div>
                     <div class="metric">
                         <div class="metric-value">$13.8M</div>
-                        <div class="metric-label">Avg Value</div>
+                        <div class="metric-label">Avg Contract</div>
                     </div>
                     <div class="metric">
                         <div class="metric-value">15</div>
                         <div class="metric-label">Suppliers</div>
                     </div>
                 </div>
-                <div class="metric">
-                    <div class="metric-value">68%</div>
-                    <div class="metric-label">SME Participation</div>
+                
+                <h4>Comparison to Previous Year</h4>
+                <div class="comparison-row">
+                    <span class="comparison-label">Total Procurement:</span>
+                    <span class="comparison-value positive">+12% ↑</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comparison-label">Contract Count:</span>
+                    <span class="comparison-value negative">-5% ↓</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comparison-label">Avg Contract Value:</span>
+                    <span class="comparison-value positive">+18% ↑</span>
                 </div>
             </div>
             
-            <!-- Trend Analysis -->
+            <!-- Flow Analysis -->
             <div class="info-card">
-                <h3>Procurement Trends</h3>
-                <div class="mini-chart">
-                    [Monthly Trend Chart]
-                </div>
-                <div class="mini-chart">
-                    [Supplier Distribution Chart]
-                </div>
-            </div>
-            
-            <!-- Additional Information -->
-            <div class="info-card">
-                <h3>Top Suppliers</h3>
-                <ol style="padding-left: 20px; margin-top: 5px;">
-                    <li>ABC Construction (S8)</li>
-                    <li>XYZ Technology (S7)</li>
-                    <li>EduTech Solutions (S5)</li>
+                <h3>Top Procurement Flows</h3>
+                
+                <h4>Largest Channels</h4>
+                <ol style="padding-left: 20px; margin-top: 5px; margin-bottom: 12px;">
+                    <li>MOE → Schools → Medium Suppliers: $450M</li>
+                    <li>MOE → Schools → Large Suppliers: $320M</li>
+                    <li>MOE → MOE HQ → Medium Suppliers: $150M</li>
                 </ol>
+                
+                <h4>Flow Distribution</h4>
+                <div class="chart-title">Supplier Category Breakdown</div>
+                <div class="distribution-bar">
+                    <div class="distribution-segment" style="width: 25%; background-color: var(--primary-blue);">25%</div>
+                    <div class="distribution-segment" style="width: 45%; background-color: var(--primary-orange);">45%</div>
+                    <div class="distribution-segment" style="width: 30%; background-color: var(--primary-green);">30%</div>
+                </div>
+                <div class="distribution-label">
+                    <div>Large (S8-S10)</div>
+                    <div>Medium (S5-S7)</div>
+                    <div>Small (S1-S4)</div>
+                </div>
+                
+                <div class="key-insight">
+                    <div class="key-insight-icon">💡</div>
+                    <div>Medium-sized suppliers (S5-S7) receive the largest share of MOE procurement.</div>
+                </div>
+            </div>
+            
+            <!-- Temporal Analysis -->
+            <div class="info-card">
+                <h3>Temporal Patterns</h3>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Monthly Procurement (2023)</div>
+                    <div class="sparkline" style="margin-top: 10px;">
+                        <div class="sparkline-bar" style="height: 20%;"></div>
+                        <div class="sparkline-bar" style="height: 30%;"></div>
+                        <div class="sparkline-bar" style="height: 40%;"></div>
+                        <div class="sparkline-bar" style="height: 60%;"></div>
+                        <div class="sparkline-bar" style="height: 70%;"></div>
+                        <div class="sparkline-bar" style="height: 30%;"></div>
+                        <div class="sparkline-bar" style="height: 20%;"></div>
+                        <div class="sparkline-bar" style="height: 10%;"></div>
+                        <div class="sparkline-bar" style="height: 40%;"></div>
+                        <div class="sparkline-bar" style="height: 90%;"></div>
+                        <div class="sparkline-bar" style="height: 60%;"></div>
+                        <div class="sparkline-bar" style="height: 40%;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; margin-top: 4px;">
+                        <span>Jan</span>
+                        <span>Dec</span>
+                    </div>
+                </div>
+                
+                <div class="key-insight">
+                    <div class="key-insight-icon">📊</div>
+                    <div>Significant procurement spike in October (fiscal year-end).</div>
+                </div>
+            </div>
+            
+            <!-- Key Insights -->
+            <div class="info-card">
+                <h3>Key Findings</h3>
+                
+                <ul class="insights-list">
+                    <li>MOE shows higher SME participation (68%) compared to government average (55%).</li>
+                    <li>Procurement is concentrated through Schools rather than direct HQ contracts.</li>
+                    <li>Average contract size increased 18% from previous year.</li>
+                </ul>
+                
+                <div class="action-row">
+                    <a href="#" class="action-link">Explore Similar Ministries →</a>
+                </div>
             </div>
         </div>
     </div>
