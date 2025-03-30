@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFM Analysis Dashboard Mockup</title>
+    <style>
+        :root {
+            --primary-blue: #1f77b4;
+            --primary-orange: #ff7f0e;
+            --primary-green: #2ca02c;
+            --primary-red: #d62728;
+            --primary-purple: #9467bd;
+            --primary-action: #4a86e8;
+            --light-blue: #e8f1f8;
+            --light-orange: #fff3e8;
+            --light-green: #e8f5e8;
+            --light-red: #fbe7e7;
+            --light-purple: #f3eef8;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #343a40;
+            --border-color: #dee2e6;
+            --shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .dashboard {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .panel {
+            padding: 15px;
+            overflow-y: auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+        
+        .control-panel {
+            width: 250px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .visualization-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+        }
+        
+        .insights-panel {
+            width: 300px;
+            background-color: white;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--dark-gray);
+            margin-top: 0;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary-blue);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--medium-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h2 .toggle-icon {
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--dark-gray);
+        }
+        
+        h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        h4 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .section-card {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .control-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            background-color: var(--light-gray);
+            margin-right: 3px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-color: var(--border-color);
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: #e2e6ea;
+        }
+        
+        .slider-container {
+            margin: 12px 0;
+        }
+        
+        .slider {
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .current-value {
+            font-weight: 600;
+            text-align: center;
+            color: var(--primary-blue);
+            margin: 2px 0 8px 0;
+            font-size: 13px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        button {
+            padding: 8px 15px;
+            background-color: var(--primary-action);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #3a76d8;
+        }
+        
+        .secondary-button {
+            background-color: var(--medium-gray);
+            color: var(--dark-gray);
+        }
+        
+        .secondary-button:hover {
+            background-color: #ced4da;
+        }
+        
+        .toolbar {
+            display: flex;
+            padding: 8px 16px;
+            background-color: var(--light-gray);
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+        
+        .toolbar-group {
+            display: flex;
+            gap: 8px;
+            padding: 0 12px;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+        
+        .toolbar-button {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #555;
+        }
+        
+        .toolbar-button:hover {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+        }
+        
+        .legend {
+            display: flex;
+            padding: 8px 16px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+            border-radius: 2px;
+        }
+        
+        .legend-label {
+            color: #555;
+        }
+        
+        .visualization {
+            flex-grow: 1;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--light-gray);
+            position: relative;
+        }
+        
+        .visualization-container {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            padding: 15px;
+        }
+        
+        .info-card {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .info-card h3 {
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            font-size: 15px;
+        }
+        
+        .entity-header {
+            padding: 8px 0;
+            margin-bottom: 10px;
+        }
+        
+        .entity-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 4px;
+        }
+        
+        .entity-type {
+            font-size: 12px;
+            color: #666;
+            background-color: var(--light-blue);
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        
+        .metric-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .metric {
+            background-color: var(--light-gray);
+            padding: 10px 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .chart-container {
+            height: 120px;
+            background-color: var(--light-gray);
+            border-radius: 6px;
+            margin-top: 10px;
+            padding: 10px;
+            position: relative;
+        }
+        
+        .chart-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .bar-chart {
+            height: 150px;
+            width: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .bar {
+            width: 8%;
+            background-color: var(--primary-blue);
+            margin: 0 1%;
+            border-radius: 3px 3px 0 0;
+            position: relative;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .distribution-bar {
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+            display: flex;
+        }
+        
+        .distribution-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .distribution-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .action-row {
+            margin-top: 12px;
+            text-align: center;
+        }
+        
+        .action-link {
+            color: var(--primary-action);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .action-link:hover {
+            text-decoration: underline;
+        }
+        
+        .recommendation {
+            display: flex;
+            background-color: var(--light-blue);
+            border-left: 3px solid var(--primary-blue);
+            padding: 8px 12px;
+            margin: 8px 0;
+            font-size: 13px;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .recommendation-icon {
+            margin-right: 8px;
+            color: var(--primary-blue);
+            font-weight: bold;
+        }
+        
+        .strategy-list {
+            margin: 0;
+            padding: 0 0 0 20px;
+        }
+        
+        .strategy-list li {
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .segment-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 2px;
+            color: white;
+        }
+        
+        .top-tag {
+            background-color: var(--primary-blue);
+        }
+        
+        .active-tag {
+            background-color: var(--primary-green);
+        }
+        
+        .big-ticket-tag {
+            background-color: var(--primary-orange);
+        }
+        
+        .regular-tag {
+            background-color: var(--primary-purple);
+        }
+        
+        .least-tag {
+            background-color: var(--primary-red);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            margin-right: 8px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-blue);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        
+        .toggle-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .toggle-label {
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* Specific to RFM */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            grid-gap: 4px;
+            height: 200px;
+            width: 100%;
+            margin: 15px 0;
+        }
+        
+        .heatmap-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .rfm-bubble-chart {
+            height: 240px;
+            width: 100%;
+            background-color: white;
+            border-radius: 6px;
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .rfm-bubble {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .axis-label {
+            position: absolute;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .x-axis-label {
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .y-axis-label {
+            top: 50%;
+            left: 5px;
+            transform: translateY(-50%) rotate(-90deg);
+        }
+        
+        .summary-metrics {
+            display: flex;
+            justify-content: space-between;
+            background-color: white;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .summary-metric {
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+        
+        .summary-label {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .segment-row {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .segment-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+        
+        .segment-name {
+            flex-grow: 1;
+            font-size: 13px;
+        }
+        
+        .segment-value {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--primary-blue);
+        }
+        
+        .segment-pct {
+            font-size: 11px;
+            color: #666;
+            width: 40px;
+            text-align: right;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 15px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .three-point-scale {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0 15px 0;
+        }
+        
+        .scale-point {
+            width: 32%;
+            text-align: center;
+            padding: 6px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .scale-point.selected {
+            background-color: var(--primary-blue);
+            color: white;
+            font-weight: 500;
+        }
+        
+        .scale-point:hover:not(.selected) {
+            background-color: var(--light-blue);
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+            font-size: 13px;
+        }
+        
+        .rfm-score {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            border-radius: 50%;
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Left Control Panel -->
+        <div class="panel control-panel">
+            <h1>RFM Analysis</h1>
+            
+            <!-- Analysis Parameters -->
+            <h2>Analysis Parameters <span class="toggle-icon">▼</span></h2>
+            
+            <!-- Time Period Control -->
+            <div class="control-group">
+                <label for="analysis-date">Analysis Reference Date</label>
+                <input type="date" id="analysis-date" value="2023-12-31">
+                
+                <label for="year-select" style="margin-top: 10px;">Data Range</label>
+                <select id="year-select">
+                    <option value="all">All Available Data</option>
+                    <option value="2023" selected>Year 2023</option>
+                    <option value="2022">Year 2022</option>
+                    <option value="5-year">Last 5 Years</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+            
+            <!-- Ministry/Agency Selection -->
+            <div class="control-group">
+                <label>Analysis Scope</label>
+                <div class="tabs">
+                    <div class="tab active">All</div>
+                    <div class="tab">Ministry</div>
+                    <div class="tab">Agency</div>
+                </div>
+                
+                <select style="margin-top: 10px;">
+                    <option value="all">All Ministries</option>
+                    <option value="moe">Ministry of Education</option>
+                    <option value="moh">Ministry of Health</option>
+                    <option value="mod">Ministry of Defence</option>
+                    <option value="mot">Ministry of Transport</option>
+                </select>
+            </div>
+            
+            <!-- RFM Calculation Parameters -->
+            <div class="control-group">
+                <label>RFM Weights & Thresholds</label>
+                
+                <div style="margin: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: #555;">Recency Weight</span>
+                        <span style="font-size: 13px; font-weight: 500; color: var(--primary-blue);">3</span>
+                    </div>
+                    <input type="range" min="1" max="5" value="3" class="slider">
+                </div>
+                
+                <div style="margin: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: #555;">Frequency Weight</span>
+                        <span style="font-size: 13px; font-weight: 500; color: var(--primary-blue);">3</span>
+                    </div>
+                    <input type="range" min="1" max="5" value="3" class="slider">
+                </div>
+                
+                <div style="margin: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: #555;">Monetary Weight</span>
+                        <span style="font-size: 13px; font-weight: 500; color: var(--primary-blue);">4</span>
+                    </div>
+                    <input type="range" min="1" max="5" value="4" class="slider">
+                </div>
+                
+                <div style="margin: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: #555;">Min Contract Value</span>
+                        <span style="font-size: 13px; font-weight: 500; color: var(--primary-blue);">$100,000</span>
+                    </div>
+                    <input type="range" min="10000" max="1000000" value="100000" class="slider">
+                </div>
+            </div>
+            
+            <!-- Segment Templates -->
+            <div class="control-group">
+                <label>Segment Templates</label>
+                <select>
+                    <option value="standard" selected>Standard RFM (4×4×4)</option>
+                    <option value="simplified">Simplified (3×3×3)</option>
+                    <option value="custom">Custom Configuration</option>
+                    <option value="value-focused">Value-Focused Analysis</option>
+                </select>
+            </div>
+            
+            <!-- Display Options -->
+            <div class="control-group">
+                <label>Display Options</label>
+                
+                <div class="toggle-option">
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Show Financial Grades</span>
+                </div>
+                
+                <div class="toggle-option">
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Include Ungraded Suppliers</span>
+                </div>
+                
+                <div class="toggle-option">
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Year-over-Year Comparison</span>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button>Run Analysis</button>
+                <button class="secondary-button">Reset</button>
+            </div>
+            
+            <div class="button-group">
+                <button class="secondary-button">Save Config</button>
+                <button class="secondary-button">Export</button>
+            </div>
+        </div>
+        
+        <!-- Center Visualization Area -->
+        <div class="panel visualization-area">
+            <!-- Summary Metrics Bar -->
+            <div class="summary-metrics">
+                <div class="summary-metric">
+                    <div class="summary-value">452</div>
+                    <div class="summary-label">Total Suppliers</div>
+                </div>
+                <div class="summary-metric">
+                    <div class="summary-value">$1.8B</div>
+                    <div class="summary-label">Procurement Value</div>
+                </div>
+                <div class="summary-metric">
+                    <div class="summary-value">56</div>
+                    <div class="summary-label">Avg Recency (days)</div>
+                </div>
+                <div class="summary-metric">
+                    <div class="summary-value">3.2</div>
+                    <div class="summary-label">Avg Frequency</div>
+                </div>
+                <div class="summary-metric">
+                    <div class="summary-value">$3.9M</div>
+                    <div class="summary-label">Avg Value</div>
+                </div>
+            </div>
+            
+            <!-- Visualization Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <button class="toolbar-button">Heatmap</button>
+                    <button class="toolbar-button" style="background-color: var(--light-blue); color: var(--primary-blue);">Bubble Chart</button>
+                    <button class="toolbar-button">Distribution</button>
+                    <button class="toolbar-button">Migration</button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="toolbar-button">Download</button>
+                    <button class="toolbar-button">Share</button>
+                </div>
+                <div style="margin-left: auto;">
+                    <select style="width: auto; margin: 0; padding: 6px 10px;">
+                        <option value="all">All Segments</option>
+                        <option value="top">Top Suppliers</option>
+                        <option value="active">Active Contractors</option>
+                        <option value="big">Big-Ticket Recent</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-blue);"></div>
+                    <div class="legend-label">Top Suppliers</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-green);"></div>
+                    <div class="legend-label">Active Contractors</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-orange);"></div>
+                    <div class="legend-label">Big-Ticket Recent</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-purple);"></div>
+                    <div class="legend-label">Regular Contractors</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-red);"></div>
+                    <div class="legend-label">Least Engaged</div>
+                </div>
+            </div>
+            
+            <!-- Visualization Container -->
+            <div class="visualization-container">
+                <!-- RFM Bubble Chart visualization -->
+                <div class="rfm-bubble-chart">
+                    <!-- Y-axis label -->
+                    <div class="axis-label y-axis-label">Recency (Days)</div>
+                    
+                    <!-- X-axis label -->
+                    <div class="axis-label x-axis-label">Frequency (Contracts)</div>
+                    
+                    <!-- Top Suppliers (blue) -->
+                    <div class="rfm-bubble" style="top: 20%; left: 65%; width: 50px; height: 50px; background-color: rgba(31, 119, 180, 0.8);">
+                        S8
+                    </div>
+                    <div class="rfm-bubble" style="top: 25%; left: 75%; width: 40px; height: 40px; background-color: rgba(31, 119, 180, 0.8);">
+                        S9
+                    </div>
+                    
+                    <!-- Active Contractors (green) -->
+                    <div class="rfm-bubble" style="top: 15%; left: 45%; width: 35px; height: 35px; background-color: rgba(44, 160, 44, 0.8);">
+                        S5
+                    </div>
+                    <div class="rfm-bubble" style="top: 30%; left: 50%; width: 30px; height: 30px; background-color: rgba(44, 160, 44, 0.8);">
+                        S6
+                    </div>
+                    
+                    <!-- Big-Ticket Recent (orange) -->
+                    <div class="rfm-bubble" style="top: 25%; left: 30%; width: 45px; height: 45px; background-color: rgba(255, 127, 14, 0.8);">
+                        S7
+                    </div>
+                    
+                    <!-- Regular Contractors (purple) -->
+                    <div class="rfm-bubble" style="top: 50%; left: 60%; width: 25px; height: 25px; background-color: rgba(148, 103, 189, 0.8);">
+                        S4
+                    </div>
+                    <div class="rfm-bubble" style="top: 45%; left: 40%; width: 20px; height: 20px; background-color: rgba(148, 103, 189, 0.8);">
+                        S4
+                    </div>
+                    
+                    <!-- Least Engaged (red) -->
+                    <div class="rfm-bubble" style="top: 70%; left: 20%; width: 15px; height: 15px; background-color: rgba(214, 39, 40, 0.8);">
+                        S3
+                    </div>
+                    <div class="rfm-bubble" style="top: 75%; left: 25%; width: 10px; height: 10px; background-color: rgba(214, 39, 40, 0.8);">
+                        S2
+                    </div>
+                </div>
+                
+                <!-- Distribution chart below the bubble chart -->
+                <div style="background-color: white; padding: 15px; border-radius: 6px; margin-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0;">Segment Distribution</h4>
+                        <div style="font-size: 12px; color: #666;">By Supplier Count vs. Procurement Value</div>
+                    </div>
+                    
+                    <div style="display: flex; margin-top: 15px;">
+                        <!-- Left bar chart - Supplier Count -->
+                        <div style="width: 48%;">
+                            <div style="font-size: 13px; color: #555; margin-bottom: 10px; text-align: center;">Supplier Count</div>
+                            <div class="bar-chart" style="height: 120px;">
+                                <div class="bar" style="height: 80%; background-color: var(--primary-blue);"></div>
+                                <div class="bar" style="height: 60%; background-color: var(--primary-green);"></div>
+                                <div class="bar" style="height: 40%; background-color: var(--primary-orange);"></div>
+                                <div class="bar" style="height: 65%; background-color: var(--primary-purple);"></div>
+                                <div class="bar" style="height: 30%; background-color: var(--primary-red);"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #666; margin-top: 10px;">
+                                <div>Top</div>
+                                <div>Active</div>
+                                <div>Big-Ticket</div>
+                                <div>Regular</div>
+                                <div>Least</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right bar chart - Procurement Value -->
+                        <div style="width: 48%; margin-left: 4%;">
+                            <div style="font-size: 13px; color: #555; margin-bottom: 10px; text-align: center;">Procurement Value</div>
+                            <div class="bar-chart" style="height: 120px;">
+                                <div class="bar" style="height: 90%; background-color: var(--primary-blue);"></div>
+                                <div class="bar" style="height: 40%; background-color: var(--primary-green);"></div>
+                                <div class="bar" style="height: 75%; background-color: var(--primary-orange);"></div>
+                                <div class="bar" style="height: 30%; background-color: var(--primary-purple);"></div>
+                                <div class="bar" style="height: 10%; background-color: var(--primary-red);"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #666; margin-top: 10px;">
+                                <div>Top</div>
+                                <div>Active</div>
+                                <div>Big-Ticket</div>
+                                <div>Regular</div>
+                                <div>Least</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Insights Panel -->
+        <div class="panel insights-panel">
+            <h2>Segment Insights</h2>
+            
+            <!-- Selected Segment Information -->
+            <div class="info-card">
+                <div class="entity-header">
+                    <div class="entity-name">Top Suppliers</div>
+                    <div class="entity-type" style="background-color: var(--light-blue);">RFM Segment</div>
+                </div>
+                
+                <div style="font-size: 13px; color: #555; margin-bottom: 12px;">
+                    Suppliers with high recency, frequency, and monetary value. These are your most valuable and active procurement partners.
+                </div>
+                
+                <div class="metric-grid">
+                    <div class="metric">
+                        <div class="metric-value">48</div>
+                        <div class="metric-label">Suppliers</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">10.6%</div>
+                        <div class="metric-label">of Total</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$920M</div>
+                        <div class="metric-label">Procurement Value</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">51.1%</div>
+                        <div class="metric-label">of Total Value</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RFM Profile -->
+            <div class="info-card">
+                <h3>RFM Profile</h3>
+                
+                <div class="stat-row">
+                    <span>Average Recency:</span>
+                    <span><strong>23 days</strong> (since last contract)</span>
+                </div>
+                <div class="stat-row">
+                    <span>Average Frequency:</span>
+                    <span><strong>8.4</strong> contracts per year</span>
+                </div>
+                <div class="stat-row">
+                    <span>Average Contract Value:</span>
+                    <span><strong>$2.28M</strong> per contract</span>
+                </div>
+                <div class="stat-row">
+                    <span>Total Procurement Value:</span>
+                    <span><strong>$920M</strong> (51.1% of total)</span>
+                </div>
+                
+                <div style="margin-top: 12px;">
+                    <div style="font-size: 13px; font-weight: 500; margin-bottom: 5px;">RFM Score Breakdown</div>
+                    <div style="display: flex; align-items: center;">
+                        <span class="rfm-score">R</span><span style="font-size: 13px;">4.8</span>
+                        <span style="margin: 0 10px;">•</span>
+                        <span class="rfm-score">F</span><span style="font-size: 13px;">4.6</span>
+                        <span style="margin: 0 10px;">•</span>
+                        <span class="rfm-score">M</span><span style="font-size: 13px;">4.9</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <div style="font-size: 13px; font-weight: 500; margin-bottom: 5px;">Financial Grade Distribution</div>
+                    <div class="distribution-bar">
+                        <div class="distribution-segment" style="width: 70%; background-color: var(--primary-blue);">70%</div>
+                        <div class="distribution-segment" style="width: 25%; background-color: var(--primary-orange);">25%</div>
+                        <div class="distribution-segment" style="width: 5%; background-color: var(--primary-green);">5%</div>
+                    </div>
+                    <div class="distribution-label">
+                        <div>Large (S8-S10)</div>
+                        <div>Medium (S5-S7)</div>
+                        <div>Small (S1-S4)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Metrics -->
+            <div class="info-card">
+                <h3>Performance Analysis</h3>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Contract Value Distribution</div>
+                    <div class="distribution-bar" style="margin-top: 15px;">
+                        <div class="distribution-segment" style="width: 15%; background-color: #74c476;">15%</div>
+                        <div class="distribution-segment" style="width: 30%; background-color: #41ab5d;">30%</div>
+                        <div class="distribution-segment" style="width: 45%; background-color: #238b45;">45%</div>
+                        <div class="distribution-segment" style="width: 10%; background-color: #005a32;">10%</div>
+                    </div>
+                    <div class="distribution-label">
+                        <div>$100K-$1M</div>
+                        <div>$1M-$5M</div>
+                        <div>$5M-$20M</div>
+                        <div>>$20M</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; font-size: 13px;">
+                    <div style="font-weight: 500; margin-bottom: 5px;">Year-over-Year Changes</div>
+                    <div class="stat-row">
+                        <span>Contract Count:</span>
+                        <span style="color: var(--primary-green);">+12% ↑</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Procurement Value:</span>
+                        <span style="color: var(--primary-green);">+18% ↑</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Average Contract Size:</span>
+                        <span style="color: var(--primary-green);">+5% ↑</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Number of Suppliers:</span>
+                        <span style="color: var(--primary-red);">-3% ↓</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Strategic Recommendations -->
+            <div class="info-card">
+                <h3>Engagement Strategies</h3>
+                
+                <div class="recommendation">
+                    <div class="recommendation-icon">💡</div>
+                    <div>Strategic supplier relationship management is critical for this high-value segment</div>
+                </div>
+                
+                <ul class="strategy-list">
+                    <li><strong>Enhance relationship</strong> through senior management touchpoints</li>
+                    <li><strong>Establish strategic reviews</strong> quarterly to ensure alignment</li>
+                    <li><strong>Develop value improvement</strong> programs beyond cost savings</li>
+                    <li><strong>Monitor financial health</strong> and risk indicators regularly</li>
+                </ul>
+                
+                <div style="margin-top: 15px;">
+                    <div style="font-size: 13px; font-weight: 500; margin-bottom: 5px;">Priority Actions</div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 18px; height: 18px; background-color: var(--primary-red); color: white; border-radius: 50%; text-align: center; font-size: 11px; margin-right: 8px;">1</div>
+                            <div style="font-size: 13px;">Schedule quarterly business reviews</div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 18px; height: 18px; background-color: var(--primary-orange); color: white; border-radius: 50%; text-align: center; font-size: 11px; margin-right: 8px;">2</div>
+                            <div style="font-size: 13px;">Develop supplier performance scorecards</div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 18px; height: 18px; background-color: var(--primary-green); color: white; border-radius: 50%; text-align: center; font-size: 11px; margin-right: 8px;">3</div>
+                            <div style="font-size: 13px;">Evaluate long-term contract opportunities</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-row">
+                    <a href="#" class="action-link">View Detailed Supplier List →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

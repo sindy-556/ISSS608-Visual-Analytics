@@ -1,7 +1,7 @@
 ---
 title: "Take-home Exercise 3: GeBiz Procurement Data Visualization Prototype"
 author: "Sindy"
-date-modified: "last-modified"
+date-modified: "March 30, 2025"
 output:
   html_document:
     css: styles.css
@@ -14,7 +14,7 @@ execute:
 
 ## 1. Overview
 
-This document presents a visualization prototype for GeBiz procurement data. We will focus on creating Sankey diagrams to visualize procurement flows from ministries to agencies to suppliers.
+This document presents a comprehensive visualization prototype for GeBiz procurement data. It features two complementary analytical approaches: Sankey diagrams to visualize procurement flows from ministries to agencies to suppliers, and RFM (Recency, Frequency, Monetary) analysis to segment and evaluate supplier relationships. Together, these visualizations provide powerful insights into government procurement patterns and supplier management.
 
 ```{r}
 # Load required packages
@@ -131,12 +131,13 @@ glimpse(procurement_enriched)
 ### 2.5 Exploratory Data Analysis
 
 #### Basic summary statistics for key numeric variables.
+
 ```{r}
 summary(procurement_df$awarded_amt)
 ```
 
-
 #### Count of records by year to understand the temporal distribution
+
 ```{r}
 yearly_counts <- procurement_df %>%
   mutate(year = year(as.Date(award_date, format="%d/%m/%Y"))) %>%
@@ -150,8 +151,8 @@ yearly_counts <- procurement_df %>%
 print(yearly_counts)
 ```
 
-
 #### Examine the distribution of procurement by ministry and agency
+
 ```{r}
 ministry_distribution <- procurement_enriched %>%
   group_by(ministry) %>%
@@ -163,8 +164,8 @@ ministry_distribution <- procurement_enriched %>%
 head(ministry_distribution, 10)
 ```
 
-
 #### Top agencies by procurement value
+
 ```{r}
 agency_distribution <- procurement_enriched %>%
   group_by(agency) %>%
@@ -176,8 +177,8 @@ agency_distribution <- procurement_enriched %>%
 head(agency_distribution, 10)
 ```
 
-
 #### Top suppliers by procurement value
+
 ```{r}
 supplier_distribution <- procurement_enriched %>%
   group_by(supplier_name) %>%
@@ -204,7 +205,9 @@ grade_distribution <- procurement_enriched %>%
 
 print(grade_distribution)
 ```
+
 #### Distribution by consolidated financial category
+
 ```{r}
 if(!"financial_category" %in% colnames(procurement_enriched)) {
   procurement_enriched <- procurement_enriched %>%
@@ -227,9 +230,10 @@ category_distribution <- procurement_enriched %>%
 print(category_distribution)
 ```
 
-
 #### Are contracts awarded consistently with financial capacity?
+
 This checks if higher-grade suppliers tend to get higher-value contracts.
+
 ```{r}
 grade_contract_match <- procurement_enriched %>%
   filter(!is.na(financial_grade)) %>%
@@ -267,6 +271,7 @@ monthly_patterns <- procurement_enriched %>%
 ```
 
 #### Plot monthly patterns across years with improved styling
+
 ```{r}
 year_colors <- c("2019" = "#1f77b4", "2020" = "#ff7f0e", 
                 "2021" = "#2ca02c", "2022" = "#d62728", 
@@ -293,7 +298,9 @@ ggplot(monthly_patterns, aes(x = month, y = total_value, group = year, color = f
 ```
 
 ### 2.7 Distribution of Award Amounts
+
 Create a histogram of award amounts to see the distribution
+
 ```{r}
 ggplot(procurement_enriched, aes(x = awarded_amt)) +
   geom_histogram(bins = 30, fill = "steelblue", alpha = 0.7) +
@@ -304,8 +311,8 @@ ggplot(procurement_enriched, aes(x = awarded_amt)) +
   theme_minimal()
 ```
 
-
 #### Box plot of award amounts by financial category
+
 ```{r}
 if(!"financial_category" %in% colnames(procurement_enriched)) {
   procurement_enriched <- procurement_enriched %>%
@@ -328,6 +335,7 @@ ggplot(procurement_enriched, aes(x = financial_category, y = awarded_amt)) +
 ```
 
 Understanding missing supplier grade information.
+
 ```{r}
 financial_grade_coverage <- sum(!is.na(procurement_enriched$financial_grade)) / nrow(procurement_enriched) * 100
 cat("Percentage of procurement records with financial grade information:", round(financial_grade_coverage, 2), "%\n")
@@ -346,9 +354,10 @@ missing_grade_by_size <- procurement_enriched %>%
 print(missing_grade_by_size)
 ```
 
-
 ### 2.8 Relationship Between Variables
+
 Let's see if there's a relationship between award amount and number of contracts per supplier
+
 ```{r}
 supplier_counts <- procurement_enriched %>%
   group_by(supplier_name) %>%
@@ -366,7 +375,6 @@ ggplot(supplier_counts, aes(x = contract_count, y = avg_value)) +
        y = "Average Contract Value (Log Scale)") +
   theme_minimal()
 ```
-
 
 ## 3. Data Preprocessing
 
@@ -419,10 +427,10 @@ The heart of our visualization is the create_sankey() function defined below. Th
 
 The function is highly customizable, allowing users to:
 
-- Filter by year, ministry, agency, or supplier
-- Show only the top K ministries, agencies, or suppliers by procurement value
-- Set a minimum value threshold to include only significant flows
-- Enable debug mode for troubleshooting when developing the Shiny application
+-   Filter by year, ministry, agency, or supplier
+-   Show only the top K ministries, agencies, or suppliers by procurement value
+-   Set a minimum value threshold to include only significant flows
+-   Enable debug mode for troubleshooting when developing the Shiny application
 
 This customizability makes the function valuable for exploring different aspects of the procurement network.
 
@@ -726,26 +734,26 @@ The `create_sankey()` function is highly customizable through various parameters
 
 Filtering parameters:
 
-- `year_filter`: Numeric or NULL. Filter records by a specific year (e.g., 2023). If NULL (default), all years are included. 
-- `ministry_filter`: Character vector or NULL. Filter by specific ministry names. If NULL (default), top ministries are selected based on top_k_ministries.
-- `agency_filter`: Character vector or NULL. Filter by specific agency names. If NULL (default), top agencies are selected based on `top_k_agencies`.
-- `supplier_filter`: Character vector or NULL. Filter by specific supplier names or categories (depending on `group_by_grade`). If NULL (default), top suppliers are selected based on `top_k_suppliers`.
+-   `year_filter`: Numeric or NULL. Filter records by a specific year (e.g., 2023). If NULL (default), all years are included.
+-   `ministry_filter`: Character vector or NULL. Filter by specific ministry names. If NULL (default), top ministries are selected based on top_k_ministries.
+-   `agency_filter`: Character vector or NULL. Filter by specific agency names. If NULL (default), top agencies are selected based on `top_k_agencies`.
+-   `supplier_filter`: Character vector or NULL. Filter by specific supplier names or categories (depending on `group_by_grade`). If NULL (default), top suppliers are selected based on `top_k_suppliers`.
 
 Top-k selection parameters:
 
-- `top_k_ministries`: Numeric, default 10. When no ministry filter is provided, specifies how many top ministries to include, ranked by total procurement value.
-- `top_k_agencies`: Numeric, default 10. When no agency filter is provided, specifies how many top agencies to include, ranked by total procurement value.
-- `top_k_suppliers`: Numeric, default 10. When no supplier filter is provided, specifies how many top suppliers or categories to include, ranked by total procurement value.
+-   `top_k_ministries`: Numeric, default 10. When no ministry filter is provided, specifies how many top ministries to include, ranked by total procurement value.
+-   `top_k_agencies`: Numeric, default 10. When no agency filter is provided, specifies how many top agencies to include, ranked by total procurement value.
+-   `top_k_suppliers`: Numeric, default 10. When no supplier filter is provided, specifies how many top suppliers or categories to include, ranked by total procurement value.
 
 Other parameters:
 
-- `min_value`: Numeric, default 1,000,000. Minimum threshold value for flows to be included in the diagram. Flows with values below this threshold are excluded, helping to simplify complex diagrams.
+-   `min_value`: Numeric, default 1,000,000. Minimum threshold value for flows to be included in the diagram. Flows with values below this threshold are excluded, helping to simplify complex diagrams.
 
-- `supplier_char_limit`: Numeric, default 50. Maximum number of characters to display for supplier names. Longer names are truncated with "...".
+-   `supplier_char_limit`: Numeric, default 50. Maximum number of characters to display for supplier names. Longer names are truncated with "...".
 
-- `group_by_grade`: Logical, default FALSE. Controls whether suppliers are grouped by financial grade categories (TRUE) or shown as individual suppliers (FALSE).
+-   `group_by_grade`: Logical, default FALSE. Controls whether suppliers are grouped by financial grade categories (TRUE) or shown as individual suppliers (FALSE).
 
-- `debug`: Logical, default FALSE. When TRUE, prints diagnostic messages during function execution to help troubleshoot issues.
+-   `debug`: Logical, default FALSE. When TRUE, prints diagnostic messages during function execution to help troubleshoot issues.
 
 ## 5. Creating Sankey Visualization Examples
 
@@ -774,7 +782,6 @@ saveNetwork(moe_sankey, file = paste0("sankey_moe_", 2023, ".html"))
 ```{=html}
 <iframe src="sankey_moe_2023.html" width="100%" height="600px" frameborder="0"></iframe>
 ```
-
 The second visualization compares the Ministry of Health and Ministry of Education, with suppliers grouped by financial grade. This comparison reveals differences in agency structures, supplier profiles, and procurement value distributions between these major ministries.
 
 ```{r}
@@ -795,7 +802,6 @@ saveNetwork(health_defence_sankey, file = paste0("sankey_health_education_", 202
 ```{=html}
 <iframe src="sankey_health_education_2023.html" width="100%" height="600px" frameborder="0"></iframe>
 ```
-
 ### 5.2 Filtering by Agency
 
 This Sankey diagram examines the Land Transport Authority's procurement patterns, showing its ministry connection and how its funds flow to suppliers of varying financial capacities. This view helps understand procurement strategies within key infrastructure agencies.
@@ -816,10 +822,10 @@ saveNetwork(lta_sankey, file = paste0("sankey_lta_", 2023, ".html"))
 ```{=html}
 <iframe src="sankey_lta_2023.html" width="100%" height="600px" frameborder="0"></iframe>
 ```
-
 ### 5.3 Filtering by Suppliers
 
 #### Large Suppliers Analysis
+
 This visualization focuses on the largest suppliers (S8-S10 financial grades) to understand how government procurement from major companies flows through different ministries and agencies. This perspective helps identify which large suppliers are receiving significant government contracts and through which channels.
 
 ```{r}
@@ -847,8 +853,8 @@ saveNetwork(top_suppliers_sankey, file = paste0("sankey_top_suppliers_", 2023, "
 ```{=html}
 <iframe src="sankey_top_suppliers_2023.html" width="100%" height="600px" frameborder="0"></iframe>
 ```
-
 #### SME Suppliers Analysis
+
 This view highlights Small and Medium Enterprise suppliers (S2-S7 financial grades), showing which ministries and agencies engage more with smaller businesses. The analysis supports policy objectives related to SME participation in government procurement.
 
 ```{r}
@@ -900,8 +906,6 @@ saveNetwork(top_k_sankey, file = "sankey_top_k_2023.html")
 ```{=html}
 <iframe src="sankey_top_k_2023.html" width="100%" height="600px" frameborder="0"></iframe>
 ```
-
-
 ## 6. UI Design for Interactive Dashboard
 
 This section outlines the user interface design for the GeBiz Procurement Data Visualization dashboard. The interactive dashboard is designed to enable users to explore complex procurement flows through an intuitive and insight-focused interface.
@@ -910,9 +914,9 @@ This section outlines the user interface design for the GeBiz Procurement Data V
 
 The dashboard follows a three-panel layout design optimized for both analytical depth and ease of use:
 
-1. Filter & Control Panel (Left): Provides structured access to filters and visualization settings
-2. Visualization Area (Center): Displays the interactive Sankey diagram with supporting tools
-3. Insights Panel (Right): Shows context-aware metrics and analytical highlights
+1.  Filter & Control Panel (Left): Provides structured access to filters and visualization settings
+2.  Visualization Area (Center): Displays the interactive Sankey diagram with supporting tools
+3.  Insights Panel (Right): Shows context-aware metrics and analytical highlights
 
 This organization balances user control with information discovery, enabling both directed analysis and exploratory data visualization.
 
@@ -922,33 +926,30 @@ The left panel is organized into two distinct functional areas to improve workfl
 
 #### Data Filtering Section
 
-- Time Period Filter
-  - Year dropdown (2019-2023)
-  - Quarter selection (optional)
-  - Default: Most recent complete year
-
-- Focus Selection
-  - Tabbed interface (Ministry/Agency/Supplier)
-  - Searchable entity list with checkboxes
-  - "Select Top N" shortcut buttons
-  - Multi-select capabilities with clear indicators
-
-- Quick Filters
-  - Predefined filters (e.g., "Education Sector", "Healthcare", "Top 5 by Value")
-  - Recently used filter combinations
-  - Save/load filter configurations
+-   Time Period Filter
+    -   Year dropdown (2019-2023)
+    -   Quarter selection (optional)
+    -   Default: Most recent complete year
+-   Focus Selection
+    -   Tabbed interface (Ministry/Agency/Supplier)
+    -   Searchable entity list with checkboxes
+    -   "Select Top N" shortcut buttons
+    -   Multi-select capabilities with clear indicators
+-   Quick Filters
+    -   Predefined filters (e.g., "Education Sector", "Healthcare", "Top 5 by Value")
+    -   Recently used filter combinations
+    -   Save/load filter configurations
 
 #### Visualization Settings
 
-- Threshold Controls
-  - Minimum flow value slider with formatted value display
-  - Top N entities to display (separate controls for ministries, agencies, suppliers)
-
-- Display Options
-  - Group suppliers by financial grade toggle
-  - Use abbreviations toggle
-  - Node sizing options (fixed vs. proportional)
-  - Color scheme selector
+-   Threshold Controls
+    -   Minimum flow value slider with formatted value display
+    -   Top N entities to display (separate controls for ministries, agencies, suppliers)
+-   Display Options
+    -   Group suppliers by financial grade toggle
+    -   Use abbreviations toggle
+    -   Node sizing options (fixed vs. proportional)
+    -   Color scheme selector
 
 ### 6.3 Visualization Area
 
@@ -956,30 +957,29 @@ The central area features a dynamically updated Sankey diagram with supporting t
 
 #### Visualization Toolbar
 
-- View Controls: Zoom in/out, reset view, fit to screen
-- Layout Options: Auto-arrange, lock/unlock node positions
-- Export Tools: Download as SVG/PNG, copy link, get embed code
-- Help Features: Diagram explanation, interaction guide
+-   View Controls: Zoom in/out, reset view, fit to screen
+-   Layout Options: Auto-arrange, lock/unlock node positions
+-   Export Tools: Download as SVG/PNG, copy link, get embed code
+-   Help Features: Diagram explanation, interaction guide
 
 #### Interactive Sankey Diagram
 
-- Enhanced Interactions:
-  - Hover: Highlight related flows, show tooltip with key metrics
-  - Click: Select node, update insights panel, persist highlight
-  - Drag: Reposition nodes for custom layouts
-  - Double-click: Expand/collapse node to show/hide details
-
-- Visual Elements:
-  - Color-coded nodes (blue: ministries, orange: agencies, green: suppliers)
-  - Link thickness proportional to value
-  - Color intensity indicating relative importance
-  - Consistent visual language across the application
+-   Enhanced Interactions:
+    -   Hover: Highlight related flows, show tooltip with key metrics
+    -   Click: Select node, update insights panel, persist highlight
+    -   Drag: Reposition nodes for custom layouts
+    -   Double-click: Expand/collapse node to show/hide details
+-   Visual Elements:
+    -   Color-coded nodes (blue: ministries, orange: agencies, green: suppliers)
+    -   Link thickness proportional to value
+    -   Color intensity indicating relative importance
+    -   Consistent visual language across the application
 
 #### Legend and Context
 
-- Color Legend: Explains node and link color coding
-- Filter Status: Shows active filters and view parameters
-- Data Coverage: Indicates data completeness (especially for financial grades)
+-   Color Legend: Explains node and link color coding
+-   Filter Status: Shows active filters and view parameters
+-   Data Coverage: Indicates data completeness (especially for financial grades)
 
 ### 6.4 Insights Panel
 
@@ -987,64 +987,876 @@ The right panel provides context-aware information that updates dynamically base
 
 #### Selection Context
 
-- Entity Profile: Detailed information about selected ministry/agency/supplier
-- Key Metrics: Procurement volume, contract count, average value
-- Comparative Indicators: Performance relative to peers and historical trends
+-   Entity Profile: Detailed information about selected ministry/agency/supplier
+-   Key Metrics: Procurement volume, contract count, average value
+-   Comparative Indicators: Performance relative to peers and historical trends
 
 #### Flow Analysis
 
-- Top Flows: Identifies largest procurement channels
-- Flow Distribution: Shows how funds distribute across the procurement network
-- Concentration Analysis: Highlights diversification or concentration patterns
+-   Top Flows: Identifies largest procurement channels
+-   Flow Distribution: Shows how funds distribute across the procurement network
+-   Concentration Analysis: Highlights diversification or concentration patterns
 
 #### Supplier Analysis
 
-- Financial Grade Distribution: 
-  - Breakdown by supplier capacity (S1-S10)
-  - Comparison with government-wide averages
-  - SME participation metrics
-
-- Temporal Patterns: 
-  - Sparklines showing procurement trends
-  - Seasonal patterns visualization
-  - Year-over-year comparisons
+-   Financial Grade Distribution:
+    -   Breakdown by supplier capacity (S1-S10)
+    -   Comparison with government-wide averages
+    -   SME participation metrics
+-   Temporal Patterns:
+    -   Sparklines showing procurement trends
+    -   Seasonal patterns visualization
+    -   Year-over-year comparisons
 
 #### Actionable Insights
 
-- Key Findings: Automatically generated observations about the visualized data
-- Suggested Explorations: Recommended filters or views for deeper analysis
-- Anomaly Detection: Highlights unusual patterns or outliers
+-   Key Findings: Automatically generated observations about the visualized data
+-   Suggested Explorations: Recommended filters or views for deeper analysis
+-   Anomaly Detection: Highlights unusual patterns or outliers
 
 ### 6.5 Interactive Features
 
 The dashboard implements several advanced interactive features:
 
-1. Cross-filtering: Selections in one view affect other views for consistent analysis
-2. Progressive Disclosure: Interface elements appear contextually based on user actions
-3. State Persistence: User selections and custom views are maintained during analysis
-4. Responsive Layout: Interface adapts to available screen space
-5. Keyboard Navigation: Full keyboard access for accessibility compliance
+1.  Cross-filtering: Selections in one view affect other views for consistent analysis
+2.  Progressive Disclosure: Interface elements appear contextually based on user actions
+3.  State Persistence: User selections and custom views are maintained during analysis
+4.  Responsive Layout: Interface adapts to available screen space
+5.  Keyboard Navigation: Full keyboard access for accessibility compliance
 
 ```{=html}
 <iframe src="mockup1.html" width="100%" height="600px" frameborder="0"></iframe>
 ```
-
-
 ## 7. RFM Analysis Module
 
-RFM (Recency, Frequency, Monetary) analysis is a powerful technique for segmenting suppliers based on their procurement behavior. This section implements a comprehensive RFM analysis of the GeBiz procurement dataset.
+The RFM (Recency, Frequency, Monetary) analysis module provides powerful supplier segmentation capabilities based on procurement behavior patterns.
 
+### 7.1 RFM Analysis Function
 
-## 8. RFM Analysis Dashboard UI Design
+The `create_rfm_analysis()` function segments suppliers based on their procurement patterns.
 
-This UI mockup demonstrates how the RFM analysis module would be integrated into your existing dashboard:
+```{r}
+create_rfm_analysis <- function(data, 
+                               year_filter = NULL,
+                               ministry_filter = NULL,
+                               agency_filter = NULL,
+                               supplier_filter = NULL,
+                               min_monetary_value = 10000,
+                               max_suppliers = 1000,
+                               recency_quartiles = 4,
+                               frequency_quartiles = 4,
+                               monetary_quartiles = 4,
+                               include_financial_grade = TRUE,
+                               analysis_date = NULL,
+                               debug = FALSE) {
+  
+  # Make a copy of the data to work with
+  filtered_data <- data
+  
+  # Apply year filter if specified
+  if(!is.null(year_filter)) {
+    if("year" %in% colnames(filtered_data)) {
+      filtered_data <- filtered_data %>% filter(year == year_filter)
+      if(debug) message("After year filter: ", nrow(filtered_data), " rows")
+    } else {
+      warning("'year' column not found, skipping year filter")
+    }
+  }
+  
+  # Apply ministry filter if specified
+  if(!is.null(ministry_filter)) {
+    filtered_data <- filtered_data %>% filter(ministry %in% ministry_filter)
+    if(debug) message("After ministry filter: ", nrow(filtered_data), " rows")
+  }
+  
+  # Apply agency filter if specified
+  if(!is.null(agency_filter)) {
+    filtered_data <- filtered_data %>% filter(agency %in% agency_filter)
+    if(debug) message("After agency filter: ", nrow(filtered_data), " rows")
+  }
+  
+  # Apply supplier filter if specified
+  if(!is.null(supplier_filter)) {
+    filtered_data <- filtered_data %>% filter(supplier_name %in% supplier_filter)
+    if(debug) message("After supplier filter: ", nrow(filtered_data), " rows")
+  }
+  
+  # Ensure date column is properly formatted
+  if(!"award_date" %in% colnames(filtered_data) || !inherits(filtered_data$award_date, "Date")) {
+    filtered_data <- filtered_data %>%
+      mutate(award_date = as.Date(award_date, format="%d/%m/%Y"))
+  }
+  
+  # Set analysis date if not provided
+  if(is.null(analysis_date)) {
+    analysis_date <- max(filtered_data$award_date, na.rm = TRUE) + days(1)
+    if(debug) message("Analysis date set to: ", analysis_date)
+  }
+  
+  # Calculate RFM metrics for each supplier
+  supplier_rfm <- filtered_data %>%
+    group_by(supplier_name) %>%
+    summarize(
+      # Recency: days since last contract (lower is better)
+      recency = as.numeric(difftime(analysis_date, max(award_date, na.rm = TRUE), units = "days")),
+      # Frequency: number of contracts
+      frequency = n(),
+      # Monetary: total value of contracts
+      monetary = sum(awarded_amt, na.rm = TRUE),
+      # Additional metrics
+      avg_contract = monetary / frequency,
+      first_contract = min(award_date, na.rm = TRUE),
+      last_contract = max(award_date, na.rm = TRUE),
+      days_active = as.numeric(difftime(max(award_date, na.rm = TRUE), 
+                                      min(award_date, na.rm = TRUE), 
+                                      units = "days")) + 1,
+      .groups = 'drop'
+    )
+  
+  # Add financial grade information if requested
+  if(include_financial_grade && "financial_grade" %in% colnames(filtered_data)) {
+    financial_info <- filtered_data %>%
+      group_by(supplier_name) %>%
+      summarize(
+        financial_grade = first(financial_grade),
+        financial_category = first(financial_category),
+        .groups = 'drop'
+      )
+    
+    supplier_rfm <- supplier_rfm %>%
+      left_join(financial_info, by = "supplier_name")
+  }
+  
+  # Remove suppliers with missing names or identified as "Unknown"
+  supplier_rfm <- supplier_rfm %>%
+    filter(!is.na(supplier_name), 
+           supplier_name != "Unknown", 
+           supplier_name != "Unspecified Supplier") %>%
+    # Filter out suppliers with extremely low values
+    filter(monetary > min_monetary_value)
+  
+  # Calculate RFM scores (quartiles)
+  supplier_rfm_scored <- supplier_rfm %>%
+    mutate(
+      # Recency score (note: lower recency days = higher score)
+      r_score = ntile(desc(recency), recency_quartiles),
+      # Frequency score
+      f_score = ntile(frequency, frequency_quartiles),
+      # Monetary score
+      m_score = ntile(monetary, monetary_quartiles),
+      # Combined RFM score
+      rfm_score = r_score + f_score + m_score
+    )
+  
+  # Create meaningful segment labels based on RFM scores
+  supplier_rfm_scored <- supplier_rfm_scored %>%
+    mutate(
+      segment = case_when(
+        r_score >= 3 & f_score >= 3 & m_score >= 3 ~ "Top Suppliers",
+        r_score >= 3 & f_score >= 3 ~ "Active Contractors",
+        r_score >= 3 & m_score >= 3 ~ "Big-Ticket Recent",
+        f_score >= 3 & m_score >= 3 ~ "High Value Regular",
+        r_score >= 3 ~ "Recent Contractors",
+        f_score >= 3 ~ "Regular Contractors",
+        m_score >= 3 ~ "Big Spenders",
+        r_score == 1 & f_score == 1 & m_score == 1 ~ "Least Engaged",
+        TRUE ~ "Average Contractors"
+      )
+    )
+  
+  # Add segment description for tooltip and display
+  segment_descriptions <- c(
+    "Top Suppliers" = "Recent, frequent, and high-value contractors",
+    "Active Contractors" = "Recent and frequent, but lower contract values",
+    "Big-Ticket Recent" = "Recent and high-value, but less frequent",
+    "High Value Regular" = "Frequent and high-value, but less recent",
+    "Recent Contractors" = "Recently engaged, but lower frequency and value",
+    "Regular Contractors" = "Frequent engagement, but lower recency and value",
+    "Big Spenders" = "High contract values, but less recent and frequent",
+    "Average Contractors" = "Middle-range performance across RFM metrics",
+    "Least Engaged" = "Low scores across all RFM dimensions"
+  )
+  
+  supplier_rfm_scored <- supplier_rfm_scored %>%
+    mutate(segment_description = segment_descriptions[segment])
+  
+  # Create summary by segment
+  segment_summary <- supplier_rfm_scored %>%
+    group_by(segment) %>%
+    summarize(
+      count = n(),
+      pct_suppliers = round(n() / nrow(supplier_rfm_scored) * 100, 1),
+      avg_recency = round(mean(recency)),
+      avg_frequency = round(mean(frequency), 1),
+      avg_monetary = round(mean(monetary)),
+      total_monetary = sum(monetary),
+      pct_spend = round(sum(monetary) / sum(supplier_rfm_scored$monetary) * 100, 1),
+      .groups = 'drop'
+    ) %>%
+    arrange(desc(total_monetary))
+  
+  # Sample data if there are too many suppliers for visualization
+  if(nrow(supplier_rfm_scored) > max_suppliers) {
+    supplier_rfm_sampled <- supplier_rfm_scored %>%
+      # Stratified sampling to maintain segment proportions
+      group_by(segment) %>%
+      sample_frac(min(1, max_suppliers / nrow(supplier_rfm_scored))) %>%
+      ungroup()
+    
+    if(debug) message("Sampled ", nrow(supplier_rfm_sampled), " suppliers from ", 
+                    nrow(supplier_rfm_scored), " total suppliers for visualization")
+  } else {
+    supplier_rfm_sampled <- supplier_rfm_scored
+  }
+  
+  # Return all objects needed for analysis in a list
+  return(list(
+    rfm_data = supplier_rfm_scored,
+    rfm_sample = supplier_rfm_sampled,
+    segment_summary = segment_summary,
+    analysis_date = analysis_date
+  ))
+}
+```
+
+### 7.2 Creating RFM Visualizations
+
+Various visualization functions to represent RFM analysis: - `create_rfm_heatmap()`: Visualizes the distribution of suppliers across RFM scores - `create_rfm_bubble_chart()`: Maps suppliers across the RFM dimensions - `create_segment_distribution()`: Compares supplier count vs. procurement value - `create_grade_segment_heatmap()`: Shows the relationship between financial grades and RFM segments - `create_rfm_datatable()`: Provides an interactive table of RFM analysis results
+
+```{r}
+create_rfm_heatmap <- function(rfm_results, 
+                               title = "RFM Heatmap: Supplier Distribution",
+                               subtitle = NULL,  # Make subtitle optional
+                               interactive = TRUE) {
+  
+  # Prepare data for heatmap
+  rfm_heatmap_data <- rfm_results$rfm_data %>%
+    count(r_score, f_score, m_score) %>%
+    # Convert scores to factors for better visualization
+    mutate(
+      r_score = factor(r_score, levels = 4:1),  # Reversed to put higher scores at top
+      f_score = factor(f_score),
+      m_score = factor(m_score)
+    )
+  
+  # Create base plot
+  rfm_heatmap <- ggplot(rfm_heatmap_data, aes(f_score, r_score, fill = n)) +
+    geom_tile(color = "white") +
+    geom_text(aes(label = n), color = "white", size = 3) +
+    scale_fill_viridis_c() +
+    labs(
+      title = title,
+      x = "Frequency Score (1-4)",
+      y = "Recency Score (1-4)",
+      fill = "Number of\nSuppliers"
+    ) +
+    facet_wrap(~m_score, labeller = labeller(m_score = function(x) paste("Monetary Score:", x))) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(face = "bold", size = 16, margin = margin(t = 10, b = 20)),
+      axis.title = element_text(face = "bold"),
+      legend.title = element_text(face = "bold"),
+      strip.text = element_text(face = "bold", size = 12),
+      strip.background = element_rect(fill = "grey90", color = NA),
+      plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
+      panel.spacing = unit(1, "lines")
+    )
+  
+  # Add subtitle only if it's provided
+  if (!is.null(subtitle)) {
+    rfm_heatmap <- rfm_heatmap +
+      labs(subtitle = subtitle) +
+      theme(plot.subtitle = element_text(size = 12, margin = margin(b = 15)))
+  }
+  
+  # For interactive plots, adjust the layout
+  if(interactive) {
+    p <- ggplotly(rfm_heatmap, height = 600)
+    
+    # Handle title and subtitle for interactive plot
+    if (!is.null(subtitle)) {
+      p <- p %>% layout(
+        title = list(text = paste0(title, "<br>", "<sup>", subtitle, "</sup>")),
+        margin = list(t = 100)
+      )
+    } else {
+      p <- p %>% layout(
+        title = list(text = title),
+        margin = list(t = 60)  # Less margin needed without subtitle
+      )
+    }
+    
+    return(p)
+  } else {
+    return(rfm_heatmap)
+  }
+}
+
+# 2. RFM Bubble Chart - visualizing suppliers across the RFM dimensions
+create_rfm_bubble_chart <- function(rfm_results,
+                                   title = "Supplier RFM Analysis",
+                                   subtitle = "Bubble size represents total contract value",
+                                   x_log = TRUE,
+                                   size_range = c(2, 15),
+                                   color_palette = "Set1",
+                                   interactive = TRUE) {
+  
+  # Create RFM bubble chart
+  rfm_bubble <- ggplot(rfm_results$rfm_sample, 
+                      aes(frequency, recency, size = monetary, color = segment)) +
+    geom_point(alpha = 0.7) +
+    scale_size(range = size_range, name = "Contract Value") +
+    scale_color_brewer(palette = color_palette) +
+    labs(
+      title = title,
+      subtitle = subtitle,
+      x = "Frequency (Number of Contracts)",
+      y = "Recency (Days Since Last Contract)",
+      color = "Segment"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(face = "bold", size = 16),
+      plot.subtitle = element_text(size = 12),
+      axis.title = element_text(face = "bold"),
+      legend.title = element_text(face = "bold")
+    )
+  
+  # Apply log scale if requested
+  if(x_log) {
+    rfm_bubble <- rfm_bubble + 
+      scale_x_log10(labels = scales::comma) +
+      labs(x = "Frequency (Number of Contracts, log scale)")
+  } else {
+    rfm_bubble <- rfm_bubble +
+      scale_x_continuous(labels = scales::comma)
+  }
+  
+  # Always reverse y-axis so lower recency (better) is at the top
+  rfm_bubble <- rfm_bubble + scale_y_reverse(labels = scales::comma)
+  
+  # Return interactive or static plot based on parameter
+  if(interactive) {
+    return(ggplotly(rfm_bubble) %>%
+             layout(title = list(text = paste0(title, "<br>", "<sup>", subtitle, "</sup>"))))
+  } else {
+    return(rfm_bubble)
+  }
+}
+
+# 3. Segment Distribution Chart - comparing supplier count vs. procurement value
+create_segment_distribution <- function(rfm_results,
+                                      title = "Supplier Segments: Distribution",
+                                      subtitle = "Comparing percentage of suppliers to percentage of total procurement value",
+                                      colors = c("#1f77b4", "#ff7f0e"),
+                                      interactive = TRUE) {
+  
+  # Create a dual-bar chart using position_dodge instead of position_nudge
+  segment_dist_chart <- ggplot(rfm_results$segment_summary, 
+                              aes(x = reorder(segment, pct_spend))) +
+    geom_bar(aes(y = pct_suppliers, fill = "% of Suppliers"), stat = "identity", 
+             alpha = 0.7, position = position_dodge(width = 0.8), width = 0.7) +
+    geom_bar(aes(y = pct_spend, fill = "% of Spend"), stat = "identity", 
+             alpha = 0.7, position = position_dodge(width = 0.8), width = 0.7) +
+    scale_fill_manual(values = setNames(colors, c("% of Suppliers", "% of Spend"))) +
+    labs(
+      title = title,
+      subtitle = subtitle,
+      x = "Segment",
+      y = "Percentage (%)",
+      fill = ""
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(face = "bold", size = 16),
+      plot.subtitle = element_text(size = 12),
+      axis.title = element_text(face = "bold"),
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = "top"
+    ) +
+    coord_flip()
+  
+  # Return interactive or static plot based on parameter
+  if(interactive) {
+    return(ggplotly(segment_dist_chart) %>%
+             layout(title = list(text = paste0(title, "<br>", "<sup>", subtitle, "</sup>"))))
+  } else {
+    return(segment_dist_chart)
+  }
+}
+
+# 4. Financial Grade vs. RFM Segment Heatmap
+create_grade_segment_heatmap <- function(rfm_results,
+                                       title = "Supplier Distribution: Financial Grade vs. RFM Segment",
+                                       interactive = TRUE) {
+  
+  # Check if financial grade data is available
+  if(!"financial_category" %in% colnames(rfm_results$rfm_data)) {
+    warning("Financial category data not available. Cannot create grade vs segment heatmap.")
+    return(NULL)
+  }
+  
+  # Prepare data for cross-analysis
+  grade_rfm_data <- rfm_results$rfm_data %>%
+    filter(!is.na(financial_category)) %>%
+    group_by(financial_category, segment) %>%
+    summarize(
+      count = n(),
+      total_monetary = sum(monetary),
+      .groups = 'drop'
+    )
+  
+  # Create a heatmap showing the distribution of segments across financial categories
+  grade_segment_heatmap <- ggplot(grade_rfm_data, 
+                                aes(segment, financial_category, fill = count)) +
+    geom_tile() +
+    geom_text(aes(label = count), color = "white") +
+    scale_fill_viridis_c() +
+    labs(
+      title = title,
+      x = "RFM Segment",
+      y = "Financial Category",
+      fill = "Count"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(face = "bold")
+    )
+  
+  # Return interactive or static plot based on parameter
+  if(interactive) {
+    return(ggplotly(grade_segment_heatmap))
+  } else {
+    return(grade_segment_heatmap)
+  }
+}
+# 5. Interactive RFM Data Table - Fixed version
+create_rfm_datatable <- function(rfm_results,
+                            title = "Supplier RFM Analysis and Segmentation",
+                            max_rows = 1000) {
+  # Get the data and convert to plain data.frame
+  rfm_data <- as.data.frame(rfm_results$rfm_data) 
+  
+  # Select important columns only
+  rfm_data <- rfm_data[, c("supplier_name", "recency", "frequency", "monetary", 
+                          "avg_contract", "r_score", "f_score", "m_score",
+                          "rfm_score", "segment", "financial_category")]
+  
+  # Create the datatable
+  dt <- datatable(
+    rfm_data,
+    caption = "Supplier RFM Analysis and Segmentation",
+    colnames = c(
+      "Supplier" = "supplier_name",
+      "Recency (Days)" = "recency",
+      "Frequency" = "frequency",
+      "Value ($)" = "monetary",
+      "Avg Contract ($)" = "avg_contract",
+      "R" = "r_score", 
+      "F" = "f_score", 
+      "M" = "m_score",
+      "RFM Score" = "rfm_score",
+      "Segment" = "segment",
+      "Financial Category" = "financial_category"
+    ),
+    options = list(
+      pageLength = 25,
+      scrollX = TRUE,
+      scrollY = 400
+    ),
+    escape = FALSE  # Try this to prevent escape-related errors
+  )
+  
+  # Add number formatting - Use the NEW column names after datatable() renames them
+  dt <- dt %>% 
+    formatRound(columns = c("Recency (Days)", "Value ($)", "Avg Contract ($)"), digits = 0)
+  
+  return(dt)
+}
+```
+
+### 7.3 Demonstrating RFM Analysis with Different Parameters
+
+Now let's demonstrate the RFM analysis with different parameter settings, starting with a baseline analysis of all suppliers:
+
+::: panel-tabset
+### Heatmap
+
+```{r}
+# First create the RFM analysis results
+rfm_results_all <- create_rfm_analysis(
+  data = procurement_enriched,
+  min_monetary_value = 100000,  # Focus on more significant contracts
+  max_suppliers = 50  # Limit for visualization
+)
+
+# Create the RFM heatmap
+rfm_heatmap <- create_rfm_heatmap(
+  rfm_results_all,
+  title = "RFM Heatmap: Supplier Distribution"
+)
+
+# Display the heatmap
+rfm_heatmap
+```
+
+### Bubble Chart
+
+```{r}
+# Create the bubble chart visualization
+rfm_bubble <- create_rfm_bubble_chart(rfm_results_all)
+
+# Display the bubble chart
+rfm_bubble
+```
+
+### Segment Distribution
+
+```{r}
+# Create the segment distribution visualization
+segment_dist <- create_segment_distribution(rfm_results_all)
+
+# Display the segment distribution
+segment_dist
+```
+
+### Segment Summary
+
+```{r}
+# Display the RFM segment summary
+print(rfm_results_all$segment_summary)
+```
+
+### Interactive Table
+
+```{r}
+# Create the interactive datatable
+rfm_table <- create_rfm_datatable(rfm_results_all)
+
+# Display the interactive table
+rfm_table
+```
+:::
+
+### 7.3 Demonstrating RFM Analysis with Different Parameters
+
+Examples of RFM analysis with different parameter settings.
+
+::: panel-tabset
+### Heatmap
+
+```{r}
+# First create the RFM analysis results
+rfm_results_all <- create_rfm_analysis(
+  data = procurement_enriched,
+  min_monetary_value = 100000,  # Focus on more significant contracts
+  max_suppliers = 50  # Limit for visualization
+)
+# Create the RFM heatmap
+rfm_heatmap <- create_rfm_heatmap(
+  rfm_results_all,
+  title = "RFM Heatmap: Supplier Distribution"
+)
+# Display the heatmap
+rfm_heatmap
+```
+
+### Bubble Chart
+
+```{r}
+# Create the bubble chart visualization
+rfm_bubble <- create_rfm_bubble_chart(rfm_results_all)
+# Display the bubble chart
+rfm_bubble
+```
+
+### Segment Distribution
+
+```{r}
+# Create the segment distribution visualization
+segment_dist <- create_segment_distribution(rfm_results_all)
+# Display the segment distribution
+segment_dist
+```
+
+### Segment Summary
+
+```{r}
+# Display the RFM segment summary
+print(rfm_results_all$segment_summary)
+```
+
+### Interactive Table
+
+```{r}
+# Create the interactive datatable
+rfm_table <- create_rfm_datatable(rfm_results_all)
+# Display the interactive table
+rfm_table
+```
+:::
+
+### 7.4 Ministry Level Demonstration
+
+Ministry-specific RFM analysis examples. 
+
+::: panel-tabset 
+
+### MOE Heatmap
+
+```{r}
+# Analyze suppliers working with Ministry of Education
+moe_rfm_results <- create_rfm_analysis(
+  data = procurement_enriched,
+  ministry_filter = "MINISTRY OF EDUCATION",
+  min_monetary_value = 50000,  # Lower threshold for ministry-specific analysis
+  debug = TRUE
+)
+# Create Ministry of Education heatmap with no subtitle
+moe_rfm_heatmap <- create_rfm_heatmap(
+  moe_rfm_results,
+  title = "Ministry of Education: RFM Heatmap"
+)
+# Display the MOE heatmap
+moe_rfm_heatmap
+```
+
+### MOE Bubble Chart
+
+```{r}
+# Create the MOE bubble chart
+moe_rfm_bubble <- create_rfm_bubble_chart(
+  moe_rfm_results,
+  title = "Ministry of Education: Supplier RFM Analysis",
+  subtitle = "Education supplier positioning by recency, frequency and value",
+  color_palette = "Dark2"
+)
+# Display the MOE bubble chart
+moe_rfm_bubble
+```
+
+### MOE Segment Distribution
+
+```{r}
+# Create the MOE segment distribution
+moe_segment_dist <- create_segment_distribution(
+  moe_rfm_results,
+  title = "Ministry of Education: Supplier Segment Distribution",
+  subtitle = "Comparing education supplier count vs. procurement value by segment"
+)
+# Display the MOE segment distribution
+moe_segment_dist
+```
+
+:::
 
 ```{r, echo=FALSE}
-# This section will be replaced with an actual UI mockup in HTML format
-htmltools::HTML('
-<div style="border: 1px solid #ddd; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
-  <h3 style="color: #333; margin-top: 0;">RFM Analysis Module UI Design</h3>
-  <p>A mockup of the RFM analysis module UI will be provided in the next section.</p>
-</div>
-')
+# Check the structure of rfm_results_all
+str(rfm_results_all)
+
+# Specifically examine the columns in the rfm_data component
+cat("\nColumns in rfm_results_all$rfm_data:\n")
+colnames(rfm_results_all$rfm_data)
+
+# Check the class of the rfm_data
+cat("\nClass of rfm_data:\n")
+class(rfm_results_all$rfm_data)
+
+# Check the first few rows to understand the data structure
+cat("\nFirst few rows of rfm_data:\n")
+head(rfm_results_all$rfm_data)
+
+# Compare with columns we're trying to format in the original function
+cat("\nColumns we're trying to format:\n")
+format_cols <- c("recency", "monetary", "avg_contract")
+segment_cols <- "segment"
+score_cols <- c("r_score", "f_score", "m_score")
+
+cat("Format columns present:", format_cols %in% colnames(rfm_results_all$rfm_data), "\n")
+cat("Segment column present:", segment_cols %in% colnames(rfm_results_all$rfm_data), "\n")
+cat("Score columns present:", score_cols %in% colnames(rfm_results_all$rfm_data), "\n")
+```
+
+### 7.4 RFM Analysis: Financial Grade Integration
+
+Demonstrates integration of financial grade information with RFM analysis.
+
+```{r}
+# Run RFM analysis with financial grade focus
+financial_rfm_results <- create_rfm_analysis(
+  data = procurement_enriched,
+  min_monetary_value = 100000,
+  include_financial_grade = TRUE
+)
+
+# Create financial grade vs. RFM segment heatmap with no subtitle
+grade_segment_heatmap <- create_grade_segment_heatmap(
+  financial_rfm_results,
+  title = "Supplier Distribution: Financial Grade vs. RFM Segment",
+)
+
+# Create a bubble chart with financial categories highlighted
+financial_bubble <- create_rfm_bubble_chart(
+  financial_rfm_results,
+  title = "Supplier RFM Analysis by Financial Category",
+  subtitle = "Showing relationship between financial grade and RFM position"
+)
+financial_bubble
+
+# Create interactive datatable with financial grade information
+financial_rfm_table <- create_rfm_datatable(
+  financial_rfm_results,
+  title = "Supplier RFM Analysis with Financial Grades"
+)
+financial_rfm_table
+```
+
+## 8. UI Design for RFM Analysis Dashboard
+
+The RFM Analysis Dashboard provides a comprehensive interface for analyzing supplier performance and segmentation through the lens of Recency, Frequency, and Monetary Value metrics. This powerful segmentation tool helps procurement officers identify key supplier groups and optimize engagement strategies.
+
+### 8.1 Dashboard Layout
+
+The RFM Analysis Dashboard follows a structured layout optimized for both in-depth analysis and intuitive exploration:
+
+1.  Parameters & Control Panel (Left): Allows users to configure RFM analysis parameters and selection criteria
+2.  Visualization Hub (Center): Houses multiple coordinated visualizations of RFM data
+3.  Segment Insights Panel (Right): Provides detailed metrics and actionable insights for selected segments
+
+This integrated layout ensures users can seamlessly move between parameter adjustment, visual exploration, and strategic insight extraction.
+
+### 8.2 Parameters & Control Panel
+
+The left panel provides complete control over RFM analysis parameters:
+
+#### Data Selection
+
+-   Analysis Scope
+    -   Date range with default to last complete fiscal year
+    -   Ministry/Agency filter with multi-select capability
+    -   Supplier category filter (All, Large, Medium, Small)
+    -   Minimum contract value threshold slider
+-   RFM Calculation Parameters
+    -   Analysis reference date picker (defaults to current date)
+    -   Recency weight adjustment (1-5)
+    -   Frequency weight adjustment (1-5)
+    -   Monetary weight adjustment (1-5)
+    -   Quartile boundaries adjustment (3-5 segments per dimension)
+-   Segment Customization
+    -   Predefined segment templates (Standard RFM, Value-focused, Engagement-focused)
+    -   Custom segment definition interface
+    -   Segment naming and color scheme selection
+
+#### Output Configuration
+
+-   Visualization Controls
+    -   Chart type selector (Heatmap, Bubble, Distribution)
+    -   Display density slider (data points per view)
+    -   Label density control
+    -   Include/exclude unclassified suppliers toggle
+-   Export Options
+    -   Save configuration preset
+    -   Schedule automated analysis
+    -   Export format selection (PDF, Excel, Power BI)
+
+### 8.3 Visualization Hub
+
+The central area presents coordinated, interactive visualizations:
+
+#### Primary Visualization Area
+
+-   Tabbed Interface with the following views:
+    -   RFM Heatmap: Shows supplier distribution across RFM score combinations
+    -   Segment Bubble Chart: Maps suppliers by recency, frequency with bubble size for monetary value
+    -   Distribution Analysis: Bar charts comparing supplier counts vs. procurement value
+    -   Segment Migration: Shows how suppliers move between segments over time
+    -   Financial Grade Correlation: Compares RFM segments with financial grades
+-   Interactive Features:
+    -   Drill-down capabilities on all charts
+    -   Brushing and linking across visualizations
+    -   Animation controls for temporal analysis
+    -   Highlighting of selected segments across all views
+
+#### Visualization Toolbar
+
+-   View Controls: Zoom, pan, reset view
+-   Selection Tools: Rectangle select, lasso select
+-   Comparative Tools: Segment comparison, benchmark overlay
+-   Annotation Tools: Add notes, highlight insights
+
+#### Key Metrics Dashboard
+
+-   Summary Statistics Band:
+    -   Total suppliers analyzed
+    -   Total procurement value
+    -   Average RFM score
+    -   Segment concentration index
+    -   Year-over-year segment volatility
+
+### 8.4 Segment Insights Panel
+
+The right panel delivers actionable insights about selected segments:
+
+#### Segment Profile
+
+-   Segment Header:
+    -   Segment name and color coding
+    -   Summary description of segment characteristics
+    -   Count and percentage of total suppliers
+    -   Procurement value and percentage of total
+-   RFM Profile:
+    -   Average recency (days since last contract)
+    -   Average frequency (contracts per year)
+    -   Average monetary value (per supplier)
+    -   RFM score distribution within segment
+
+#### Performance Metrics
+
+-   Procurement Pattern Analysis:
+    -   Contract size distribution
+    -   Temporal pattern visualization
+    -   Agency distribution
+    -   Contract type breakdown
+-   Comparative Analysis:
+    -   Performance vs. other segments
+    -   Year-over-year changes
+    -   Performance vs. financial grade expectations
+    -   Distance from ideal supplier profile
+
+#### Strategic Recommendations
+
+-   Engagement Strategies:
+    -   Tailored engagement recommendations based on segment
+    -   Opportunity identification
+    -   Risk assessment
+    -   Performance improvement suggestions
+-   Action Planning:
+    -   Suggested next steps for each segment
+    -   Priority ranking of actions
+    -   Expected impact metrics
+    -   Integration with procurement planning
+
+### 8.5 Advanced Interaction Features
+
+The RFM Analysis Dashboard implements several advanced interaction features:
+
+1.  Segment-Driven Filtering: Selections in segment visualizations automatically filter all other views
+2.  Parameter Impact Simulation: Interactive preview of how parameter changes affect segmentation
+3.  Threshold Sensitivity Analysis: Shows stability of segments across different threshold settings
+4.  Temporal Playback: Animated visualization of how supplier segments evolve over time
+5.  Personalized Insights: Context-aware recommendations based on selected segments and historical actions
+
+### 8.6 Integration with Other Modules
+
+The RFM Analysis Dashboard seamlessly integrates with other system modules:
+
+1.  Sankey Flow Integration: Selected segments can be highlighted in procurement flow visualizations
+2.  Supplier Profile Connection: Direct links to detailed supplier profiles for deeper analysis
+3.  Predictive Analytics Bridge: Feed RFM segments into procurement forecasting and planning tools
+4.  Export to Strategy: Direct export of segment insights to procurement strategy documents
+5.  Notification System: Set up alerts for segment transitions or significant changes in supplier behavior
+
+```{=html}
+<iframe src="mockup2.html" width="100%" height="600px" frameborder="0"></iframe>
 ```
