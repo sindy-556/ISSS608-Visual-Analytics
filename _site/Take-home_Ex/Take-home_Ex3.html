@@ -321,6 +321,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#filtering-by-suppliers" id="toc-filtering-by-suppliers" class="nav-link" data-scroll-target="#filtering-by-suppliers">5.3 Filtering by Suppliers</a></li>
   <li><a href="#top-k-analysis" id="toc-top-k-analysis" class="nav-link" data-scroll-target="#top-k-analysis">5.4 Top K Analysis</a></li>
   </ul></li>
+  <li><a href="#ui-design-for-interactive-dashboard" id="toc-ui-design-for-interactive-dashboard" class="nav-link" data-scroll-target="#ui-design-for-interactive-dashboard">6. UI Design for Interactive Dashboard</a>
+  <ul class="collapse">
+  <li><a href="#dashboard-layout" id="toc-dashboard-layout" class="nav-link" data-scroll-target="#dashboard-layout">6.1 Dashboard Layout</a></li>
+  <li><a href="#control-panel-components" id="toc-control-panel-components" class="nav-link" data-scroll-target="#control-panel-components">6.2 Control Panel Components</a></li>
+  <li><a href="#visualization-area-components" id="toc-visualization-area-components" class="nav-link" data-scroll-target="#visualization-area-components">6.3 Visualization Area Components</a></li>
+  <li><a href="#information-panel-components" id="toc-information-panel-components" class="nav-link" data-scroll-target="#information-panel-components">6.4 Information Panel Components</a></li>
+  <li><a href="#interactive-features" id="toc-interactive-features" class="nav-link" data-scroll-target="#interactive-features">6.5 Interactive Features</a></li>
+  <li><a href="#color-scheme-and-accessibility" id="toc-color-scheme-and-accessibility" class="nav-link" data-scroll-target="#color-scheme-and-accessibility">6.6 Color Scheme and Accessibility</a></li>
+  <li><a href="#mockup-preview" id="toc-mockup-preview" class="nav-link" data-scroll-target="#mockup-preview">6.7 Mockup Preview</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -1396,6 +1406,165 @@ $ year                 &lt;dbl&gt; 2019, 2019, 2019, 2019, 2019, 2019, 2020, 202
 <span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a><span class="fu">saveNetwork</span>(top_k_sankey, <span class="at">file =</span> <span class="st">"sankey_top_k_2023.html"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <iframe src="sankey_top_k_2023.html" width="100%" height="600px" frameborder="0"></iframe>
+</section>
+</section>
+<section id="ui-design-for-interactive-dashboard" class="level2">
+<h2 class="anchored" data-anchor-id="ui-design-for-interactive-dashboard">6. UI Design for Interactive Dashboard</h2>
+<p>This section outlines the user interface design for the proposed GeBiz Procurement Data Visualization dashboard. The interactive dashboard will allow users to explore procurement data through various filters and visualization options.</p>
+<section id="dashboard-layout" class="level3">
+<h3 class="anchored" data-anchor-id="dashboard-layout">6.1 Dashboard Layout</h3>
+<p>The dashboard will follow a three-panel layout design:</p>
+<ol type="1">
+<li><strong>Control Panel (Left)</strong>: Contains all filtering and customization options</li>
+<li><strong>Visualization Area (Center)</strong>: Displays the selected Sankey diagram or other visualizations</li>
+<li><strong>Information Panel (Right)</strong>: Shows additional context, metrics, and details about selected elements</li>
+</ol>
+<p>This layout ensures that users can easily navigate between different views while maintaining context.</p>
+</section>
+<section id="control-panel-components" class="level3">
+<h3 class="anchored" data-anchor-id="control-panel-components">6.2 Control Panel Components</h3>
+<p>The control panel will include the following UI components:</p>
+<section id="date-range-selector" class="level4">
+<h4 class="anchored" data-anchor-id="date-range-selector">6.2.1 Date Range Selector</h4>
+<ul>
+<li><strong>Type</strong>: Slider or dropdown</li>
+<li><strong>Function</strong>: Allows users to filter data by year (2019-2023)</li>
+<li><strong>Default</strong>: Most recent complete year</li>
+</ul>
+</section>
+<section id="entity-type-selectors" class="level4">
+<h4 class="anchored" data-anchor-id="entity-type-selectors">6.2.2 Entity Type Selectors</h4>
+<ul>
+<li><strong>Type</strong>: Tabbed interface with three tabs (Ministry, Agency, Supplier)</li>
+<li><strong>Function</strong>: Determines the main focus of the analysis</li>
+<li><strong>Default</strong>: Ministry view</li>
+</ul>
+</section>
+<section id="entity-selection" class="level4">
+<h4 class="anchored" data-anchor-id="entity-selection">6.2.3 Entity Selection</h4>
+<ul>
+<li><strong>Type</strong>: Searchable multi-select dropdown</li>
+<li><strong>Function</strong>: Allows selection of specific ministries, agencies, or suppliers</li>
+<li><strong>Features</strong>: Includes autocomplete and “Select Top K” options</li>
+</ul>
+</section>
+<section id="visualization-controls" class="level4">
+<h4 class="anchored" data-anchor-id="visualization-controls">6.2.4 Visualization Controls</h4>
+<ul>
+<li><strong>Type</strong>: Radio buttons and sliders</li>
+<li><strong>Functions</strong>:
+<ul>
+<li>Toggle between individual suppliers and supplier groups (by financial grade)</li>
+<li>Adjust minimum flow value threshold</li>
+<li>Set “Top K” limits for ministries, agencies, and suppliers</li>
+<li>Customize node display options (abbreviations vs.&nbsp;full names)</li>
+</ul></li>
+</ul>
+</section>
+<section id="export-and-share-options" class="level4">
+<h4 class="anchored" data-anchor-id="export-and-share-options">6.2.5 Export and Share Options</h4>
+<ul>
+<li><strong>Type</strong>: Button group</li>
+<li><strong>Functions</strong>: Save visualization as PNG/PDF, share link, download data</li>
+</ul>
+</section>
+</section>
+<section id="visualization-area-components" class="level3">
+<h3 class="anchored" data-anchor-id="visualization-area-components">6.3 Visualization Area Components</h3>
+<section id="sankey-diagram" class="level4">
+<h4 class="anchored" data-anchor-id="sankey-diagram">6.3.1 Sankey Diagram</h4>
+<ul>
+<li><strong>Type</strong>: Interactive SVG</li>
+<li><strong>Features</strong>:
+<ul>
+<li>Zoom and pan controls</li>
+<li>Node dragging for better arrangement</li>
+<li>Hover tooltips showing detailed information</li>
+<li>Click interaction to highlight related flows</li>
+<li>Animation during transitions between different views</li>
+</ul></li>
+</ul>
+</section>
+<section id="alternative-visualizations" class="level4">
+<h4 class="anchored" data-anchor-id="alternative-visualizations">6.3.2 Alternative Visualizations</h4>
+<ul>
+<li><strong>Type</strong>: Tabbed interface</li>
+<li><strong>Options</strong>:
+<ul>
+<li>Sankey Diagram (default)</li>
+<li>Network Graph</li>
+<li>Treemap</li>
+<li>Bar Charts (for comparative analysis)</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="information-panel-components" class="level3">
+<h3 class="anchored" data-anchor-id="information-panel-components">6.4 Information Panel Components</h3>
+<section id="selection-details" class="level4">
+<h4 class="anchored" data-anchor-id="selection-details">6.4.1 Selection Details</h4>
+<ul>
+<li><strong>Type</strong>: Dynamic information cards</li>
+<li><strong>Content</strong>: Detailed information about selected ministries, agencies, or suppliers</li>
+<li><strong>Features</strong>: Updates when users click on nodes in the visualization</li>
+</ul>
+</section>
+<section id="summary-metrics" class="level4">
+<h4 class="anchored" data-anchor-id="summary-metrics">6.4.2 Summary Metrics</h4>
+<ul>
+<li><strong>Type</strong>: Key performance indicators (KPIs)</li>
+<li><strong>Content</strong>:
+<ul>
+<li>Total procurement value</li>
+<li>Number of contracts</li>
+<li>Average contract value</li>
+<li>Supplier diversity metrics</li>
+</ul></li>
+</ul>
+</section>
+<section id="trend-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="trend-analysis">6.4.3 Trend Analysis</h4>
+<ul>
+<li><strong>Type</strong>: Small multiple charts</li>
+<li><strong>Content</strong>: Time series showing procurement patterns for selected entities</li>
+</ul>
+</section>
+</section>
+<section id="interactive-features" class="level3">
+<h3 class="anchored" data-anchor-id="interactive-features">6.5 Interactive Features</h3>
+<p>The UI design incorporates several interactive features to enhance user experience:</p>
+<ol type="1">
+<li><strong>Cross-filtering</strong>: Selections in one panel affect what’s displayed in others</li>
+<li><strong>Responsive layout</strong>: Adapts to different screen sizes</li>
+<li><strong>State persistence</strong>: Maintains user selections during session</li>
+<li><strong>Progressive disclosure</strong>: Shows relevant options based on current context</li>
+<li><strong>Search functionality</strong>: Enables quick location of specific entities</li>
+<li><strong>Guided analysis</strong>: Optional tooltips explaining dashboard features</li>
+</ol>
+</section>
+<section id="color-scheme-and-accessibility" class="level3">
+<h3 class="anchored" data-anchor-id="color-scheme-and-accessibility">6.6 Color Scheme and Accessibility</h3>
+<p>The dashboard follows a consistent color scheme:</p>
+<ul>
+<li><strong>Ministries</strong>: Blue shades (#1f77b4 and variants)</li>
+<li><strong>Agencies</strong>: Orange shades (#ff7f0e and variants)</li>
+<li><strong>Suppliers</strong>: Green shades (#2ca02c and variants)</li>
+<li><strong>Financial grades</strong>: Sequential color scale from light to dark</li>
+</ul>
+<p>Accessibility features include:</p>
+<ul>
+<li>Color-blind friendly palette</li>
+<li>Sufficient contrast ratios</li>
+<li>Text alternatives for graphical elements</li>
+<li>Keyboard navigation support</li>
+<li>Screen reader compatibility</li>
+</ul>
+</section>
+<section id="mockup-preview" class="level3">
+<h3 class="anchored" data-anchor-id="mockup-preview">6.7 Mockup Preview</h3>
+<p>Below is a schematic representation of the dashboard layout:</p>
+<iframe src="mockup1.html" width="100%" height="600px" frameborder="0"></iframe>
+<p>This UI design provides a flexible, intuitive interface for exploring the complex relationships in GeBiz procurement data while maintaining consistent visual language and accessibility standards.</p>
 
 
 </section>

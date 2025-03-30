@@ -899,3 +899,126 @@ saveNetwork(top_k_sankey, file = "sankey_top_k_2023.html")
 ```{=html}
 <iframe src="sankey_top_k_2023.html" width="100%" height="600px" frameborder="0"></iframe>
 ```
+
+
+## 6. UI Design for Interactive Dashboard
+
+This section outlines the user interface design for the proposed GeBiz Procurement Data Visualization dashboard. The interactive dashboard will allow users to explore procurement data through various filters and visualization options.
+
+### 6.1 Dashboard Layout
+
+The dashboard will follow a three-panel layout design:
+
+1. **Control Panel (Left)**: Contains all filtering and customization options
+2. **Visualization Area (Center)**: Displays the selected Sankey diagram or other visualizations
+3. **Information Panel (Right)**: Shows additional context, metrics, and details about selected elements
+
+This layout ensures that users can easily navigate between different views while maintaining context.
+
+### 6.2 Control Panel Components
+
+The control panel will include the following UI components:
+
+#### 6.2.1 Date Range Selector
+- **Type**: Slider or dropdown
+- **Function**: Allows users to filter data by year (2019-2023)
+- **Default**: Most recent complete year
+
+#### 6.2.2 Entity Type Selectors
+- **Type**: Tabbed interface with three tabs (Ministry, Agency, Supplier)
+- **Function**: Determines the main focus of the analysis
+- **Default**: Ministry view
+
+#### 6.2.3 Entity Selection
+- **Type**: Searchable multi-select dropdown
+- **Function**: Allows selection of specific ministries, agencies, or suppliers
+- **Features**: Includes autocomplete and "Select Top K" options
+
+#### 6.2.4 Visualization Controls
+- **Type**: Radio buttons and sliders
+- **Functions**:
+  - Toggle between individual suppliers and supplier groups (by financial grade)
+  - Adjust minimum flow value threshold
+  - Set "Top K" limits for ministries, agencies, and suppliers
+  - Customize node display options (abbreviations vs. full names)
+
+#### 6.2.5 Export and Share Options
+- **Type**: Button group
+- **Functions**: Save visualization as PNG/PDF, share link, download data
+
+### 6.3 Visualization Area Components
+
+#### 6.3.1 Sankey Diagram
+- **Type**: Interactive SVG
+- **Features**:
+  - Zoom and pan controls
+  - Node dragging for better arrangement
+  - Hover tooltips showing detailed information
+  - Click interaction to highlight related flows
+  - Animation during transitions between different views
+
+#### 6.3.2 Alternative Visualizations
+- **Type**: Tabbed interface
+- **Options**:
+  - Sankey Diagram (default)
+  - Network Graph
+  - Treemap
+  - Bar Charts (for comparative analysis)
+
+### 6.4 Information Panel Components
+
+#### 6.4.1 Selection Details
+- **Type**: Dynamic information cards
+- **Content**: Detailed information about selected ministries, agencies, or suppliers
+- **Features**: Updates when users click on nodes in the visualization
+
+#### 6.4.2 Summary Metrics
+- **Type**: Key performance indicators (KPIs)
+- **Content**:
+  - Total procurement value
+  - Number of contracts
+  - Average contract value
+  - Supplier diversity metrics
+
+#### 6.4.3 Trend Analysis
+- **Type**: Small multiple charts
+- **Content**: Time series showing procurement patterns for selected entities
+
+### 6.5 Interactive Features
+
+The UI design incorporates several interactive features to enhance user experience:
+
+1. **Cross-filtering**: Selections in one panel affect what's displayed in others
+2. **Responsive layout**: Adapts to different screen sizes
+3. **State persistence**: Maintains user selections during session
+4. **Progressive disclosure**: Shows relevant options based on current context
+5. **Search functionality**: Enables quick location of specific entities
+6. **Guided analysis**: Optional tooltips explaining dashboard features
+
+### 6.6 Color Scheme and Accessibility
+
+The dashboard follows a consistent color scheme:
+
+- **Ministries**: Blue shades (#1f77b4 and variants)
+- **Agencies**: Orange shades (#ff7f0e and variants)
+- **Suppliers**: Green shades (#2ca02c and variants)
+- **Financial grades**: Sequential color scale from light to dark
+
+Accessibility features include:
+
+- Color-blind friendly palette
+- Sufficient contrast ratios
+- Text alternatives for graphical elements
+- Keyboard navigation support
+- Screen reader compatibility
+
+### 6.7 Mockup Preview
+
+Below is a schematic representation of the dashboard layout:
+
+
+```{=html}
+<iframe src="mockup1.html" width="100%" height="600px" frameborder="0"></iframe>
+```
+
+This UI design provides a flexible, intuitive interface for exploring the complex relationships in GeBiz procurement data while maintaining consistent visual language and accessibility standards.

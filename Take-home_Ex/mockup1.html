@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeBiz Procurement Dashboard Mockup</title>
+    <style>
+        :root {
+            --primary-blue: #1f77b4;
+            --primary-orange: #ff7f0e;
+            --primary-green: #2ca02c;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #343a40;
+            --border-color: #dee2e6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .dashboard {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .panel {
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .control-panel {
+            width: 250px;
+            background-color: white;
+        }
+        
+        .visualization-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+        }
+        
+        .info-panel {
+            width: 280px;
+            background-color: white;
+        }
+        
+        h1, h2, h3 {
+            color: var(--dark-gray);
+            margin-top: 0;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary-blue);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            background-color: var(--light-gray);
+            margin-right: 3px;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-color: var(--border-color);
+            font-weight: bold;
+        }
+        
+        .checkbox-group {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .checkbox-item input {
+            width: auto;
+            margin-right: 8px;
+            margin-bottom: 0;
+        }
+        
+        .slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 8px 15px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .secondary-button {
+            background-color: var(--medium-gray);
+            color: var(--dark-gray);
+        }
+        
+        .secondary-button:hover {
+            background-color: #ced4da;
+        }
+        
+        .visualization {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--border-color);
+            margin: 15px;
+            border-radius: 8px;
+            background-color: var(--light-gray);
+        }
+        
+        .vis-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+        
+        .vis-placeholder-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .info-card {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .info-card h3 {
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        
+        .metric-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .metric {
+            background-color: var(--light-gray);
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+        
+        .metric-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .mini-chart {
+            height: 100px;
+            background-color: var(--light-gray);
+            border-radius: 4px;
+            margin-top: 10px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+        
+        /* Sample nodes for the Sankey diagram */
+        .sankey-preview {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .node {
+            position: absolute;
+            background-color: #ccc;
+            border-radius: 4px;
+        }
+        
+        .node-ministry {
+            background-color: rgba(31, 119, 180, 0.7);
+            color: white;
+        }
+        
+        .node-agency {
+            background-color: rgba(255, 127, 14, 0.7);
+            color: white;
+        }
+        
+        .node-supplier {
+            background-color: rgba(44, 160, 44, 0.7);
+            color: white;
+        }
+        
+        .link {
+            position: absolute;
+            background-color: #ddd;
+            opacity: 0.6;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Left Control Panel -->
+        <div class="panel control-panel">
+            <h1>GeBiz Dashboard</h1>
+            
+            <!-- Date Range Control -->
+            <div class="control-group">
+                <label for="year-select">Select Year</label>
+                <select id="year-select">
+                    <option value="2023" selected>2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                    <option value="2020">2020</option>
+                    <option value="2019">2019</option>
+                </select>
+            </div>
+            
+            <!-- Entity Type Selector -->
+            <div class="control-group">
+                <label>Entity Focus</label>
+                <div class="tabs">
+                    <div class="tab active">Ministry</div>
+                    <div class="tab">Agency</div>
+                    <div class="tab">Supplier</div>
+                </div>
+            </div>
+            
+            <!-- Entity Selection -->
+            <div class="control-group">
+                <label>Select Ministries</label>
+                <input type="text" placeholder="Search ministries...">
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ministry1" checked>
+                        <label for="ministry1">Ministry of Education</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ministry2" checked>
+                        <label for="ministry2">Ministry of Health</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ministry3">
+                        <label for="ministry3">Ministry of Defence</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ministry4">
+                        <label for="ministry4">Ministry of Finance</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ministry5">
+                        <label for="ministry5">Ministry of Transport</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Top K Selection -->
+            <div class="control-group">
+                <label for="topk-ministries">Top Ministries</label>
+                <input type="range" id="topk-ministries" class="slider" min="3" max="15" value="5">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>3</span>
+                    <span>5</span>
+                    <span>15</span>
+                </div>
+                
+                <label for="topk-agencies">Top Agencies</label>
+                <input type="range" id="topk-agencies" class="slider" min="5" max="20" value="10">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>5</span>
+                    <span>10</span>
+                    <span>20</span>
+                </div>
+                
+                <label for="topk-suppliers">Top Suppliers</label>
+                <input type="range" id="topk-suppliers" class="slider" min="5" max="30" value="15">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>5</span>
+                    <span>15</span>
+                    <span>30</span>
+                </div>
+            </div>
+            
+            <!-- Min Value Threshold -->
+            <div class="control-group">
+                <label for="min-value">Minimum Value Threshold</label>
+                <input type="range" id="min-value" class="slider" min="100000" max="5000000" value="1000000">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>$100K</span>
+                    <span>$1M</span>
+                    <span>$5M</span>
+                </div>
+            </div>
+            
+            <!-- Group by Financial Grade -->
+            <div class="control-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="group-grade">
+                    <label for="group-grade">Group by Financial Grade</label>
+                </div>
+            </div>
+            
+            <!-- Export and Share -->
+            <div class="button-group">
+                <button>Export</button>
+                <button class="secondary-button">Share</button>
+            </div>
+        </div>
+        
+        <!-- Center Visualization Area -->
+        <div class="panel visualization-area">
+            <div class="tabs">
+                <div class="tab active">Sankey Diagram</div>
+                <div class="tab">Network Graph</div>
+                <div class="tab">Treemap</div>
+                <div class="tab">Bar Charts</div>
+            </div>
+            
+            <div class="visualization">
+                <!-- Simplified Sankey Diagram Mockup -->
+                <div class="sankey-preview">
+                    <!-- Ministry nodes (left) -->
+                    <div class="node node-ministry" style="top: 20%; left: 5%; width: 10%; height: 15%; padding: 10px;">
+                        Ministry of Education
+                    </div>
+                    <div class="node node-ministry" style="top: 50%; left: 5%; width: 10%; height: 15%; padding: 10px;">
+                        Ministry of Health
+                    </div>
+                    
+                    <!-- Agency nodes (middle) -->
+                    <div class="node node-agency" style="top: 10%; left: 40%; width: 10%; height: 8%; padding: 10px;">
+                        MOE HQ
+                    </div>
+                    <div class="node node-agency" style="top: 25%; left: 40%; width: 10%; height: 8%; padding: 10px;">
+                        Schools
+                    </div>
+                    <div class="node node-agency" style="top: 45%; left: 40%; width: 10%; height: 8%; padding: 10px;">
+                        Hospitals
+                    </div>
+                    <div class="node node-agency" style="top: 60%; left: 40%; width: 10%; height: 8%; padding: 10px;">
+                        Polyclinics
+                    </div>
+                    
+                    <!-- Supplier nodes (right) -->
+                    <div class="node node-supplier" style="top: 5%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                        Large (S8-S10)
+                    </div>
+                    <div class="node node-supplier" style="top: 20%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                        Medium (S5-S7)
+                    </div>
+                    <div class="node node-supplier" style="top: 35%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                        Small (S1-S4)
+                    </div>
+                    <div class="node node-supplier" style="top: 50%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                        Medium (S5-S7)
+                    </div>
+                    <div class="node node-supplier" style="top: 65%; left: 75%; width: 15%; height: 6%; padding: 8px;">
+                        Small (S1-S4)
+                    </div>
+                    
+                    <!-- Links (simplified) -->
+                    <div class="link" style="top: 22%; left: 15%; width: 25%; height: 3%;"></div>
+                    <div class="link" style="top: 30%; left: 15%; width: 25%; height: 5%;"></div>
+                    <div class="link" style="top: 52%; left: 15%; width: 25%; height: 4%;"></div>
+                    <div class="link" style="top: 58%; left: 15%; width: 25%; height: 6%;"></div>
+                    
+                    <div class="link" style="top: 14%; left: 50%; width: 25%; height: 2%;"></div>
+                    <div class="link" style="top: 18%; left: 50%; width: 25%; height: 4%;"></div>
+                    <div class="link" style="top: 29%; left: 50%; width: 25%; height: 8%;"></div>
+                    <div class="link" style="top: 48%; left: 50%; width: 25%; height: 4%;"></div>
+                    <div class="link" style="top: 55%; left: 50%; width: 25%; height: 3%;"></div>
+                    <div class="link" style="top: 64%; left: 50%; width: 25%; height: 5%;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Information Panel -->
+        <div class="panel info-panel">
+            <h2>Analysis Details</h2>
+            
+            <!-- Selection Details -->
+            <div class="info-card">
+                <h3>Selection Details</h3>
+                <p><strong>Ministry of Education</strong></p>
+                <p>Responsible for education policies and oversight of educational institutions.</p>
+                <p><strong>Total Agencies:</strong> 5</p>
+                <p><strong>Top Agency:</strong> Schools</p>
+            </div>
+            
+            <!-- Summary Metrics -->
+            <div class="info-card">
+                <h3>Summary Metrics</h3>
+                <div class="metric-grid">
+                    <div class="metric">
+                        <div class="metric-value">$1.2B</div>
+                        <div class="metric-label">Total Value</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">87</div>
+                        <div class="metric-label">Contracts</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$13.8M</div>
+                        <div class="metric-label">Avg Value</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">15</div>
+                        <div class="metric-label">Suppliers</div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">68%</div>
+                    <div class="metric-label">SME Participation</div>
+                </div>
+            </div>
+            
+            <!-- Trend Analysis -->
+            <div class="info-card">
+                <h3>Procurement Trends</h3>
+                <div class="mini-chart">
+                    [Monthly Trend Chart]
+                </div>
+                <div class="mini-chart">
+                    [Supplier Distribution Chart]
+                </div>
+            </div>
+            
+            <!-- Additional Information -->
+            <div class="info-card">
+                <h3>Top Suppliers</h3>
+                <ol style="padding-left: 20px; margin-top: 5px;">
+                    <li>ABC Construction (S8)</li>
+                    <li>XYZ Technology (S7)</li>
+                    <li>EduTech Solutions (S5)</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
