@@ -246,30 +246,50 @@ print(grade_contract_match)
 ```
 
 ### 2.6 Temporal Patterns
-Examine monthly patterns in procurement
+
+#### Examine monthly patterns in procurement
+
 ```{r}
+if(!inherits(procurement_enriched$award_date, "Date")) {
+  procurement_enriched <- procurement_enriched %>%
+    mutate(award_date = as.Date(award_date, format="%d/%m/%Y"))
+}
 monthly_patterns <- procurement_enriched %>%
   mutate(month = month(award_date, label = TRUE),
          year = year(award_date)) %>%
+  # Filter to include only the relevant years (2019-2023)
+  filter(year >= 2019 & year <= 2023) %>%
   group_by(year, month) %>%
   summarise(count = n(),
             total_value = sum(awarded_amt, na.rm = TRUE)) %>%
   ungroup()
 ```
 
-Plot monthly procurement values over time
+#### Plot monthly patterns across years with improved styling
 ```{r}
+year_colors <- c("2019" = "#1f77b4", "2020" = "#ff7f0e", 
+                "2021" = "#2ca02c", "2022" = "#d62728", 
+                "2023" = "#9467bd")
+
 ggplot(monthly_patterns, aes(x = month, y = total_value, group = year, color = factor(year))) +
-  geom_line() +
-  geom_point() +
-  labs(title = "Monthly Procurement Patterns by Year",
+  geom_line(size = 1, alpha = 0.3) + 
+  geom_point(size = 2.5, alpha = 0.7) +  
+  labs(title = "Monthly Procurement Patterns (2019-2023)",
+       subtitle = "Comparing monthly procurement values across years",
        x = "Month",
        y = "Total Procurement Value (SGD)",
        color = "Year") +
   theme_minimal() +
-  scale_y_continuous(labels = scales::comma)
+  theme(
+    legend.position = "right",
+    panel.grid.minor = element_blank(),
+    text = element_text(size = 12),
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  scale_color_manual(values = year_colors)
 ```
-
 
 ### 2.7 Distribution of Award Amounts
 Create a histogram of award amounts to see the distribution
@@ -389,7 +409,7 @@ procurement_enriched <- procurement_enriched %>%
   ))
 
 # Preview the processed data
-head(procurement_enriched)
+glimpse(procurement_enriched)
 ```
 
 ## 4. Building the Sankey Diagram Visualization
@@ -415,6 +435,8 @@ create_sankey <- function(data,
                           top_k_agencies = 10,
                           top_k_suppliers = 10,
                           min_value = 1000000,
+                          supplier_char_limit = 50,
+                          group_by_grade = FALSE,
                           debug = FALSE) {
   
   # Log data diagnostics if debug is enabled
@@ -473,19 +495,33 @@ create_sankey <- function(data,
       pull(agency)
   }
   
-  # 3. Determine which suppliers to include
+  # 3. Determine which suppliers to include based on the view mode
   if(!is.null(supplier_filter)) {
     # Use the specified suppliers
     suppliers_to_include <- supplier_filter
   } else {
     # Get top suppliers by award amount
-    suppliers_to_include <- filtered_data %>%
-      filter(agency %in% agencies_to_include) %>%
-      group_by(supplier_name) %>%
-      summarize(total_value = sum(awarded_amt, na.rm = TRUE)) %>%
-      arrange(desc(total_value)) %>%
-      head(top_k_suppliers) %>%
-      pull(supplier_name)
+    if(group_by_grade) {
+      # When grouping by grade, supplier categories will be the financial_category (e.g., "Large (S8-S10)")
+      # We still need to filter by top suppliers for consistency, but we'll sum across all suppliers
+      suppliers_to_include <- filtered_data %>%
+        filter(agency %in% agencies_to_include) %>%
+        group_by(financial_category) %>%
+        summarize(total_value = sum(awarded_amt, na.rm = TRUE)) %>%
+        filter(!is.na(financial_category)) %>%  # Exclude NA categories
+        arrange(desc(total_value)) %>%
+        head(top_k_suppliers) %>%
+        pull(financial_category)
+    } else {
+      # When showing individual suppliers
+      suppliers_to_include <- filtered_data %>%
+        filter(agency %in% agencies_to_include) %>%
+        group_by(supplier_name) %>%
+        summarize(total_value = sum(awarded_amt, na.rm = TRUE)) %>%
+        arrange(desc(total_value)) %>%
+        head(top_k_suppliers) %>%
+        pull(supplier_name)
+    }
   }
   
   if(debug) {
@@ -495,12 +531,23 @@ create_sankey <- function(data,
   }
   
   # Filter the data to only include the selected entities
-  filtered_data <- filtered_data %>%
-    filter(
-      ministry %in% ministries_to_include,
-      agency %in% agencies_to_include,
-      supplier_name %in% suppliers_to_include
-    )
+  if(group_by_grade) {
+    # When grouping by grade, filter by financial_category
+    filtered_data <- filtered_data %>%
+      filter(
+        ministry %in% ministries_to_include,
+        agency %in% agencies_to_include,
+        financial_category %in% suppliers_to_include
+      )
+  } else {
+    # When showing individual suppliers, filter by supplier_name
+    filtered_data <- filtered_data %>%
+      filter(
+        ministry %in% ministries_to_include,
+        agency %in% agencies_to_include,
+        supplier_name %in% suppliers_to_include
+      )
+  }
   
   if(debug) message("After entity filtering: ", nrow(filtered_data), " rows")
   
@@ -516,12 +563,21 @@ create_sankey <- function(data,
     summarize(value = sum(awarded_amt, na.rm = TRUE), .groups = 'drop') %>%
     filter(value >= min_value)
   
-  # Create agency-to-supplier flow
-  agency_supplier_flow <- filtered_data %>%
-    group_by(agency, financial_category) %>%
-    summarize(value = sum(awarded_amt, na.rm = TRUE), .groups = 'drop') %>%
-    filter(value >= min_value) %>%
-    rename(supplier_name = financial_category)
+  # Create agency-to-supplier flow based on the view mode
+  if(group_by_grade) {
+    # Group by financial_category (S-grades)
+    agency_supplier_flow <- filtered_data %>%
+      group_by(agency, financial_category) %>%
+      summarize(value = sum(awarded_amt, na.rm = TRUE), .groups = 'drop') %>%
+      filter(value >= min_value) %>%
+      rename(supplier_name = financial_category)
+  } else {
+    # Group by individual supplier_name
+    agency_supplier_flow <- filtered_data %>%
+      group_by(agency, supplier_name) %>%
+      summarize(value = sum(awarded_amt, na.rm = TRUE), .groups = 'drop') %>%
+      filter(value >= min_value)
+  }
   
   if(debug) {
     message("Ministry-agency flows: ", nrow(ministry_agency_flow))
@@ -543,21 +599,14 @@ create_sankey <- function(data,
   # Create a data frame to hold both display names and full names for tooltips
   nodes <- data.frame(
     name = character(),        # Full name
-    display_name = character(),  # Abbreviated name for display
+    display_name = character(),  # Display name (full name for ministry/agency)
     group = character(),       # Node type
     stringsAsFactors = FALSE
   )
   
-  # Add ministries with abbreviation
+  # Add ministries with full name
   for (ministry in ministry_nodes) {
-    # Look up the abbreviation
-    ministry_abbr <- filtered_data %>%
-      filter(ministry == !!ministry) %>%
-      pull(ministry_abbr) %>%
-      unique()
-    
-    # Use abbreviation if available, otherwise use full name
-    display <- if(length(ministry_abbr) > 0 && !is.na(ministry_abbr[1])) ministry_abbr[1] else ministry
+    display <- ministry
     
     nodes <- rbind(nodes, data.frame(
       name = ministry,
@@ -567,16 +616,9 @@ create_sankey <- function(data,
     ))
   }
   
-  # Add agencies with abbreviation
+  # Add agencies with full name
   for (agency in agency_nodes) {
-    # Look up the abbreviation
-    agency_abbr <- filtered_data %>%
-      filter(agency == !!agency) %>%
-      pull(agency_abbr) %>%
-      unique()
-    
-    # Use abbreviation if available, otherwise use full name
-    display <- if(length(agency_abbr) > 0 && !is.na(agency_abbr[1])) agency_abbr[1] else agency
+    display <- agency
     
     nodes <- rbind(nodes, data.frame(
       name = agency,
@@ -586,10 +628,13 @@ create_sankey <- function(data,
     ))
   }
   
-  # Add suppliers with truncation
+  # Add suppliers with truncation if needed
   for (supplier in supplier_nodes) {
-    # Truncate long supplier names
-    display <- if(nchar(supplier) > 50) paste0(substr(supplier, 1, 47), "...") else supplier
+    # Truncate long supplier names based on the supplier_char_limit parameter
+    display <- if(nchar(supplier) > supplier_char_limit) 
+                 paste0(substr(supplier, 1, supplier_char_limit - 3), "...") 
+               else 
+                 supplier
     
     nodes <- rbind(nodes, data.frame(
       name = supplier,
@@ -676,19 +721,181 @@ create_sankey <- function(data,
 }
 ```
 
+The `create_sankey()` function is highly customizable through various parameters that control filtering, display options, and performance.
+
+Filtering parameters:
+
+- `year_filter`: Numeric or NULL. Filter records by a specific year (e.g., 2023). If NULL (default), all years are included. 
+- `ministry_filter`: Character vector or NULL. Filter by specific ministry names. If NULL (default), top ministries are selected based on top_k_ministries.
+- `agency_filter`: Character vector or NULL. Filter by specific agency names. If NULL (default), top agencies are selected based on `top_k_agencies`.
+- `supplier_filter`: Character vector or NULL. Filter by specific supplier names or categories (depending on `group_by_grade`). If NULL (default), top suppliers are selected based on `top_k_suppliers`.
+
+Top-k selection parameters:
+
+- `top_k_ministries`: Numeric, default 10. When no ministry filter is provided, specifies how many top ministries to include, ranked by total procurement value.
+- `top_k_agencies`: Numeric, default 10. When no agency filter is provided, specifies how many top agencies to include, ranked by total procurement value.
+- `top_k_suppliers`: Numeric, default 10. When no supplier filter is provided, specifies how many top suppliers or categories to include, ranked by total procurement value.
+
+Other parameters:
+
+- `min_value`: Numeric, default 1,000,000. Minimum threshold value for flows to be included in the diagram. Flows with values below this threshold are excluded, helping to simplify complex diagrams.
+
+- `supplier_char_limit`: Numeric, default 50. Maximum number of characters to display for supplier names. Longer names are truncated with "...".
+
+- `group_by_grade`: Logical, default FALSE. Controls whether suppliers are grouped by financial grade categories (TRUE) or shown as individual suppliers (FALSE).
+
+- `debug`: Logical, default FALSE. When TRUE, prints diagnostic messages during function execution to help troubleshoot issues.
+
 ## 5. Creating Sankey Visualization Examples
 
-In this section, we'll create several example Sankey diagrams to demonstrate different filtering capabilities:
+This section presents several Sankey diagram visualizations that demonstrate different perspectives on the GeBiz procurement data. Each visualization highlights specific patterns and relationships within the procurement network, helping stakeholders understand how government funds flow from ministries to agencies to suppliers.
 
-Filtering by ministry (1-2 examples)
-Filtering by agency (1-2 examples)
-Filtering by suppliers (1-2 examples)
-Filtering by top K for all 3 entity types
+### 5.1 Filtering by Ministry
 
-These examples showcase the flexibility of our visualization approach and highlight different aspects of the procurement network.
+This visualization focuses on the Ministry of Education's procurement flows, revealing how education funding distributes across agencies and suppliers. It highlights the ministry's key procurement channels and major supplier relationships.
 
-## 6. Embedding the Sankey Diagram
+```{r}
+# Create Sankey diagram for Ministry of Education
+moe_sankey <- create_sankey(
+  data = procurement_enriched,
+  year_filter = 2023,
+  ministry_filter = c("MINISTRY OF EDUCATION"),
+  min_value = 1000000,
+  top_k_agencies = 100,
+  top_k_suppliers = 20,
+  supplier_char_limit = 30
+)
+
+# Save the widget to an HTML file
+saveNetwork(moe_sankey, file = paste0("sankey_moe_", 2023, ".html"))
+```
 
 ```{=html}
-<iframe src="gebiz_sankey_2021.html" width="100%" height="600px" frameborder="0"></iframe>
+<iframe src="sankey_moe_2023.html" width="100%" height="600px" frameborder="0"></iframe>
+```
+
+The second visualization compares the Ministry of Health and Ministry of Education, with suppliers grouped by financial grade. This comparison reveals differences in agency structures, supplier profiles, and procurement value distributions between these major ministries.
+
+```{r}
+# Create Sankey diagram comparing two major ministries
+health_defence_sankey <- create_sankey(
+  data = procurement_enriched,
+  year_filter = 2023,
+    ministry_filter = c("MINISTRY OF HEALTH", "MINISTRY OF EDUCATION"),
+  min_value = 5000000,
+  top_k_agencies = 10, 
+  top_k_suppliers = 15,  
+  group_by_grade = TRUE
+)
+
+saveNetwork(health_defence_sankey, file = paste0("sankey_health_education_", 2023, ".html"))
+```
+
+```{=html}
+<iframe src="sankey_health_education_2023.html" width="100%" height="600px" frameborder="0"></iframe>
+```
+
+### 5.2 Filtering by Agency
+
+This Sankey diagram examines the Land Transport Authority's procurement patterns, showing its ministry connection and how its funds flow to suppliers of varying financial capacities. This view helps understand procurement strategies within key infrastructure agencies.
+
+```{r}
+# Create Sankey diagram for Land Transport Authority
+lta_sankey <- create_sankey(
+  data = procurement_enriched,
+  year_filter = 2023,
+  agency_filter = c("Land Transport Authority"),
+  min_value = 500000, 
+  top_k_suppliers = 25
+)
+
+saveNetwork(lta_sankey, file = paste0("sankey_lta_", 2023, ".html"))
+```
+
+```{=html}
+<iframe src="sankey_lta_2023.html" width="100%" height="600px" frameborder="0"></iframe>
+```
+
+### 5.3 Filtering by Suppliers
+
+#### Large Suppliers Analysis
+This visualization focuses on the largest suppliers (S8-S10 financial grades) to understand how government procurement from major companies flows through different ministries and agencies. This perspective helps identify which large suppliers are receiving significant government contracts and through which channels.
+
+```{r}
+# Identify top 10 suppliers by total contract value
+top_suppliers <- procurement_enriched %>%
+  group_by(supplier_name) %>%
+  summarize(total_value = sum(awarded_amt, na.rm = TRUE)) %>%
+  arrange(desc(total_value)) %>%
+  head(10) %>%
+  pull(supplier_name)
+
+# Create Sankey diagram for top suppliers
+top_suppliers_sankey <- create_sankey(
+  data = procurement_enriched,
+  supplier_filter = top_suppliers,
+  min_value = 500000, 
+  top_k_ministries = 15,
+  top_k_agencies = 25,   
+  debug = FALSE
+)
+
+saveNetwork(top_suppliers_sankey, file = paste0("sankey_top_suppliers_", 2023, ".html"))
+```
+
+```{=html}
+<iframe src="sankey_top_suppliers_2023.html" width="100%" height="600px" frameborder="0"></iframe>
+```
+
+#### SME Suppliers Analysis
+This view highlights Small and Medium Enterprise suppliers (S2-S7 financial grades), showing which ministries and agencies engage more with smaller businesses. The analysis supports policy objectives related to SME participation in government procurement.
+
+```{r}
+# Get small-medium sized suppliers (those with lower financial grades)
+sme_suppliers <- procurement_enriched %>%
+  filter(financial_grade %in% c("S2", "S3", "S4", "S5", "S6", "S7")) %>%
+  group_by(supplier_name) %>%
+  summarize(total_value = sum(awarded_amt, na.rm = TRUE)) %>%
+  arrange(desc(total_value)) %>%
+  head(15) %>%
+  pull(supplier_name)
+
+# Create Sankey diagram for SME suppliers
+sme_suppliers_sankey <- create_sankey(
+  data = procurement_enriched,
+  # Consider removing the year filter to see all data for these suppliers
+  # year_filter = 2023,  
+  supplier_filter = sme_suppliers,
+  min_value = 100000,   # Lower threshold for SMEs
+  top_k_ministries = 10,  # Show up to 10 ministries
+  top_k_agencies = 20,
+  group_by_grade = FALSE
+)
+
+saveNetwork(sme_suppliers_sankey, file = paste0("sankey_sme_suppliers_", 2023, ".html"))
+```
+
+```{=html}
+<iframe src="sankey_sme_suppliers_2023.html" width="100%" height="600px" frameborder="0"></iframe>
+```
+### 5.4 Top K Analysis
+
+This visualization presents the most significant procurement flows across the entire government for 2023. It quickly identifies the dominant ministries, key agencies, and major suppliers by procurement value, providing a strategic overview of government spending patterns.
+
+```{r}
+# Create Sankey diagram showing top entities across all dimensions
+top_k_sankey <- create_sankey(
+  data = procurement_enriched,
+  year_filter = 2023,
+  top_k_ministries = 5,  
+  top_k_agencies = 10, 
+  top_k_suppliers = 20, 
+  min_value = 500000
+)
+
+saveNetwork(top_k_sankey, file = "sankey_top_k_2023.html")
+```
+
+```{=html}
+<iframe src="sankey_top_k_2023.html" width="100%" height="600px" frameborder="0"></iframe>
 ```
