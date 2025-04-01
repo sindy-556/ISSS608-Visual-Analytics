@@ -65,6 +65,8 @@ website:
             href: "https://simplysindy.shinyapps.io/shiny_basics/"
           - text: "In-class Exercise 7"
             href: In-class_Ex/In-class_Ex07/In-class_Ex07.html
+          - text: "In-class Exercise 10"
+            href: "https://public.tableau.com/app/profile/sindy.hua/viz/In-class_Ex10_17432409718990/CoffeeChainSalesReportbyProductandProductType"
       - text: "Take-home Exercise"
         menu:
           - text: "Take-home Exercise 1"
