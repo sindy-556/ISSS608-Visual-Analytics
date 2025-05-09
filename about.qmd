@@ -7,6 +7,6 @@ Hi there! I'm Sindy! 👋
 
 So I just wrapped up ISSS608 Visual Analytics with Professor Kam Tin Seong, and this site is basically my digital scrapbook from the whole experience.
 
-Started as a total R newbie (seriously, what's a tibble?) and somehow managed to create some visualizations I'm actually proud of! This course took me from R basics to building interactive dashboards that actually work.
+Started as a total R newbie and somehow managed to create some visualizations I'm actually proud of!
 
 You'll find my projects, exercises, and probably a few happy accidents throughout this site. Each one represents a small victory in my data visualisation journey.

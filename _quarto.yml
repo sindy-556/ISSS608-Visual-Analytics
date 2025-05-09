@@ -76,8 +76,8 @@ website:
           - text: "Take-home Exercise 3"
             href: Take-home_Ex/Take-home_Ex3.html            
     right:
-      - href: index.qmd
-        text: "🚀 Home"
+      - href: "https://isss608ay2425s2-g3.netlify.app"
+        text: "🚀 Project"
       - href: about.qmd
         text: "💡️ About"
 
